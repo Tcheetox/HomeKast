@@ -1,0 +1,32 @@
+﻿
+header {
+    height: auto;
+    box-shadow: 0px 6px 9px 0px rgba(0, 0, 0, 0.05);
+    padding: 0.3rem 0;
+    transition: all var(--animation-duration);
+    position: fixed;
+    background-color: white;
+    width: 100%;
+    z-index: 1;
+
+    .navbar-brand {
+        margin-right: 0;
+    }
+
+    nav {
+        padding: 0 !important;
+        height: 64px;
+    }
+
+    .info-bar {
+        width: 100%;
+        font-size: 24px;
+        display: flex;
+        margin-right: 44px;
+        position: relative;
+    }
+
+    .header-title {
+        margin-left: 0.5rem;
+    }
+}

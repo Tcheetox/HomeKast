@@ -1,0 +1,16 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB;Database=_CHANGE_ME;Trusted_Connection=True;MultipleActiveResultSets=true"
+  },
+  "Application": {
+    "Port": 8081,
+    "ApiKey": "b06510099730528e06c7202ebd06eddd"
+  },
+  "Library": {
+    "Extensions": [ ".mkv", ".mp4" ],
+    "Directories": [ "D:\\TORRENTS" ]
+  },
+  "Ngrok": {
+    "Token": "1kPZSjTBOHN3K7xj4VGmU826etK_67DY8ADU1mqHLv9RNPLFb"
+  }
+}

@@ -1,0 +1,30 @@
+﻿@using Cast.Provider
+@model IMedia
+@{
+    string state = Model.Status.ToString().ToLower();
+    string poster = Model.Metadata == null ? 
+        ""
+        : $"https://image.tmdb.org/t/p/original{Model.Metadata.Backdrop}";
+}
+
+<div class="media @state" data-status="@state" data-id="@Model.Id" data-title="@Model.Name" style="background-image: url('@poster')">
+    <div class="overlay">
+
+    </div>
+    <div class="content">
+        <div class="title">
+            @Model.Name
+        </div>
+        <div class="duration">
+                @if(Model.Length > TimeSpan.FromMinutes(60))
+                {
+                    @Model.Length.ToString(@"h\:mm\:ss")
+                }
+                else
+                {
+                    @Model.Length.ToString(@"mm\:ss")
+                }
+        </div>
+        <div class="state"></div>
+    </div>
+</div>

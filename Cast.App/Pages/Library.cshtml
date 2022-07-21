@@ -1,0 +1,18 @@
+﻿@page
+@model Cast.App.Pages.LibraryModel
+@{
+    ViewBag.Title = "HomeCast | Library";
+
+    if (Model.HideLayout)
+    {
+        Layout = null;
+    }
+}
+
+<h2>My library</h2>
+<div class="library" data-host="@Model.Uri">
+    @foreach(var media in Model.Media)
+    {
+        <partial name="_MediaFrame" model="media" />
+    }
+</div>

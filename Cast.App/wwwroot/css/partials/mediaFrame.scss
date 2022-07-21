@@ -1,0 +1,58 @@
+﻿.media {
+    border: 1px solid lightgray;
+    border-radius: var(--border-radius);
+    min-width: 200px;
+    min-height: 300px;
+    position: relative;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.content {
+    padding: 0.5rem 1rem;
+}
+
+.title {
+    font-weight: 600;
+}
+
+.duration {
+    position: absolute;
+    margin-bottom: 0.5rem;
+    bottom: 0;
+}
+
+.state {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 100%;
+    position: absolute;
+    margin-bottom: 0.5rem;
+    bottom: 2px;
+    right: 0;
+    margin-right: 1rem;
+}
+
+.unplayable .state {
+    background-color: var(--danger);
+}
+
+.playable .state {
+    background-color: var(--success);
+}
+
+.overlay {
+    border-radius: var(--border-radius);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: all var(--animation-duration);
+    cursor: pointer;
+}
+
+.media:hover .overlay {
+    opacity: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+}

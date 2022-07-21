@@ -1,0 +1,79 @@
+@import 'library.scss';
+@import 'partials/footer.scss';
+@import 'partials/header.scss';
+@import 'partials/mediaFrame.scss';
+@import 'partials/mediaPlayer.scss';
+
+html {
+    font-size: 24px;
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100%;
+}
+
+:root {
+    --animation-duration: 150ms;
+    --main-color: #007bff;
+    --main-hover-color: #0056b3;
+    --border-radius: 5px;
+    --success: #198754;
+    --danger: #dc3545;
+}
+
+body {
+    width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+
+    .modal-open,
+    .modal {
+        padding-right: 0 !important;
+    }
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+main {
+    display: flex;
+    flex-grow: 1;
+    padding-top: 6rem;
+    flex-direction: column;
+}
+
+.logo {
+    fill: var(--main-color);
+    transition: all var(--animation-duration);
+
+    &:hover {
+        fill: var(--main-hover-color);
+    }
+}
+
+.loading.logo {
+    fill: black;
+    height: 2rem;
+    width: 2rem;
+    animation: rotation 1s infinite linear;
+    margin: 0.5rem;
+}
+
+@keyframes rotation {
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+.spinner-border {
+    width: max-content;
+    height: max-content;
+    margin: auto;
+}

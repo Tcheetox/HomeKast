@@ -1,0 +1,232 @@
+﻿.library {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+footer {
+  margin-top: auto;
+}
+
+.copyright {
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 1rem;
+}
+
+header {
+  height: auto;
+  box-shadow: 0px 6px 9px 0px rgba(0, 0, 0, 0.05);
+  padding: 0.3rem 0;
+  transition: all var(--animation-duration);
+  position: fixed;
+  background-color: white;
+  width: 100%;
+  z-index: 1;
+}
+header .navbar-brand {
+  margin-right: 0;
+}
+header nav {
+  padding: 0 !important;
+  height: 64px;
+}
+header .info-bar {
+  width: 100%;
+  font-size: 24px;
+  display: flex;
+  margin-right: 44px;
+  position: relative;
+}
+header .header-title {
+  margin-left: 0.5rem;
+}
+
+.media {
+  border: 1px solid lightgray;
+  border-radius: var(--border-radius);
+  min-width: 200px;
+  min-height: 300px;
+  position: relative;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.content {
+  padding: 0.5rem 1rem;
+}
+
+.title {
+  font-weight: 600;
+}
+
+.duration {
+  position: absolute;
+  margin-bottom: 0.5rem;
+  bottom: 0;
+}
+
+.state {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 100%;
+  position: absolute;
+  margin-bottom: 0.5rem;
+  bottom: 2px;
+  right: 0;
+  margin-right: 1rem;
+}
+
+.unplayable .state {
+  background-color: var(--danger);
+}
+
+.playable .state {
+  background-color: var(--success);
+}
+
+.overlay {
+  border-radius: var(--border-radius);
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: all var(--animation-duration);
+  cursor: pointer;
+}
+
+.media:hover .overlay {
+  opacity: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.media-player {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: all var(--animation-duration);
+  min-width: 300px;
+}
+.media-player .cast-title {
+  font-size: 1rem;
+  text-align: center;
+}
+.media-player .cast-icons {
+  display: flex;
+  justify-content: space-evenly;
+}
+.media-player .cast-progression {
+  display: flex;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+.media-player .cast-progression .form-range {
+  flex-grow: 1;
+  margin: auto 0.5rem;
+  height: 5px;
+  padding-top: 1px;
+}
+.media-player .cast-progression .form-range::-webkit-slider-thumb {
+  height: 10px;
+  width: 10px;
+  margin-top: -3px;
+}
+.media-player .cast-progression .form-range::-webkit-slider-runnable-track {
+  height: 5px;
+}
+.media-player img {
+  transition: all var(--animation-duration);
+}
+.media-player .inactive {
+  pointer-events: none;
+}
+.media-player .inactive img {
+  filter: invert(98%) sepia(2%) saturate(541%) hue-rotate(175deg) brightness(94%) contrast(92%);
+}
+.media-player .active {
+  pointer-events: initial;
+}
+.media-player .active img {
+  filter: invert(78%) sepia(10%) saturate(227%) hue-rotate(169deg) brightness(91%) contrast(91%);
+  cursor: pointer;
+}
+.media-player .active img:hover {
+  filter: invert(46%) sepia(14%) saturate(284%) hue-rotate(167deg) brightness(94%) contrast(91%);
+}
+.media-player svg {
+  filter: invert(1);
+}
+
+html {
+  font-size: 24px;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100%;
+}
+
+:root {
+  --animation-duration: 150ms;
+  --main-color: #007bff;
+  --main-hover-color: #0056b3;
+  --border-radius: 5px;
+  --success: #198754;
+  --danger: #dc3545;
+}
+
+body {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+body .modal-open,
+body .modal {
+  padding-right: 0 !important;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+main {
+  display: flex;
+  flex-grow: 1;
+  padding-top: 6rem;
+  flex-direction: column;
+}
+
+.logo {
+  fill: var(--main-color);
+  transition: all var(--animation-duration);
+}
+.logo:hover {
+  fill: var(--main-hover-color);
+}
+
+.loading.logo {
+  fill: black;
+  height: 2rem;
+  width: 2rem;
+  animation: rotation 1s infinite linear;
+  margin: 0.5rem;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+.spinner-border {
+  width: max-content;
+  height: max-content;
+  margin: auto;
+}
