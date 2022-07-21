@@ -6,7 +6,7 @@
 // TODO: check for events: statechange, event
 // TODO: store in session storage
 
-import Castjs from '../lib/castjs/cast.js'
+import Castjs from './cast.js'
 
 export default class Player {
     #$headerBar = $('.info-bar')
