@@ -14,10 +14,12 @@ html {
 :root {
     --animation-duration: 150ms;
     --main-color: #007bff;
+  /*  --main-color: #e50914;*/
     --main-hover-color: #0056b3;
     --border-radius: 5px;
     --success: #198754;
     --danger: #dc3545;
+    --background-color: #141414;
 }
 
 body {
@@ -25,6 +27,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background-color: var(--background-color);
 
     .modal-open,
     .modal {
@@ -76,4 +79,8 @@ main {
     width: max-content;
     height: max-content;
     margin: auto;
+}
+
+.container-fluid {
+    max-width: 95%;
 }

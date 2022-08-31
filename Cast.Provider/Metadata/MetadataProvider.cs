@@ -21,7 +21,7 @@ namespace Cast.Provider.MediaInfoProvider
             _logger = logger;
             _userProfile = userProfile;
         }
-
+        // TODO: header api key du con!
         public async Task<Metadata.Metadata?> GetMetadataAsync(string lookup)
         {
             if (string.IsNullOrWhiteSpace(lookup))

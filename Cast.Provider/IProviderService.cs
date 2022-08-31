@@ -6,7 +6,6 @@ namespace Cast.Provider
     {
         Task<ConcurrentDictionary<Guid, IMedia>> GetMedia();
         Task<IMedia?> GetMedia(Guid guid);
-
         bool IsCached { get; }
     }
 }

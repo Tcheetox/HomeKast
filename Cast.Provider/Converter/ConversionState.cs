@@ -5,7 +5,8 @@ namespace Cast.Provider.Converter
 {
     public class ConversionState
     {
-        public readonly IMedia SourceMedia;
+        public readonly IMedia? SourceMedia;
+        public bool Converting => SourceMedia != null && Progress != null;
         public ConversionProgressEventArgs Progress { get; private set; }
         private readonly object _progressLock = new();
 
@@ -21,7 +22,9 @@ namespace Cast.Provider.Converter
             }
         }
 
-        public ConversionState(IMedia media)
+        public readonly static ConversionState Default = new(null);
+
+        public ConversionState(IMedia? media)
         {
             SourceMedia = media;
         }
@@ -32,9 +35,9 @@ namespace Cast.Provider.Converter
             {
                 Progress = progress;
                 if (progress.Percent == 100)
-                    SourceMedia.Status = MediaStatus.Playable;
+                    SourceMedia!.Status = MediaStatus.Playable;
                 else if (progress.Percent > 0)
-                    SourceMedia.Status = MediaStatus.Converting;
+                    SourceMedia!.Status = MediaStatus.Converting;
             }
         }
     }

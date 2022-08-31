@@ -21,9 +21,9 @@ header {
   padding: 0.3rem 0;
   transition: all var(--animation-duration);
   position: fixed;
-  background-color: white;
   width: 100%;
   z-index: 1;
+  background-color: var(--background-color);
 }
 header .navbar-brand {
   margin-right: 0;
@@ -44,7 +44,6 @@ header .header-title {
 }
 
 .media {
-  border: 1px solid lightgray;
   border-radius: var(--border-radius);
   min-width: 200px;
   min-height: 300px;
@@ -172,10 +171,12 @@ html {
 :root {
   --animation-duration: 150ms;
   --main-color: #007bff;
+  /*  --main-color: #e50914;*/
   --main-hover-color: #0056b3;
   --border-radius: 5px;
   --success: #198754;
   --danger: #dc3545;
+  --background-color: #141414;
 }
 
 body {
@@ -183,6 +184,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--background-color);
 }
 body .modal-open,
 body .modal {
@@ -229,4 +231,8 @@ main {
   width: max-content;
   height: max-content;
   margin: auto;
+}
+
+.container-fluid {
+  max-width: 95%;
 }

@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
@@ -19,6 +18,8 @@ namespace Cast.Provider.Converter
         private readonly ConcurrentDictionary<string, ConversionState> _conversions;
         private readonly CancellationTokenSource _conversionCanceller;
         private readonly ILogger _logger;
+
+        public bool IsEmpty => _queue.IsEmpty;
 
         public ConversionQueue(ILogger logger)
         {
@@ -53,15 +54,24 @@ namespace Cast.Provider.Converter
         public bool TryGet(IMedia media, out ConversionState? state)
             => _conversions.TryGetValue(media.ConversionPath, out state);
 
+        public ConversionState GetCurrent(IMedia? media)
+        {
+            ConversionState? state = null;
+
+            if (media != null)
+                _conversions.TryGetValue(media.ConversionPath, out state);
+            else if (!_conversions.IsEmpty)
+                state = _conversions.FirstOrDefault().Value;
+
+            return state ?? ConversionState.Default;
+        }
+
         private void OnConversionProgress(object sender, ConversionProgressEventArgs args)
         {
             var conversion = (IConversion)sender;
             if (_conversions.TryGetValue(conversion.OutputFilePath, out ConversionState? conversionItem))
                 conversionItem.UpdateProgress(args);
         }
-
-        public ConversionState? GetStatus(IMedia media)
-            => _conversions.TryGetValue(media.ConversionPath, out ConversionState? state) ? state : null;
 
         public void Abort(IMedia media)
         {

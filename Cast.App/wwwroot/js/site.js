@@ -18,3 +18,10 @@ $('main').on('click', '.library .media', (e) => {
         title: media.data('title')
     })
 });
+
+const $conversionPlaceholder = $('.conversion-placeholder')
+const updateConversion = () => {
+    console.log("YOLO")
+}
+if ($conversionPlaceholder.length > 0)
+    setInterval(updateConversion, 500)

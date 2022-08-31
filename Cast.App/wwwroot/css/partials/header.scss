@@ -5,9 +5,9 @@ header {
     padding: 0.3rem 0;
     transition: all var(--animation-duration);
     position: fixed;
-    background-color: white;
     width: 100%;
     z-index: 1;
+    background-color: var(--background-color);
 
     .navbar-brand {
         margin-right: 0;

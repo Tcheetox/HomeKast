@@ -36,8 +36,8 @@ namespace Cast.Provider.Converter
             return null;
         }
 
-        public bool TryGetState(IMedia media, out ConversionState? state)
-            => _conversionQueue.TryGet(media, out state);
+        public bool TryGetState(IMedia media, out ConversionState? state) => _conversionQueue.TryGet(media, out state);
+        public ConversionState GetCurrentState(IMedia? media) => _conversionQueue.GetCurrent(media);
 
         public bool StartConversion(IMedia media)
         {
@@ -80,6 +80,7 @@ namespace Cast.Provider.Converter
             AudioCodec.mp3adu.ToString(),
             AudioCodec.mp3on4.ToString(),
         };
+
         public static bool RequireConversion(IMediaInfo info)
         {
             var video = info.VideoStreams.First();

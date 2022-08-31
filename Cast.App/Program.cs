@@ -1,9 +1,9 @@
+using LazyCache;
+using Microsoft.Extensions.Hosting.WindowsServices;
 using Cast.Provider;
 using Cast.Provider.Converter;
 using Cast.Provider.MediaInfoProvider;
 using Cast.SharedModels.User;
-using LazyCache;
-using System.Net;
 
 namespace Cast.App
 {
@@ -11,21 +11,21 @@ namespace Cast.App
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            var options = new WebApplicationOptions
+            {
+                Args = args,
+                ContentRootPath = WindowsServiceHelpers.IsWindowsService() ? AppContext.BaseDirectory : default
+            };
+            var builder = WebApplication.CreateBuilder(options);
 
             // TODO: metadata should return an empty version when nothing found
-            // TODO: refactor using scss everywhere?
-            // TODO: minification scss when scoped! JVDW
             // TODO: use exports module js
             // TODO: bind properly title name JS
             // TODO: bind seek +- buttons
             // TODO: orderby library
-            // TODO: grab poster
             // TODO: make this shit pretty
-            // TODO: gently switch to darkmode
             // TODO: bind range form to progress
             // TODO: adjust media overlay
-            // TODO: create banner
 
             builder.Services.AddRazorPages();
             builder.Services.AddLazyCache();
@@ -47,6 +47,8 @@ namespace Cast.App
                     x.GetRequiredService<UserProfile>())
                 );
 
+            builder.Host.UseWindowsService();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -63,6 +65,7 @@ namespace Cast.App
 
             app.MapRazorPages();
 
+            //app.RunAsync();
             app.Run();
         }
     }
