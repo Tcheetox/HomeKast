@@ -22,7 +22,7 @@ export default class Player {
         if (this.#$headerBar.length === 0) return
         this.#cjs = new Castjs();
         if (!this.#cjs) return
-        console.log(this.#cjs)
+
         // Bind
         this.#cjs.on('available', () => {
             this.#cjs.on('connect', () => {

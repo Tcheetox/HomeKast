@@ -4,6 +4,7 @@ using Cast.Provider;
 using Cast.Provider.Converter;
 using Cast.Provider.MediaInfoProvider;
 using Cast.SharedModels.User;
+using Cast.SharedModels;
 
 namespace Cast.App
 {
@@ -17,7 +18,13 @@ namespace Cast.App
                 ContentRootPath = WindowsServiceHelpers.IsWindowsService() ? AppContext.BaseDirectory : default
             };
             var builder = WebApplication.CreateBuilder(options);
-
+            builder.Services.AddCors(options => 
+                options.AddDefaultPolicy(cors =>
+                    cors.WithOrigins("*")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowAnyOrigin()
+                ));
             // TODO: metadata should return an empty version when nothing found
             // TODO: use exports module js
             // TODO: bind properly title name JS
@@ -36,6 +43,7 @@ namespace Cast.App
                 options.ListenLocalhost(profile.Application.Port);
                 options.Listen(profile.Application.IP, profile.Application.Port);
             });
+
             builder.Services.AddSingleton<IMediaConverter, MediaConverter>();
             builder.Services.AddSingleton<IMetadataProvider, MetadataProvider>();
             builder.Services.AddSingleton<MediaProvider>();
@@ -47,7 +55,7 @@ namespace Cast.App
                     x.GetRequiredService<UserProfile>())
                 );
 
-            builder.Host.UseWindowsService();
+            // builder.Host.UseWindowsService();
 
             var app = builder.Build();
 
@@ -60,6 +68,8 @@ namespace Cast.App
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseCors();
 
             app.UseAuthorization();
 

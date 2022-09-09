@@ -5,7 +5,7 @@ namespace Cast.Provider.Converter
 {
     public class ConversionState
     {
-        public readonly IMedia? SourceMedia;
+        public readonly IMedia SourceMedia;
         public bool Converting => SourceMedia != null && Progress != null;
         public ConversionProgressEventArgs Progress { get; private set; }
         private readonly object _progressLock = new();
@@ -22,9 +22,7 @@ namespace Cast.Provider.Converter
             }
         }
 
-        public readonly static ConversionState Default = new(null);
-
-        public ConversionState(IMedia? media)
+        public ConversionState(IMedia media)
         {
             SourceMedia = media;
         }

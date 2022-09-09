@@ -44,10 +44,7 @@ namespace Cast.SharedModels.User
                 get
                 {
                     if (_ip == null)
-                    {
-                        IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
-                        _ip = host.AddressList.First(ip => ip.AddressFamily == AddressFamily.InterNetwork);
-                    }
+                        _ip = Helper.GetIPAddress();
                     return _ip;
                 }
             }

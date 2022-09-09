@@ -1,9 +1,16 @@
 ﻿@page
 @model Cast.App.Pages.ConversionModel
 @{
+    string popoverContent = @"
+    <div class='conversion-state'>
+        <div class='media'/>
+        <div><span class='progress'></span><img class='stop-icon' src='media/pause.svg' width='20' height='20'/></div>
+        <div class='queue'/>
+    </div>";
 }
 
-<div class="conversion">
-    <img class="icon" src="@Url.Content("~/media/convert.svg")" height="30" width="30"/>
-    <div class="details">DETAILS</div>
+<div class="conversion hidden">
+    <button type="button" class="popover-btn" data-bs-html="true" data-bs-container="body" data-bs-title="Converting..." data-bs-toggle="popover" data-bs-trigger="focus" data-bs-placement="bottom" data-bs-content="@popoverContent">
+        <img class="icon" src="@Url.Content("~/media/convert.svg")" height="30" width="30"/>
+    </button>
 </div>

@@ -47,11 +47,11 @@ namespace Cast.App.Pages
             return Partial("MediaFrame", media);
         }
 
-        // TODO: debug
+        // TODO: use async wording please
         public async Task<IActionResult> OnGetMediaConversionProgress(Guid guid)
         {
             var media = await _providerService.GetMedia(guid);
-            if (media == null || !_mediaConverter.TryGetState(media, out ConversionState? state))
+            if (media == null || !_mediaConverter.TryGetMediaState(media, out ConversionState? state))
                 return new NoContentResult();
 
             return new JsonResult(state);

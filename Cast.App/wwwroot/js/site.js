@@ -5,23 +5,38 @@ import Player from './player.js'
 
 const player = new Player()
 
+// Enable Bootstrap popovers
+const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+const _ = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
+
 if ($('.loader').length > 0) {
     $('main').load('/Library')
 }
 
 $('main').on('click', '.library .media', (e) => {
     if (!player) return
-    const media = $(e.currentTarget)
-    const url = `${$('.library').data('host')}library?handler=mediastream&guid=${media.data('id')}`
-    console.log(url)
-    player.cast(url, {
-        title: media.data('title')
-    })
+    const $media = $(e.currentTarget)
+    const status = $media.data('status')
+    switch (status) {
+        case 'playable':
+            player.cast(`${$('.library').data('host')}library?handler=mediastream&guid=${$media.data('id')}`, {
+                title: $media.data('title')
+            })
+            break;
+        case 'unplayable':
+            $.post(`conversion?handler=startconversion`, { guid: $media.data('id') })
+            break;
+        default:
+            console.warn(`No action defined for media state: ${status}`)
+    }
 });
 
-const $conversionPlaceholder = $('.conversion-placeholder')
-const updateConversion = () => {
-    console.log("YOLO")
+// Check conversion queue state
+function checkQueueState() {
+    $.get('/conversion?handler=state', (data, status) => {
+        console.log(data)
+        if (status === "success") setTimeout(checkQueueState, 300)
+    })
 }
-if ($conversionPlaceholder.length > 0)
-    setInterval(updateConversion, 500)
+const $conversionPlaceholder = $('.conversion-placeholder')
+if ($conversionPlaceholder.length > 0) checkQueueState()

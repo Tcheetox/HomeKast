@@ -33,7 +33,7 @@ namespace Cast.Provider
                 Status = MediaStatus.Unknown;
             else if (!MediaConverter.RequireConversion(Info))
                 Status = MediaStatus.Playable;
-            else if (mediaConverter.TryGetState(this, out ConversionState? state))
+            else if (mediaConverter.TryGetMediaState(this, out ConversionState? state))
                 Status = state?.Progress == null ? MediaStatus.Queued : MediaStatus.Converting;
             else
                 Status = MediaStatus.Unplayable;
@@ -52,7 +52,7 @@ namespace Cast.Provider
             }
         }
 
-        public string ConversionPath => Path.Combine(Path.GetTempPath(), Id.ToString());
+        public string ConversionPath => Path.Combine(Path.GetTempPath(), $"{Id.ToString()}.mp4");
         #endregion
     }
 }

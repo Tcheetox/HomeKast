@@ -36,8 +36,23 @@ namespace Cast.Provider.Converter
             return null;
         }
 
-        public bool TryGetState(IMedia media, out ConversionState? state) => _conversionQueue.TryGet(media, out state);
-        public ConversionState GetCurrentState(IMedia? media) => _conversionQueue.GetCurrent(media);
+        public bool TryGetMediaState(IMedia media, out ConversionState? state) => _conversionQueue.TryGet(media, out state);
+
+        public QueueState GetQueueState() => _conversionQueue.GetState();
+
+        public void StopConvertion(IMedia? media = null)
+        {
+            if (media == null)
+            {
+                var queueState = _conversionQueue.GetState();
+                if (queueState.Media == null)
+                    return;
+                media = queueState.Media;
+            }
+
+            if (TryGetMediaState(media, out ConversionState? conversionState))
+                conversionState!.Canceller.Cancel();
+        }
 
         public bool StartConversion(IMedia media)
         {

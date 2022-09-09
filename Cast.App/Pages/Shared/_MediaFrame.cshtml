@@ -1,30 +1,32 @@
 ﻿@using Cast.Provider
+@using Cast.App.TagHelpers
 @model IMedia
 @{
     string state = Model.Status.ToString().ToLower();
-    string poster = Model.Metadata == null ? 
-        ""
-        : $"https://image.tmdb.org/t/p/original{Model.Metadata.Backdrop}";
+    // TODO: use a file cache for picture + fallback
+    string poster = Model.Metadata == null ? string.Empty : $"https://image.tmdb.org/t/p/original{Model.Metadata.Backdrop}";
 }
 
 <div class="media @state" data-status="@state" data-id="@Model.Id" data-title="@Model.Name" style="background-image: url('@poster')">
     <div class="overlay">
-
-    </div>
-    <div class="content">
-        <div class="title">
-            @Model.Name
-        </div>
+        <div class="title">@Model.Name</div>
+        @if (Model.Status == MediaStatus.Converting || Model.Status == MediaStatus.Unplayable)
+        {
+            <dynamic-svg source="~/media/convert.svg" class="icon" height="50" width="50"></dynamic-svg>
+        }
+        else if (Model.Status == MediaStatus.Playable)
+        {
+            <dynamic-svg source="~/media/play.svg" class="icon" height="50" width="50"></dynamic-svg>
+        }
         <div class="duration">
-                @if(Model.Length > TimeSpan.FromMinutes(60))
-                {
-                    @Model.Length.ToString(@"h\:mm\:ss")
-                }
-                else
-                {
-                    @Model.Length.ToString(@"mm\:ss")
-                }
+            @if(Model.Length > TimeSpan.FromMinutes(60))
+            {
+                @Model.Length.ToString(@"h\:mm\:ss")
+            }
+            else
+            {
+                @Model.Length.ToString(@"mm\:ss")
+            }
         </div>
-        <div class="state"></div>
     </div>
 </div>
