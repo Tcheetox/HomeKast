@@ -6,11 +6,24 @@ namespace Cast.SharedModels.User
 {
     public class Settings
     {
+        public MediaSettings Media { get; set; }
+        public class MediaSettings
+        {
+            public List<PreferencesSettings> Preferences { get; set; }
+            public class PreferencesSettings
+            {
+                public string Language { get; set; }
+                public string Subtitles { get; set; }
+            }
+        }
+
         public LibrarySettings Library { get; set; }
         public class LibrarySettings
         {
             public List<string> Extensions { get; set; }
             public List<string> Directories { get; set; }
+            public bool IsMonitoredExtensions(string extension)
+                => Extensions?.Any(e => e.ToLower() == extension.ToLower()) ?? false;
         }
 
         public ConnectionSettings ConnectionStrings { get; set; }
@@ -22,8 +35,10 @@ namespace Cast.SharedModels.User
         public ApplicationSettings Application { get; set; }
         public class ApplicationSettings
         {
-            public string ApiKey { get; set; }
+            public string ApiToken { get; set; }
             public int Port { get; set; }
+
+            public string BaseUrl { get; set; }
 
             private Uri _uri;
             [JsonIgnore]
@@ -44,7 +59,7 @@ namespace Cast.SharedModels.User
                 get
                 {
                     if (_ip == null)
-                        _ip = Helper.GetIPAddress();
+                        _ip = Helper.GetLocalIPAddress();
                     return _ip;
                 }
             }

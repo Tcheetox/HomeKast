@@ -5,9 +5,11 @@ namespace Cast.Provider.Converter
     public interface IMediaConverter
     {
         bool StartConversion(IMedia media);
-        QueueState GetQueueState();
-        void StopConvertion(IMedia? media = null);
-        bool TryGetMediaState(IMedia media, out ConversionState? state);
-        Task<IMediaInfo?> GetMediaInfo(string path);
+        bool StopConvertion(IMedia media);
+        bool TryGetMediaState(IMedia media, out ConversionState state);
+        Task<IMediaInfo> GetMediaInfo(string path, int timeout = 1000);
+        IMedia? Current { get; }
+        bool HasPendingConversions { get; }
+        event EventHandler<ConversionEventArgs> OnMediaConverted;
     }
 }

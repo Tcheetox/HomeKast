@@ -1,10 +1,8 @@
-using LazyCache;
 using Microsoft.Extensions.Hosting.WindowsServices;
 using Cast.Provider;
 using Cast.Provider.Converter;
-using Cast.Provider.MediaInfoProvider;
+using Cast.Provider.Meta;
 using Cast.SharedModels.User;
-using Cast.SharedModels;
 
 namespace Cast.App
 {
@@ -18,21 +16,18 @@ namespace Cast.App
                 ContentRootPath = WindowsServiceHelpers.IsWindowsService() ? AppContext.BaseDirectory : default
             };
             var builder = WebApplication.CreateBuilder(options);
-            builder.Services.AddCors(options => 
+            builder.Services.AddCors(options =>
                 options.AddDefaultPolicy(cors =>
                     cors.WithOrigins("*")
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowAnyOrigin()
                 ));
-            // TODO: metadata should return an empty version when nothing found
-            // TODO: use exports module js
+
             // TODO: bind properly title name JS
             // TODO: bind seek +- buttons
-            // TODO: orderby library
             // TODO: make this shit pretty
-            // TODO: bind range form to progress
-            // TODO: adjust media overlay
+            // TODO: replace the ugly SVG omagad
 
             builder.Services.AddRazorPages();
             builder.Services.AddLazyCache();
@@ -46,20 +41,17 @@ namespace Cast.App
 
             builder.Services.AddSingleton<IMediaConverter, MediaConverter>();
             builder.Services.AddSingleton<IMetadataProvider, MetadataProvider>();
-            builder.Services.AddSingleton<MediaProvider>();
-            builder.Services.AddSingleton<IProviderService>
-                (x => new CachedMediaProvider(
-                    x.GetRequiredService<ILogger<CachedMediaProvider>>(),
-                    x.GetRequiredService<MediaProvider>(),
-                    x.GetRequiredService<IAppCache>(),
-                    x.GetRequiredService<UserProfile>())
-                );
+            builder.Services.AddSingleton<IMediaProvider, MediaProvider>();
+            builder.Services.AddSingleton<FileWatcher>();
 
             // builder.Host.UseWindowsService();
 
             var app = builder.Build();
+            app.Services
+                .GetRequiredService<FileWatcher>()
+                .Start();
 
-            // Configure the HTTP request pipeline.
+            // Configure the HTTP request pipeline
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error");

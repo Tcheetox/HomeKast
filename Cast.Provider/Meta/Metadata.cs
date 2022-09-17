@@ -1,10 +1,17 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace Cast.Provider.Metadata
+namespace Cast.Provider.Meta
 {
     public class Metadata
     {
+        public readonly static Metadata Default = new()
+        {
+            Backdrop = "/media/notfound.png"
+        };
+
         public bool? Adult { get; set; }
+
         [JsonProperty(PropertyName = "backdrop_path")]
         public string Backdrop { get; set; }
         [JsonProperty(PropertyName = "genre_ids")]

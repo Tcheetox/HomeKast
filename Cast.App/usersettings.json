@@ -2,12 +2,25 @@
   "ConnectionStrings": {
     "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB;Database=_CHANGE_ME;Trusted_Connection=True;MultipleActiveResultSets=true"
   },
+  "Media": {
+    "Preferences": [
+      {
+        "Language": "eng",
+        "Subtitles": "fre"
+      },
+      {
+        "Language": "fre",
+        "Subtitles": null
+      }
+    ]
+  },
   "Application": {
     "Port": 8081,
-    "ApiKey": "b06510099730528e06c7202ebd06eddd"
+    "ApiToken": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiMDY1MTAwOTk3MzA1MjhlMDZjNzIwMmViZDA2ZWRkZCIsInN1YiI6IjYyZDVjNDMzODlkOTdmMDA0YzkyNmJkNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.2bqhLtLHyU-Cr-O8A9cKRVcrYNnj-SVcHEkPcETt9-Q",
+    "BaseUrl": "https://api.themoviedb.org/3/search/multi"
   },
   "Library": {
-    "Extensions": [ ".mkv", ".mp4" ],
+    "Extensions": [ ".mkv", ".mp4", ".webm" ],
     "Directories": [ "D:\\TORRENTS" ]
   },
   "Ngrok": {

@@ -1,14 +1,20 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Concurrent;
+using System.Text.Json.Serialization;
 using Xabe.FFmpeg.Events;
 
 namespace Cast.Provider.Converter
 {
     public class ConversionState
     {
+        [JsonIgnore]
         public readonly IMedia SourceMedia;
-        public bool Converting => SourceMedia != null && Progress != null;
+        [JsonIgnore]
+        public readonly string TargetPath;
+        public string Name => SourceMedia.Name;
+        public int QueueLength => _queue.Count;
+        public Guid Id => SourceMedia.Id;
+        public string Status => SourceMedia.Status.ToString().ToLower();
         public ConversionProgressEventArgs Progress { get; private set; }
-        private readonly object _progressLock = new();
 
         private CancellationTokenSource? _canceller;
         [JsonIgnore]
@@ -16,27 +22,35 @@ namespace Cast.Provider.Converter
         {
             get
             {
-                if (_canceller == null)
-                    _canceller = new CancellationTokenSource();
-                return _canceller;
+                return _canceller ??= new CancellationTokenSource();
             }
         }
 
-        public ConversionState(IMedia media)
+        private readonly ConcurrentDictionary<string, ConversionState> _queue;
+        public ConversionState(ConcurrentDictionary<string, ConversionState> queue, IMedia media)
         {
+            _queue = queue;
             SourceMedia = media;
+
+            string targetDirectory = Path.GetDirectoryName(media.LocalPath)!;
+            string fileName = "_" 
+                + Path.GetFileNameWithoutExtension(media.LocalPath)
+                + Path.GetExtension(media.ConversionPath);
+            TargetPath = Path.Combine(targetDirectory, fileName);
         }
+
+        public void UpdateProgress()
+            => SourceMedia.Status = ConversionHelper.RequireConversion(SourceMedia.Info) 
+            ? MediaStatus.Unplayable 
+            : MediaStatus.Playable;
 
         public void UpdateProgress(ConversionProgressEventArgs progress)
         {
-            lock (_progressLock)
-            {
-                Progress = progress;
-                if (progress.Percent == 100)
-                    SourceMedia!.Status = MediaStatus.Playable;
-                else if (progress.Percent > 0)
-                    SourceMedia!.Status = MediaStatus.Converting;
-            }
+            Progress = progress;
+            if (Progress.Percent >= 0)
+                SourceMedia.Status = MediaStatus.Converting;
+            else
+                SourceMedia.Status = MediaStatus.Queued;
         }
     }
 }

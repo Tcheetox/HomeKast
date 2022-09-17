@@ -1,57 +1,70 @@
+using System.Text;
 using Cast.Provider;
 using Cast.Provider.Converter;
+using Cast.SharedModels;
 using Cast.SharedModels.User;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Collections.Concurrent;
-using System.Net.Mime;
 
 namespace Cast.App.Pages
 {
     public class LibraryModel : PageModel
     {
+        public readonly Uri Uri;
         public IEnumerable<IMedia> Media { get; private set; }
-        public Uri Uri { get; private set; }
-
+        public string MediaMD5 { get; private set; } = string.Empty;
         public bool HideLayout => HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
         private readonly ILogger<LibraryModel> _logger;
-        private readonly IProviderService _providerService;
+        private readonly IMediaProvider _mediaProvider;
         private readonly IMediaConverter _mediaConverter;
-        private readonly UserProfile _userProfile;
 
-        public LibraryModel(ILogger<LibraryModel> logger, IProviderService providerService, IMediaConverter mediaConverter, UserProfile userProfile)
+        public LibraryModel(ILogger<LibraryModel> logger, IMediaProvider mediaProvider, IMediaConverter mediaConverter, UserProfile userProfile)
         {
             _logger = logger;
-            _providerService = providerService;
+            _mediaProvider = mediaProvider;
             _mediaConverter = mediaConverter;
-            _userProfile = userProfile;
+            Uri = userProfile.Application.Uri;
         }
 
-        public async Task<IActionResult> OnGet()
+        public async Task<IActionResult> OnGet(string md5 = "")
         {
-            Media = (await _providerService.GetMedia())
+            Media = (await _mediaProvider.GetAllMedia())
                 .Select(m => m.Value)
-                .OrderBy(m => m.Status != MediaStatus.Playable)
-                .ThenBy(m => m.Creation);
-            Uri = _userProfile.Application.Uri;
+                .OrderByDescending(m => m.Creation)
+                .ThenByDescending(m => m.Status == MediaStatus.Playable);
+
+            MediaMD5 = ComputeLibraryMD5(Media);
+
+            if (!string.IsNullOrWhiteSpace(md5) && md5 == MediaMD5)
+                return new NoContentResult();
             return Page();
         }
 
-        public async Task<IActionResult> OnGetMedia(Guid guid)
+        private static string ComputeLibraryMD5(IEnumerable<IMedia> library)
         {
-            var media = await _providerService.GetMedia(guid);
+            StringBuilder builder = new();
+            foreach (var media in library)
+            {
+                builder.Append(media.Id.ToString());
+                builder.Append(media.Status);
+            }
+            return Helper.ComputeMD5(builder.ToString());
+        }
+
+        public async Task<IActionResult> OnGetMediaAsync(Guid guid)
+        {
+            var media = await _mediaProvider.GetMedia(guid);
             if (media == null)
                 return new NoContentResult();
 
-            return Partial("MediaFrame", media);
+            return Partial("_MediaFrame", media);
         }
 
-        // TODO: use async wording please
-        public async Task<IActionResult> OnGetMediaConversionProgress(Guid guid)
+        public async Task<IActionResult> OnGetMediaConversionStateAsync(Guid? guid)
         {
-            var media = await _providerService.GetMedia(guid);
-            if (media == null || !_mediaConverter.TryGetMediaState(media, out ConversionState? state))
+            IMedia? media = guid == null ? _mediaConverter.Current : await _mediaProvider.GetMedia(guid.Value);
+            if (media == null || !_mediaConverter.TryGetMediaState(media, out ConversionState state))
                 return new NoContentResult();
 
             return new JsonResult(state);
@@ -59,7 +72,7 @@ namespace Cast.App.Pages
 
         public async Task<IActionResult> OnGetMediaStream(Guid guid)
         {
-            var media = await _providerService.GetMedia(guid);
+            var media = await _mediaProvider.GetMedia(guid);
             if (media == null)
                 return new NoContentResult();
 

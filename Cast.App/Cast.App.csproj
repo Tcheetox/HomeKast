@@ -16,6 +16,7 @@
 
 	<ItemGroup>
 		<None Include="compilerconfig.json" />
+		<None Include="wwwroot\media\notfound.png" />
 	</ItemGroup>
 
 	<ItemGroup>

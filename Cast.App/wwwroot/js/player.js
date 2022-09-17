@@ -4,7 +4,6 @@
 
 // TODO: check for Chrome browser
 // TODO: check for events: statechange, event
-// TODO: store in session storage
 
 import Castjs from './cast.js'
 

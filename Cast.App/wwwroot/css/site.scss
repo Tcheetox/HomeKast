@@ -14,7 +14,7 @@ html {
 :root {
     --animation-duration: 150ms;
     --main-color: #007bff;
-  /*  --main-color: #e50914;*/
+    /*  --main-color: #e50914;*/
     --main-hover-color: #0056b3;
     --border-radius: 5px;
     --success: #198754;
@@ -61,11 +61,11 @@ main {
     fill: black;
     height: 2rem;
     width: 2rem;
-    animation: rotation 1s infinite linear;
+    animation: logoRorate 1s infinite linear;
     margin: 0.5rem;
 }
 
-@keyframes rotation {
+@keyframes logoRorate {
     from {
         transform: rotate(360deg);
     }
@@ -84,3 +84,20 @@ main {
 .container-fluid {
     max-width: 95%;
 }
+
+@keyframes rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes absoluteRotate {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+

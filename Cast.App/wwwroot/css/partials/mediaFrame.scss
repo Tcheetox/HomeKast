@@ -6,40 +6,49 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-}
 
-.title {
-    font-weight: 600;
-    font-size: 1.5rem;
-    color: white;
-}
+    .title {
+        font-weight: 600;
+        font-size: 1.5rem;
+        color: white;
+    }
 
-.duration {
-    position: absolute;
-    color: white;
-    bottom: 0.5rem;
-}
-
-
-.overlay {
-    border-radius: var(--border-radius);
-    width: 100%;
-    height: 100%;
-    opacity: 0%;
-    transition: all var(--animation-duration);
-    cursor: pointer;
-    padding: 0.5rem;
-
-    svg {
-        fill: white;
+    .duration {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        color: white;
+        bottom: 0.5rem;
+    }
+
+    &[data-status="converting"] .icon {
+        animation: absoluteRotate 2s linear infinite;
+    }
+
+    .overlay {
+        border-radius: var(--border-radius);
+        width: 100%;
+        height: 100%;
+        opacity: 0%;
+        // transition: all var(--animation-duration);
+        cursor: pointer;
+        padding: 0.5rem;
+
+        svg {
+            fill: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+
+    &:hover .overlay {
+        opacity: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
     }
 }
 
-.media:hover .overlay {
-    opacity: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
+@keyframes rotate2 {
+    to {
+        transform: rotate(360deg);
+    }
 }

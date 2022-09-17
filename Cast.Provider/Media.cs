@@ -1,19 +1,21 @@
 ﻿using System;
+using System.Diagnostics;
 using Cast.Provider.Converter;
-using Cast.Provider.Metadata;
+using Cast.Provider.Meta;
 using Xabe.FFmpeg;
 
 namespace Cast.Provider
 {
     public enum MediaStatus
     {
-        Unknown,
+        Hidden,
         Playable,
         Unplayable,
         Queued,
         Converting
     }
 
+    [DebuggerDisplay("{Name} - {LocalPath}")]
     internal class Media : IMedia
     {
 
@@ -25,20 +27,7 @@ namespace Cast.Provider
         public IMediaInfo Info { get; init; }
         public MediaStatus Status { get; set; }
         public DateTime Creation { get; init; }
-        public Metadata.Metadata Metadata { get; init; }
-
-        public Media UpdateStatus(IMediaConverter mediaConverter)
-        {
-            if (Info == null)
-                Status = MediaStatus.Unknown;
-            else if (!MediaConverter.RequireConversion(Info))
-                Status = MediaStatus.Playable;
-            else if (mediaConverter.TryGetMediaState(this, out ConversionState? state))
-                Status = state?.Progress == null ? MediaStatus.Queued : MediaStatus.Converting;
-            else
-                Status = MediaStatus.Unplayable;
-            return this;
-        }
+        public Metadata Metadata { get; init; }
 
         #region Conversion members
         private Guid? _conversionId;
@@ -52,7 +41,7 @@ namespace Cast.Provider
             }
         }
 
-        public string ConversionPath => Path.Combine(Path.GetTempPath(), $"{Id.ToString()}.mp4");
+        public string ConversionPath => Path.Combine(Path.GetTempPath(), $"{Id}.mp4");
         #endregion
     }
 }

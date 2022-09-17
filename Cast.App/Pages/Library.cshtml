@@ -2,7 +2,6 @@
 @model Cast.App.Pages.LibraryModel
 @{
     ViewBag.Title = "HomeCast | Library";
-
     if (Model.HideLayout)
     {
         Layout = null;
@@ -10,8 +9,9 @@
 }
 
 <h2>My library</h2>
+@Html.HiddenFor(m => m.MediaMD5)
 <div class="library" data-host="@Model.Uri">
-    @foreach(var media in Model.Media)
+    @foreach(var media in Model.Media.Where(m => m.Status != Provider.MediaStatus.Hidden))
     {
         <partial name="_MediaFrame" model="media" />
     }

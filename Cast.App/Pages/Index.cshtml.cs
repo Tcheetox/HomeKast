@@ -7,14 +7,14 @@ namespace Cast.App.Pages
     public class IndexModel : PageModel
     {
         private readonly ILogger<IndexModel> _logger;
-        private readonly IProviderService _providerService;
+        private readonly IMediaProvider _providerService;
 
-        public IndexModel(ILogger<IndexModel> logger, IProviderService providerService)
+        public IndexModel(ILogger<IndexModel> logger, IMediaProvider providerService)
         {
             _logger = logger;
             _providerService = providerService;
         }
-
+        // TODO: rework ajax loading lib, avoid shitty redirect
         public IActionResult OnGet()
         {
             if (!_providerService.IsCached)

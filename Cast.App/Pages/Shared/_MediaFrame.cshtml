@@ -3,16 +3,19 @@
 @model IMedia
 @{
     string state = Model.Status.ToString().ToLower();
-    // TODO: use a file cache for picture + fallback
-    string poster = Model.Metadata == null ? string.Empty : $"https://image.tmdb.org/t/p/original{Model.Metadata.Backdrop}";
+    //@Model.Metadata.Backdrop
 }
 
-<div class="media @state" data-status="@state" data-id="@Model.Id" data-title="@Model.Name" style="background-image: url('@poster')">
+<div class="media" data-status="@state" data-id="@Model.Id" data-title="@Model.Name" style="background-image: url('@Model.Metadata.Backdrop')">
     <div class="overlay">
         <div class="title">@Model.Name</div>
         @if (Model.Status == MediaStatus.Converting || Model.Status == MediaStatus.Unplayable)
         {
             <dynamic-svg source="~/media/convert.svg" class="icon" height="50" width="50"></dynamic-svg>
+        }
+        else if (Model.Status == MediaStatus.Queued)
+        {
+            <dynamic-svg source="~/media/queued.svg" class="icon" height="50" width="50"></dynamic-svg>
         }
         else if (Model.Status == MediaStatus.Playable)
         {

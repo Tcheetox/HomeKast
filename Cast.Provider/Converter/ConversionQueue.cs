@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xabe.FFmpeg;
 using Xabe.FFmpeg.Events;
+using Cast.SharedModels.User;
 
 namespace Cast.Provider.Converter
 {
     // TODO: logging + IDisposable
-    // TODO: try catching around conversion
     internal class ConversionQueue
     {
         private readonly ConcurrentQueue<IConversion> _queue;
@@ -19,14 +15,13 @@ namespace Cast.Provider.Converter
         private readonly CancellationTokenSource _conversionCanceller;
         private readonly ILogger _logger;
 
-        public bool IsEmpty => _queue.IsEmpty;
-
         public ConversionQueue(ILogger logger)
         {
+            _logger = logger;
             _queue = new ConcurrentQueue<IConversion>();
             _conversions = new ConcurrentDictionary<string, ConversionState>();
-
             _conversionCanceller = new CancellationTokenSource();
+
             Task.Run(async () =>
             {
                 while (!_conversionCanceller.IsCancellationRequested)
@@ -37,64 +32,60 @@ namespace Cast.Provider.Converter
                     {
                         try
                         {
+                            Current = state.SourceMedia;
+                            if (File.Exists(conversion.OutputFilePath))
+                                File.Delete(conversion.OutputFilePath);
+                            // Convert file
                             await conversion.Start(state.Canceller.Token);
+                            // Put covnerted file under user library directory
+                            ConversionHelper.MoveAndRename(state);
+                            // Raise event
+                            OnMediaConverted?.Invoke(this, new ConversionEventArgs(state)); 
+                        }
+                        catch (OperationCanceledException ex)
+                        {
+                            _logger.LogError("!! Conversion cancelled by user", ex);
                         }
                         catch (Exception ex)
+                        {               
+                            _logger.LogError("!! Conversion error", ex);
+                        }
+                        finally
                         {
-                            _logger!.LogError("!! Conversion error", ex);
+                            Current = null;
+                            state.UpdateProgress();
+                            TryRemove(state.SourceMedia);
                         }
                     }
-                    Thread.Sleep(100);
+                    Thread.Sleep(50);
                 }
             }, _conversionCanceller.Token);
         }
 
-        private static void OnConversionProgress(IMedia media, IConversion conversion, ConversionProgressEventArgs args)
-        {
-            // TODO: media update + conversions rem
-            //if (args.Percent >= 100)
-            //    _conversions.Remove(conversion.OutputFilePath, out _);
-            //conversionItem.UpdateProgress(args);
-        }
+        #region Public Members
+        public IMedia? Current { get; private set; }
+        public bool IsQueueEmpty => _conversions.IsEmpty;
+        public event EventHandler<ConversionEventArgs> OnMediaConverted;
 
         public bool TryAdd(IMedia media, IConversion conversion)
         {
-            if (!_conversions.TryAdd(media.ConversionPath, new ConversionState(media)))
+            var state = new ConversionState(_conversions, media);
+            if (!_conversions.TryAdd(media.ConversionPath, state))
                 return false;
 
-            conversion.OnProgress += (object sender, ConversionProgressEventArgs args)
-                => OnConversionProgress(media, conversion, args);
+            media.Status = MediaStatus.Queued;
             _queue.Enqueue(conversion);
+            conversion.OnProgress += (object sender, ConversionProgressEventArgs args)
+                => state.UpdateProgress(args);
 
             return true;
         }
 
-        public bool TryGet(IMedia media, out ConversionState? state)
+        public bool TryGet(IMedia media, out ConversionState state)
             => _conversions.TryGetValue(media.ConversionPath, out state);
 
-        public QueueState GetState()
-        {
-            if (_conversions.IsEmpty)
-                return new QueueState() { IsConverting = false };
-
-            // Double-check needed to avoid minor chance of race condition
-            var item = _conversions.FirstOrDefault(c => c.Value.Converting).Value;
-            if (item == null)
-                return new QueueState() { IsConverting = false };
-
-            return new QueueState()
-            {
-                IsConverting = true,
-                Media = item.SourceMedia,
-                MediaProgress = item.Progress?.Percent ?? 0,
-                QueueLength = _conversions.Count
-            };
-        }
-
-        public void Abort(IMedia media)
-        {
-            if (_conversions.TryGetValue(media.ConversionPath, out ConversionState? state))
-                state.Canceller.Cancel();
-        }
+        public bool TryRemove(IMedia media)
+            => _conversions.TryRemove(media.ConversionPath, out _);
+        #endregion
     }
 }

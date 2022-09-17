@@ -5,36 +5,35 @@ using Cast.Provider;
 
 namespace Cast.App.Pages
 {
-    // TODO: debug without net
     // TODO: add antiforgerytoken
     [IgnoreAntiforgeryToken(Order = 1001)]
     public class ConversionModel : PageModel
     {
         private readonly ILogger<ConversionModel> _logger;
-        private readonly IMediaConverter _converter;
-        private readonly IProviderService _providerService;
+        private readonly IMediaConverter _mediaConverter;
+        private readonly IMediaProvider _mediaProvider;
 
-        public ConversionModel(ILogger<ConversionModel> logger, IMediaConverter mediaConverter, IProviderService providerService)
+        public ConversionModel(ILogger<ConversionModel> logger, IMediaConverter mediaConverter, IMediaProvider providerService)
         {
             _logger = logger;
-            _converter = mediaConverter;
-            _providerService = providerService;
+            _mediaConverter = mediaConverter;
+            _mediaProvider = providerService;
         }
 
-        public IActionResult OnGetState() => new JsonResult(_converter.GetQueueState());
-
-        public async void OnPostStartConversionAsync(Guid guid)
+        public async Task<IActionResult> OnPostStartConversionAsync(Guid guid)
         {
-            var media = await _providerService.GetMedia(guid);
-            if (media != null && media.Status == MediaStatus.Unplayable)
-                _converter.StartConversion(media);
+            var media = await _mediaProvider.GetMedia(guid);
+            if (media != null && media.Status == MediaStatus.Unplayable && _mediaConverter.StartConversion(media))
+                return Partial("_MediaFrame", media);
+            return BadRequest();
         }
 
-        public async void OnPostStopConversionAsync(Guid guid)
+        public async Task<IActionResult> OnPostStopConversionAsync(Guid guid)
         {
-            var media = await _providerService.GetMedia(guid);
-            if (media != null)
-                _converter.StopConvertion(media);
+            var media = await _mediaProvider.GetMedia(guid);
+            if (media != null && _mediaConverter.StopConvertion(media))
+                return Partial("_MediaFrame", media);
+            return BadRequest();
         }
     }
 }

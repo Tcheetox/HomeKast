@@ -1,154 +1,63 @@
-﻿using Cast.Provider.Converter;
-using Cast.Provider.MediaInfoProvider;
-using Cast.SharedModels.User;
-using Microsoft.Extensions.Logging;
+﻿using System;
 using System.Collections.Concurrent;
-using System.Text.RegularExpressions;
-using Xabe.FFmpeg;
+using Cast.Provider.Converter;
+using Cast.Provider.Meta;
+using Cast.SharedModels.User;
+using LazyCache;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace Cast.Provider
 {
     // TODO: logging
-    // TODO: layout shift on lib load because of scrollbar...
-    public class MediaProvider : IProviderService
+    public class MediaProvider : MediaProviderBase
     {
         private readonly ILogger<MediaProvider> _logger;
-        private readonly UserProfile _profile;
-        private readonly IMediaConverter _mediaConverter;
-        private readonly IMetadataProvider _metadataProvider;
+        private readonly IAppCache _lazyCache;
 
-        public bool IsCached => false;
-
-        static MediaProvider()
-        {
-            _specific.AddRange(Enum.GetNames(typeof(VideoSize)));
-            _specific.AddRange(Enum.GetNames(typeof(VideoCodec)));
-            _specific.AddRange(Enum.GetNames(typeof(AudioCodec)));
-        }
-
-        public MediaProvider(ILogger<MediaProvider> logger, IMetadataProvider metadataProvider, IMediaConverter mediaConverter, UserProfile profile)
+        public MediaProvider(ILogger<MediaProvider> logger,
+            IMetadataProvider metadataProvider,
+            IMediaConverter mediaConverter,
+            IAppCache lazyCache,
+            UserProfile userProfile)
+            : base(logger, metadataProvider, mediaConverter, userProfile)
         {
             _logger = logger;
-            _mediaConverter = mediaConverter;
-            _metadataProvider = metadataProvider;
-            _profile = profile;
+            _lazyCache = lazyCache;
+            _userProfile.ProfileChanged += UserProfileChanged;
         }
 
-        public async Task<IMedia?> GetMedia(Guid guid) => (await GetMedia())[guid];
+        private string CacheKey => CreateCacheKey(_userProfile.Library.Directories, _userProfile.Library.Extensions);
 
-        // TODO: movies which have an equivalent playable state shouldn't be in the collection...
-        public async Task<ConcurrentDictionary<Guid, IMedia>> GetMedia()
+        private void UserProfileChanged(object? sender, EventArgs e)
         {
-            ConcurrentDictionary<Guid, IMedia> library = new();
+            // TODO: gently refresh cache
+            _ = GetAllMedia();
+        }
 
-            foreach (var file in _profile
-                .Library
-                .Directories
-                .SelectMany(directory => Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories))
-                .Where(f => _profile.Library.Extensions.Any(e => e == Path.GetExtension(f))))
+        private string CreateCacheKey(IEnumerable<string> directories, IEnumerable<string> extensions)
+        {
+            unchecked
             {
-                var info = await _mediaConverter.GetMediaInfo(file);
-                if (info != null)
-                {
-                    var (Normalized, Displayed) = CreateNames(file);
-                    var fileInfo = new FileInfo(file);
-                    var media = new Media()
-                    {
-                        LocalPath = file,
-                        Name = Displayed,
-                        Created = File.GetCreationTime(file),
-                        Size = fileInfo.Length,
-                        Creation = fileInfo.CreationTime,
-                        Length = info.Duration,
-                        Info = info,
-                        Metadata = await _metadataProvider.GetMetadataAsync(Normalized)
-                    }.UpdateStatus(_mediaConverter);
-                    library.TryAdd(media.Id, media);
-                }
+                int hash = 17;
+                foreach (var directory in directories)
+                    hash = hash * 31 + directory.GetHashCode();
+                foreach (var extension in extensions)
+                    hash = hash * 31 + extension.GetHashCode();
+                return $"{nameof(MediaProvider)}|{hash}";
             }
-
-            return library;
         }
 
-
-        private static readonly List<string> _specific = new()
-        {
-            "webrip",
-            "uncut",
-            "1080p",
-            "1080 p",
-            "720p",
-            "720 p",
-            "10bit",
-            "10 bit",
-            "vff",
-            "multi",
-            "web",
-            "french",
-            "english",
-            "bluray",
-            "hdtv",
-            "hevc",
-            "6ch",
-            "x265",
-            "x265-chk",
-            "-shc23",
-            "shc23",
-            "-dl",
-            "-dnt",
-            "bdrip",
-            "x265",
-            "-mgd",
-            "mgd",
-            "notag",
-            "no tag",
-            "custom",
-            "vfi",
-            "mhd",
-            "x264",
-            "uncensored",
-            "vostfr",
-            "-dl",
-            "-fhd",
-            "partie",
-            "true",
-            "_",
-            "final"
-        };
-        private static (string Normalized, string Displayed) CreateNames(string path)
-        {
-            var original = Path.GetFileNameWithoutExtension(path);
-            var cleaned = Regex.Replace(original, @"[\.]", " ");
-            cleaned = Regex.Replace(cleaned, @"\[.*?\]", " ");
-            cleaned = Regex.Replace(cleaned, @"\(.*?\)", " ");
-
-            for (int i = 0; i < 2; i++)
-            {
-                var cleanedArray = cleaned
-                    .Split(" ", StringSplitOptions.RemoveEmptyEntries)
-                    .Where(e => e.Length > 2);
-                cleaned = string.Join(' ', cleanedArray);
-
-                foreach (var word in _specific)
-                    cleaned = cleaned.Replace(word, "", StringComparison.InvariantCultureIgnoreCase);
-            }
-
-            cleaned = cleaned.Trim();
-            if (cleaned.Length > 0)
-                cleaned = cleaned[0].ToString().ToUpper() + cleaned[1..];
-
-            var splittedName = cleaned.Split(' ');
-            int idx = -1;
-            for (int i = 0; i < splittedName.Length; i++)
-                if (splittedName[i].Any(char.IsDigit))
+        public override async Task<ConcurrentDictionary<Guid, IMedia>> GetAllMedia()
+            => await _lazyCache.GetOrAddAsync(CacheKey,
+                async (cacheEntry) =>
                 {
-                    idx = i;
-                    break;
-                }
+                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(60));
+                    return await base.GetAllMedia();
+                });
 
-            string displayName = string.Join(' ', splittedName.Where(e => !e.StartsWith('-')));
-            string normalizedName = idx > 0 ? string.Join(' ', splittedName[0..idx]) : displayName;
-            return (normalizedName, displayName);
-        }
+        public override async Task<IMedia> GetMedia(Guid guid) => (await GetAllMedia())[guid];
+
+        public override bool IsCached => _lazyCache.TryGetValue(CacheKey, out object _);
     }
 }
