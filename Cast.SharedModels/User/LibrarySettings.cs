@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Sockets;
 using System.Text.Json.Serialization;
 
 namespace Cast.SharedModels.User
@@ -54,15 +53,7 @@ namespace Cast.SharedModels.User
 
             private IPAddress _ip;
             [JsonIgnore]
-            public IPAddress IP
-            {
-                get
-                {
-                    if (_ip == null)
-                        _ip = Helper.GetLocalIPAddress();
-                    return _ip;
-                }
-            }
+            public IPAddress IP => _ip ??= Helper.GetLocalIPAddress();
         }
     }
 }

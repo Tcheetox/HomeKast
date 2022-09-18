@@ -14,7 +14,8 @@
 }
 
 <div class="conversion">
-    <button type="button" class="popover-btn" data-bs-html="true" data-bs-container="body" data-bs-title="Converting...<span class='queueLength'>7 items</span>" data-bs-toggle="popover" data-bs-placement="bottom" data-bs-content="@popoverContent">
-        <dynamic-svg source="~/media/convert.svg" class="toggler-icon" height="30" width="30"></dynamic-svg>
+    @Html.AntiForgeryToken()
+    <button type="button" class="popover-btn" data-bs-html="true" data-bs-container="body" data-bs-title="Converting...<span class='queueLength'>0 item(s)</span>" data-bs-toggle="popover" data-bs-placement="bottom" data-bs-content="@popoverContent">
+        <smart-svg color="#FFFFFF" src="~/media/convert.svg" class="toggler-icon" height="30" width="30"></smart-svg>
     </button>
 </div>

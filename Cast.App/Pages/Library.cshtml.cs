@@ -12,7 +12,9 @@ namespace Cast.App.Pages
     {
         public readonly Uri Uri;
         public IEnumerable<IMedia> Media { get; private set; }
-        public string MediaMD5 { get; private set; } = string.Empty;
+        public string newMd5 { get; private set; } = string.Empty;
+
+        // Hide layout if this AJAX request
         public bool HideLayout => HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
         private readonly ILogger<LibraryModel> _logger;
@@ -34,10 +36,12 @@ namespace Cast.App.Pages
                 .OrderByDescending(m => m.Creation)
                 .ThenByDescending(m => m.Status == MediaStatus.Playable);
 
-            MediaMD5 = ComputeLibraryMD5(Media);
+            newMd5 = ComputeLibraryMD5(Media);
 
-            if (!string.IsNullOrWhiteSpace(md5) && md5 == MediaMD5)
+            if (!string.IsNullOrWhiteSpace(md5) && md5 == newMd5)
                 return new NoContentResult();
+
+            _logger.LogDebug("Media library returned with MD5 {newMd5}", newMd5);
             return Page();
         }
 
@@ -76,6 +80,7 @@ namespace Cast.App.Pages
             if (media == null)
                 return new NoContentResult();
 
+            _logger.LogInformation("Media library started streaming {media.Name}", media.Name);
             return new PhysicalFileResult(media.LocalPath, "video/mp4")
             {
                 EnableRangeProcessing = true

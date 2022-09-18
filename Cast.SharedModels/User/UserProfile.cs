@@ -15,13 +15,13 @@ namespace Cast.SharedModels.User
         private readonly ILogger<UserProfile> _logger;
         private readonly string _path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "usersettings.json");
 
-        // TODO: logging
-        // TODO: try-catching around IO
         public UserProfile(ILogger<UserProfile> logger)
         {
             _logger = logger;
 
-            if (File.Exists(_path))
+            if (!File.Exists(_path))
+                throw new ArgumentException($"User settings could not be found {_path}");
+            else
             {
                 var content = File.ReadAllText(_path);
                 _settings = JsonConvert.DeserializeObject<Settings>(content)!;
@@ -30,18 +30,32 @@ namespace Cast.SharedModels.User
 
         public event EventHandler ProfileChanged;
 
-        public void Update(List<string>? newExtensions = null, List<string>? newDirectories = null)
+        public void Update(List<string> newExtensions, List<string> newDirectories)
         {
+            if (_settings.Library.Directories.SequenceEqual(newDirectories)
+                && _settings.Library.Extensions.SequenceEqual(newExtensions))
+                return;
+            
             _settings.Library = new LibrarySettings
             {
                 Directories = newDirectories ?? Library.Directories,
                 Extensions = newExtensions ?? Library.Extensions
             };
 
-            string content = JsonConvert.SerializeObject(_settings, Formatting.Indented);
-            File.WriteAllText(_path, content);
-
-            ProfileChanged?.Invoke(this, EventArgs.Empty);
+            try
+            {
+                string content = JsonConvert.SerializeObject(_settings, Formatting.Indented);
+                File.WriteAllText(_path, content);
+                ProfileChanged?.Invoke(this, EventArgs.Empty);
+            }
+            catch (JsonSerializationException ex)
+            {
+                _logger.LogError(ex, "Could not serialize updated {settings} of {profile}", nameof(Settings), nameof(UserProfile));
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "Could not write updated {settings} of {profile} to {path}", nameof(Settings), nameof(UserProfile), _path);
+            }
         }
     }
 }

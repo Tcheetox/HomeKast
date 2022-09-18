@@ -1,9 +1,10 @@
-﻿
+﻿@using Cast.App.TagHelpers
+
 <header>
     <nav class="navbar navbar-expand-md navbar-toggleable-sm navbar-light box-shadow">
         <div class="container-fluid">
             <a class="navbar-brand" asp-action="Index">
-                <partial name="Media/_Logo" model="@string.Empty" />
+                <smart-svg color="#007bff" src="~/media/logo.svg" class="logo" height="44" width="44"></smart-svg>
             </a>
             <div class="info-bar">
                 <div class="header-title">HomeCast</div>

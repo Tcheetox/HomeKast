@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Xabe.FFmpeg;
 using Xabe.FFmpeg.Events;
-using Cast.SharedModels.User;
 
 namespace Cast.Provider.Converter
 {
-    // TODO: logging + IDisposable
-    internal class ConversionQueue
+    internal class ConversionQueue : IDisposable
     {
         private readonly ConcurrentQueue<IConversion> _queue;
         private readonly ConcurrentDictionary<string, ConversionState> _conversions;
         private readonly CancellationTokenSource _conversionCanceller;
-        private readonly ILogger _logger;
+        private readonly ILogger<ConversionQueue> _logger;
 
-        public ConversionQueue(ILogger logger)
+        public ConversionQueue(ILogger<ConversionQueue> logger)
         {
             _logger = logger;
             _queue = new ConcurrentQueue<IConversion>();
@@ -32,28 +31,36 @@ namespace Cast.Provider.Converter
                     {
                         try
                         {
+                            var clock = new Stopwatch();
                             Current = state.SourceMedia;
                             if (File.Exists(conversion.OutputFilePath))
                                 File.Delete(conversion.OutputFilePath);
                             // Convert file
+                            clock.Start();
                             await conversion.Start(state.Canceller.Token);
-                            // Put covnerted file under user library directory
+                            // Put converted file under user library directory
                             ConversionHelper.MoveAndRename(state);
                             // Raise event
-                            OnMediaConverted?.Invoke(this, new ConversionEventArgs(state)); 
+                            OnMediaConverted?.Invoke(this, new ConversionEventArgs(state));
+                            clock.Stop();
+                            _logger.LogInformation("Conversion successful for {media.Name} ({media.Id}) after {time} minutes",
+                                state.SourceMedia.Name,
+                                state.SourceMedia.Id,
+                                clock.Elapsed.Minutes);
                         }
                         catch (OperationCanceledException ex)
                         {
-                            _logger.LogError("!! Conversion cancelled by user", ex);
+                            _logger.LogError(ex, "Conversion cancelled by user for {media.Name} ({media.Id})", state.SourceMedia.Name, state.SourceMedia.Id);
                         }
                         catch (Exception ex)
-                        {               
-                            _logger.LogError("!! Conversion error", ex);
+                        {
+                            _logger.LogError(ex, "Conversion error for {media.Name} ({media.Id})", state.SourceMedia.Name, state.SourceMedia.Id);
                         }
                         finally
                         {
                             Current = null;
                             state.UpdateProgress();
+                            state.Canceller.Dispose();
                             TryRemove(state.SourceMedia);
                         }
                     }
@@ -82,10 +89,35 @@ namespace Cast.Provider.Converter
         }
 
         public bool TryGet(IMedia media, out ConversionState state)
-            => _conversions.TryGetValue(media.ConversionPath, out state);
+            => _conversions.TryGetValue(media.ConversionPath, out state!);
 
         public bool TryRemove(IMedia media)
             => _conversions.TryRemove(media.ConversionPath, out _);
+        #endregion
+
+        #region IDisposable
+        private bool disposedValue;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _conversionCanceller.Dispose();
+                    foreach (var canceller in _conversions.Select(conversion => conversion.Value.Canceller)
+                                                          .Where(canceller => !canceller.IsCancellationRequested))
+                        canceller.Cancel();
+                    _conversions.Clear();
+                }
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
         #endregion
     }
 }

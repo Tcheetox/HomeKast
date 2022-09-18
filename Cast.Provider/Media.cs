@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using Cast.Provider.Converter;
 using Cast.Provider.Meta;
 using Xabe.FFmpeg;
 
@@ -18,7 +17,6 @@ namespace Cast.Provider
     [DebuggerDisplay("{Name} - {LocalPath}")]
     internal class Media : IMedia
     {
-
         public string Name { get; init; }
         public string LocalPath { get; init; }
         public DateTime Created { get; init; }

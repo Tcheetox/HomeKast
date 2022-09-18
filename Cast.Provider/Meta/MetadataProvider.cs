@@ -26,10 +26,10 @@ namespace Cast.Provider.Meta
         {
             Metadata metadata = null!;
             var cancellation = new CancellationTokenSource();
-
+            var timeout = 1000;
             try
             {
-                cancellation.CancelAfter(1000);
+                cancellation.CancelAfter(timeout);
                 var content = await _client.GetStringAsync($"{_baseUrl}?query={HttpUtility.UrlEncode(lookup)}", cancellation.Token);
                 if (string.IsNullOrWhiteSpace(content))
                     return Metadata.Default;
@@ -39,7 +39,11 @@ namespace Cast.Provider.Meta
             }
             catch (OperationCanceledException ex)
             {
-                _logger.LogError(ex, "Failed to retrieve metadata for {lookup}", lookup);
+                _logger.LogError(ex, "Failed to retrieve metadata for {lookup} within {timeout} ms", lookup, timeout);
+            }
+            catch (JsonSerializationException ex)
+            {
+                _logger.LogError(ex, "Could not deserialize metadata for {lookup}", lookup);
             }
             finally
             {

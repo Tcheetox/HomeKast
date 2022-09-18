@@ -29,6 +29,14 @@ header {
     .header-title {
         margin-left: 0.5rem;
     }
+
+    .logo {
+        transition: all var(--animation-duration);
+
+        &:hover {
+            filter: invert(19%) sepia(32%) saturate(6935%) hue-rotate(200deg) brightness(98%) contrast(102%) !important;
+        }
+    }
 }
 
 // Conversion popover
@@ -49,7 +57,6 @@ header {
     border: none;
 
     .toggler-icon {
-        fill: white;
         animation: rotate 2s linear infinite;
     }
 }

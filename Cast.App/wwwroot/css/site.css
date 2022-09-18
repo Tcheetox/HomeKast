@@ -42,6 +42,12 @@ header .info-bar {
 header .header-title {
   margin-left: 0.5rem;
 }
+header .logo {
+  transition: all var(--animation-duration);
+}
+header .logo:hover {
+  filter: invert(19%) sepia(32%) saturate(6935%) hue-rotate(200deg) brightness(98%) contrast(102%) !important;
+}
 
 .popover-btn {
   background-color: transparent;
@@ -59,7 +65,6 @@ header .header-title {
   border: none;
 }
 .conversion button .toggler-icon {
-  fill: white;
   animation: rotate 2s linear infinite;
 }
 
@@ -118,8 +123,7 @@ header .header-title {
   cursor: pointer;
   padding: 0.5rem;
 }
-.media .overlay svg {
-  fill: white;
+.media .overlay img {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -237,15 +241,7 @@ main {
   flex-direction: column;
 }
 
-.logo {
-  fill: var(--main-color);
-  transition: all var(--animation-duration);
-}
-.logo:hover {
-  fill: var(--main-hover-color);
-}
-
-.loading.logo {
+.loading-logo {
   fill: black;
   height: 2rem;
   width: 2rem;

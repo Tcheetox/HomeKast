@@ -1,16 +1,13 @@
-﻿using Cast.Provider.Converter;
-using Cast.Provider.Meta;
-using Cast.SharedModels.User;
+﻿using Xabe.FFmpeg;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
-using Xabe.FFmpeg;
-using System.Linq;
+using Cast.Provider.Converter;
+using Cast.Provider.Meta;
+using Cast.SharedModels.User;
 
 namespace Cast.Provider
 {
-    // TODO: logging
-    // TODO: layout shift on lib load because of scrollbar...
     public abstract class MediaProviderBase : IMediaProvider
     {
         private readonly IMetadataProvider _metadataProvider;
@@ -59,6 +56,8 @@ namespace Cast.Provider
                     AddMediaAndUpdateCompanions(library, media);
             }
 
+            _logger.LogInformation("MediaProvider retrieved {media} media from {directories} directories", library.Count, _userProfile.Library.Directories.Count);
+
             return library;
         }
 
@@ -69,11 +68,14 @@ namespace Cast.Provider
                 return false;
 
             var library = await GetAllMedia();
-            var existingMedia = library.FirstOrDefault(m => m.Value.LocalPath == media.LocalPath).Value;
-            if (existingMedia != null)
+            if (library.Any(m => m.Value.LocalPath == media.LocalPath))
                 return false;
 
-            return AddMediaAndUpdateCompanions(library, media);
+            var state = AddMediaAndUpdateCompanions(library, media);
+            var info = state ? "added" : "could not add";
+            _logger.LogInformation("MediaProvider {state} {name} ({guid}) to library from {path}", info, media.Name, media.Id, filePath);
+
+            return state;
         }
 
         public async Task<bool> TryRemoveMediaFromPath(string filePath)
@@ -83,7 +85,11 @@ namespace Cast.Provider
             if (media == null)
                 return false;
 
-            return RemoveMediaAndUpdateCompanions(_mediaConverter, allMedia, media);
+            var state = RemoveMediaAndUpdateCompanions(allMedia, media);
+            var info = state ? "removed" : "could not remove";
+            _logger.LogInformation("MediaProvider {state} {name} ({guid}) from library", info, media.Name, media.Id);
+
+            return state;
         }
         #endregion
 
@@ -103,15 +109,21 @@ namespace Cast.Provider
             return library.TryAdd(media.Id, media);
         }
 
-        private static bool RemoveMediaAndUpdateCompanions(IMediaConverter mediaconverter, ConcurrentDictionary<Guid, IMedia> library, IMedia media)
+        private static bool RemoveMediaAndUpdateCompanions(ConcurrentDictionary<Guid, IMedia> library, IMedia media)
         {
             foreach (var companion in from companionEntry in library.Where(m => m.Value.Name == media.Name && m.Value.Id != media.Id)
                                       let companion = companionEntry.Value
                                       select companion)
             {
-                companion.Status = ConversionHelper.RequireConversion(companion.Info) 
-                    ? MediaStatus.Unplayable 
+                var newCompanionStatus = ConversionHelper.RequireConversion(companion.Info)
+                    ? MediaStatus.Unplayable
                     : MediaStatus.Playable;
+
+                if (newCompanionStatus == MediaStatus.Playable)
+                {
+                    companion.Status = newCompanionStatus;
+                    break;
+                }
             }
 
             return library.Remove(media.Id, out _);

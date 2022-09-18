@@ -19,12 +19,7 @@ namespace Cast.Provider.Converter
         private CancellationTokenSource? _canceller;
         [JsonIgnore]
         public CancellationTokenSource Canceller
-        {
-            get
-            {
-                return _canceller ??= new CancellationTokenSource();
-            }
-        }
+            => _canceller ??= new CancellationTokenSource();
 
         private readonly ConcurrentDictionary<string, ConversionState> _queue;
         public ConversionState(ConcurrentDictionary<string, ConversionState> queue, IMedia media)

@@ -15,19 +15,12 @@ namespace Cast.App
                 Args = args,
                 ContentRootPath = WindowsServiceHelpers.IsWindowsService() ? AppContext.BaseDirectory : default
             };
+
             var builder = WebApplication.CreateBuilder(options);
-            builder.Services.AddCors(options =>
-                options.AddDefaultPolicy(cors =>
-                    cors.WithOrigins("*")
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowAnyOrigin()
-                ));
 
             // TODO: bind properly title name JS
             // TODO: bind seek +- buttons
             // TODO: make this shit pretty
-            // TODO: replace the ugly SVG omagad
 
             builder.Services.AddRazorPages();
             builder.Services.AddLazyCache();
@@ -41,10 +34,8 @@ namespace Cast.App
 
             builder.Services.AddSingleton<IMediaConverter, MediaConverter>();
             builder.Services.AddSingleton<IMetadataProvider, MetadataProvider>();
-            builder.Services.AddSingleton<IMediaProvider, MediaProvider>();
+            builder.Services.AddSingleton<IMediaProvider, CachedMediaProvider>();
             builder.Services.AddSingleton<FileWatcher>();
-
-            // builder.Host.UseWindowsService();
 
             var app = builder.Build();
             app.Services
@@ -53,21 +44,16 @@ namespace Cast.App
 
             // Configure the HTTP request pipeline
             if (!app.Environment.IsDevelopment())
-            {
                 app.UseExceptionHandler("/Error");
-            }
 
             app.UseStaticFiles();
 
             app.UseRouting();
 
-            app.UseCors();
-
             app.UseAuthorization();
 
             app.MapRazorPages();
 
-            //app.RunAsync();
             app.Run();
         }
     }

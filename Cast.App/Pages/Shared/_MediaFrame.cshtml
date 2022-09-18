@@ -3,7 +3,6 @@
 @model IMedia
 @{
     string state = Model.Status.ToString().ToLower();
-    //@Model.Metadata.Backdrop
 }
 
 <div class="media" data-status="@state" data-id="@Model.Id" data-title="@Model.Name" style="background-image: url('@Model.Metadata.Backdrop')">
@@ -11,15 +10,15 @@
         <div class="title">@Model.Name</div>
         @if (Model.Status == MediaStatus.Converting || Model.Status == MediaStatus.Unplayable)
         {
-            <dynamic-svg source="~/media/convert.svg" class="icon" height="50" width="50"></dynamic-svg>
+            <smart-svg color="#FFFFFF" src="~/media/convert.svg" class="icon" height="50" width="50"></smart-svg>
         }
         else if (Model.Status == MediaStatus.Queued)
         {
-            <dynamic-svg source="~/media/queued.svg" class="icon" height="50" width="50"></dynamic-svg>
+            <smart-svg color="#FFFFFF" src="~/media/queued.svg" class="icon" height="50" width="50"></smart-svg>
         }
         else if (Model.Status == MediaStatus.Playable)
         {
-            <dynamic-svg source="~/media/play.svg" class="icon" height="50" width="50"></dynamic-svg>
+            <smart-svg color="#FFFFFF" src="~/media/play.svg" class="icon" height="50" width="50"></smart-svg>
         }
         <div class="duration">
             @if(Model.Length > TimeSpan.FromMinutes(60))

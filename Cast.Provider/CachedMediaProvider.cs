@@ -9,13 +9,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Cast.Provider
 {
-    // TODO: logging
-    public class MediaProvider : MediaProviderBase
+    public class CachedMediaProvider : MediaProviderBase
     {
-        private readonly ILogger<MediaProvider> _logger;
+        private readonly ILogger<CachedMediaProvider> _logger;
         private readonly IAppCache _lazyCache;
 
-        public MediaProvider(ILogger<MediaProvider> logger,
+        public CachedMediaProvider(ILogger<CachedMediaProvider> logger,
             IMetadataProvider metadataProvider,
             IMediaConverter mediaConverter,
             IAppCache lazyCache,
@@ -27,32 +26,20 @@ namespace Cast.Provider
             _userProfile.ProfileChanged += UserProfileChanged;
         }
 
-        private string CacheKey => CreateCacheKey(_userProfile.Library.Directories, _userProfile.Library.Extensions);
+        private string CacheKey => $"{nameof(CachedMediaProvider)}|Library";
 
         private void UserProfileChanged(object? sender, EventArgs e)
         {
-            // TODO: gently refresh cache
+            _lazyCache.Remove(CacheKey);
             _ = GetAllMedia();
-        }
-
-        private string CreateCacheKey(IEnumerable<string> directories, IEnumerable<string> extensions)
-        {
-            unchecked
-            {
-                int hash = 17;
-                foreach (var directory in directories)
-                    hash = hash * 31 + directory.GetHashCode();
-                foreach (var extension in extensions)
-                    hash = hash * 31 + extension.GetHashCode();
-                return $"{nameof(MediaProvider)}|{hash}";
-            }
+            _logger.LogInformation("The cached media library has been refreshed following change in {settings}", nameof(UserProfile));
         }
 
         public override async Task<ConcurrentDictionary<Guid, IMedia>> GetAllMedia()
             => await _lazyCache.GetOrAddAsync(CacheKey,
                 async (cacheEntry) =>
                 {
-                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(60));
+                    cacheEntry.SetSlidingExpiration(TimeSpan.FromMinutes(30));
                     return await base.GetAllMedia();
                 });
 

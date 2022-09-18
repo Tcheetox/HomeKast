@@ -1,5 +1,4 @@
-﻿
-namespace Cast.Provider.Converter
+﻿namespace Cast.Provider.Converter
 {
     public class ConversionEventArgs : EventArgs
     {

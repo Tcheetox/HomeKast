@@ -3,7 +3,7 @@
 @import 'partials/header.scss';
 @import 'partials/mediaFrame.scss';
 @import 'partials/mediaPlayer.scss';
-
+// TODO: layout shift on lib load because of scrollbar...
 html {
     font-size: 24px;
     overflow-x: hidden;
@@ -48,16 +48,7 @@ main {
     flex-direction: column;
 }
 
-.logo {
-    fill: var(--main-color);
-    transition: all var(--animation-duration);
-
-    &:hover {
-        fill: var(--main-hover-color);
-    }
-}
-
-.loading.logo {
+.loading-logo {
     fill: black;
     height: 2rem;
     width: 2rem;

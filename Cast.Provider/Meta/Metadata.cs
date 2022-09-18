@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Cast.Provider.Meta
 {
@@ -11,7 +10,6 @@ namespace Cast.Provider.Meta
         };
 
         public bool? Adult { get; set; }
-
         [JsonProperty(PropertyName = "backdrop_path")]
         public string Backdrop { get; set; }
         [JsonProperty(PropertyName = "genre_ids")]

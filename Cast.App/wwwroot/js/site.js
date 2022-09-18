@@ -4,25 +4,31 @@
 import Player from './player.js'
 const player = new Player()
 
+// Antiforgery
+const $csrf = $('input[name="__RequestVerificationToken"]')
+
 // Popover bindings
 const $conversionButton = $('.conversion button')
 const $popoverButton = $('.conversion [data-bs-toggle="popover"]')
 const conversionPopover = new bootstrap.Popover($popoverButton)
 $('body').on('click', '.conversion-state .stop-icon', (e) => {
     const targetId = $(e.target).attr('data-media-id')
-    $.post(`conversion?handler=stopConversion`, { guid: targetId },
-        content => {
-            $(`[data-id="${targetId}"]`).replaceWith(content)
-            $popoverButton.popover('hide')
-        })
+    $.ajax({
+        url: 'conversion?handler=stopConversion',
+        type: 'post',
+        data: { guid: targetId },
+        headers: { RequestVerificationToken: $csrf.val() }
+    }).done(data => {
+        $(`[data-id="${targetId}"]`).replaceWith(data)
+        $popoverButton.popover('hide')
+    })
 })
 
 // Load/Refresh library
 const $main = $('main')
 const loadLibrary = () => {
-    const md5 = $('#MediaMD5').val()
-    if (!md5) $.get('library', data => $main.html(data))
-    else $.get(`library?md5=${md5 ?? $('#MediaMD5').val()}`, data => {
+    const md5 = $('.md5').val()
+    $.get(md5 ? `library?md5=${md5}` : 'library', data => {
         if (data) $main.html(data)
     })
 }
@@ -41,8 +47,13 @@ $('main').on('click', '.library .media', (e) => {
             break;
         case 'unplayable':
             const id = $media.data('id')
-            $.post(`conversion?handler=startConversion`, { guid: id }, content => {
-                $(`[data-id="${id}"]`).html(content)
+            $.ajax({
+                url: 'conversion?handler=startConversion',
+                type: 'post',
+                data: { guid: id },
+                headers: { RequestVerificationToken: $csrf.val() },
+            }).done(data => {
+                $(`[data-id="${id}"]`).html(data)
                 $('#MediaMD5').val(null)
             })
             break;

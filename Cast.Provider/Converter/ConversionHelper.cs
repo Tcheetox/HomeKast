@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using Xabe.FFmpeg;
 
 namespace Cast.Provider.Converter
@@ -74,7 +72,7 @@ namespace Cast.Provider.Converter
                 }
             }
 
-            throw new IOException($"Failed perform action within {timeout} ms");
+            throw new IOException($"Failed to perform action within {timeout} ms");
         }
     }
 }

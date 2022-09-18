@@ -1,13 +1,12 @@
 ﻿using System;
-using System.IO;
 using Cast.SharedModels.User;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xabe.FFmpeg;
 
 namespace Cast.Provider.Converter
 {
-    // TODO: logging
-    public class MediaConverter : IMediaConverter
+    public class MediaConverter : IMediaConverter, IDisposable
     {
         private readonly ILogger<MediaConverter> _logger;
         private readonly ConversionQueue _conversionQueue;
@@ -23,17 +22,18 @@ namespace Cast.Provider.Converter
             remove => _conversionQueue.OnMediaConverted -= value;
         }
 
-        public MediaConverter(ILogger<MediaConverter> logger, UserProfile userProfile)
+        public MediaConverter(ILogger<MediaConverter> logger, IServiceProvider serviceProvider, UserProfile userProfile)
         {
             _logger = logger;
             _userProfile = userProfile;
-            _conversionQueue = new ConversionQueue(logger);
+            _conversionQueue = new ConversionQueue(serviceProvider.GetRequiredService<ILogger<ConversionQueue>>());
 
             var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "FFmpeg");
             if (!Directory.Exists(directory))
-                throw new ArgumentException($"FFmpeg directory not found at {directory}");
+                throw new ArgumentException($"FFmpeg directory not found {directory}");
 
             FFmpeg.SetExecutablesPath(directory);
+            _logger.LogDebug("FFmpeg directory {directory}", directory);
         }
 
         public async Task<IMediaInfo?> GetMediaInfo(string path, int timeout = 1000)
@@ -45,7 +45,7 @@ namespace Cast.Provider.Converter
                 canceller.CancelAfter(timeout);
                 return await FFmpeg.GetMediaInfo(path, canceller.Token);
             }
-            catch (OperationCanceledException ex) 
+            catch (OperationCanceledException ex)
             {
                 _logger.LogError(ex, "Extracting media info timed-out for {path}", path);
             }
@@ -65,7 +65,7 @@ namespace Cast.Provider.Converter
 
         public bool StopConvertion(IMedia media)
         {
-            if (TryGetMediaState(media, out ConversionState? conversionState) 
+            if (TryGetMediaState(media, out ConversionState? conversionState)
                 && _conversionQueue.TryRemove(media)
                 && !conversionState!.Canceller.IsCancellationRequested)
             {
@@ -94,7 +94,12 @@ namespace Cast.Provider.Converter
                 .AddStream(audioStream, videoStream)
                 .SetOutput(media.ConversionPath);
 
-            return _conversionQueue.TryAdd(media, conversion);
+            var state = _conversionQueue.TryAdd(media, conversion);
+            if (state)
+                _logger.LogInformation("Conversion successfuly enqueued for {media.Name} ({media.Id})", media.Name, media.Id);
+            else
+                _logger.LogCritical("Failed to enqueue conversion for {media.Name} ({media.Id})", media.Name, media.Id);
+            return state;
         }
 
         private (int AudioIndex, IStream? Subtitles) GetPreferredConversion(IMediaInfo info)
@@ -113,5 +118,24 @@ namespace Cast.Provider.Converter
             // Fallback to first audio without subtitles
             return (0, null);
         }
+
+        #region IDisposable
+        private bool disposedValue;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                    _conversionQueue.Dispose();
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

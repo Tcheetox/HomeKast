@@ -1,5 +1,4 @@
-﻿
-namespace Cast.Provider.Meta
+﻿namespace Cast.Provider.Meta
 {
     public interface IMetadataProvider
     {

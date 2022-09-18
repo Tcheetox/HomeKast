@@ -1,6 +1,5 @@
-﻿using Cast.Provider.Meta;
-using System.Diagnostics;
-using Xabe.FFmpeg;
+﻿using Xabe.FFmpeg;
+using Cast.Provider.Meta;
 
 namespace Cast.Provider
 {

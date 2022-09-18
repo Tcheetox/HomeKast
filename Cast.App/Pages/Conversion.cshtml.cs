@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Cast.Provider.Converter;
@@ -5,8 +6,6 @@ using Cast.Provider;
 
 namespace Cast.App.Pages
 {
-    // TODO: add antiforgerytoken
-    [IgnoreAntiforgeryToken(Order = 1001)]
     public class ConversionModel : PageModel
     {
         private readonly ILogger<ConversionModel> _logger;
