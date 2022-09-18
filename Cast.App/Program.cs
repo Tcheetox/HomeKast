@@ -1,8 +1,8 @@
-using Microsoft.Extensions.Hosting.WindowsServices;
 using Cast.Provider;
 using Cast.Provider.Converter;
 using Cast.Provider.Meta;
 using Cast.SharedModels.User;
+using Microsoft.Extensions.Hosting.WindowsServices;
 
 namespace Cast.App
 {
@@ -17,10 +17,13 @@ namespace Cast.App
             };
 
             var builder = WebApplication.CreateBuilder(options);
-
-            // TODO: bind properly title name JS
-            // TODO: bind seek +- buttons
-            // TODO: make this shit pretty
+            builder.Services.AddLogging(logBuilder => 
+            {
+                var path = Path.Combine(builder.Environment.ContentRootPath, "logs");
+                var template = "{Timestamp:g} [{Level}]   {Message} {NewLine}{Exception}";
+                logBuilder.AddFile(Path.Combine(path, "Info.log"), LogLevel.Information, outputTemplate: template, retainedFileCountLimit: 10);
+                logBuilder.AddFile(Path.Combine(path, "Warning.log"), LogLevel.Warning, outputTemplate: template);
+            });
 
             builder.Services.AddRazorPages();
             builder.Services.AddLazyCache();
@@ -38,13 +41,13 @@ namespace Cast.App
             builder.Services.AddSingleton<FileWatcher>();
 
             var app = builder.Build();
+
+            if (!app.Environment.IsDevelopment())
+                app.UseExceptionHandler("/Error");
+
             app.Services
                 .GetRequiredService<FileWatcher>()
                 .Start();
-
-            // Configure the HTTP request pipeline
-            if (!app.Environment.IsDevelopment())
-                app.UseExceptionHandler("/Error");
 
             app.UseStaticFiles();
 
