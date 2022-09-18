@@ -61,6 +61,7 @@ namespace Cast.Provider.Converter
                             Current = null;
                             state.UpdateProgress();
                             state.Canceller.Dispose();
+                            // It might already be removed from the queue but let's try anyway
                             TryRemove(state.SourceMedia);
                         }
                     }

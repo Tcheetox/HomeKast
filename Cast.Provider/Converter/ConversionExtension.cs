@@ -16,7 +16,7 @@ namespace Cast.Provider.Converter
 
         public static IVideoStream SetOptimalSize(this IVideoStream videoStream)
         {
-            var optimalSize = (videoStream.Width > 1920 || videoStream.Height > 1080)
+            var optimalSize = (videoStream.Width >= 1920 || videoStream.Height >= 1080)
                 ? VideoSize.Hd1080
                 : VideoSize.Hd720;
             return videoStream.SetSize(optimalSize);

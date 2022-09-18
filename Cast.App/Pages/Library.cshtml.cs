@@ -12,7 +12,7 @@ namespace Cast.App.Pages
     {
         public readonly Uri Uri;
         public IEnumerable<IMedia> Media { get; private set; }
-        public string newMd5 { get; private set; } = string.Empty;
+        public string MD5 { get; private set; } = string.Empty;
 
         // Hide layout if this AJAX request
         public bool HideLayout => HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest";
@@ -36,12 +36,12 @@ namespace Cast.App.Pages
                 .OrderByDescending(m => m.Creation)
                 .ThenByDescending(m => m.Status == MediaStatus.Playable);
 
-            newMd5 = ComputeLibraryMD5(Media);
+            MD5 = ComputeLibraryMD5(Media);
 
-            if (!string.IsNullOrWhiteSpace(md5) && md5 == newMd5)
+            if (!string.IsNullOrWhiteSpace(md5) && md5 == MD5)
                 return new NoContentResult();
 
-            _logger.LogDebug("Media library returned with MD5 {newMd5}", newMd5);
+            _logger.LogDebug("Media library returned with MD5 {MD5}", MD5);
             return Page();
         }
 

@@ -70,6 +70,7 @@ namespace Cast.Provider.Converter
                 && !conversionState!.Canceller.IsCancellationRequested)
             {
                 conversionState.Canceller.Cancel();
+                conversionState.UpdateProgress();
                 return true;
             }
             return false;

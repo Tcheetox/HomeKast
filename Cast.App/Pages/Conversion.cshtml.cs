@@ -8,13 +8,11 @@ namespace Cast.App.Pages
 {
     public class ConversionModel : PageModel
     {
-        private readonly ILogger<ConversionModel> _logger;
         private readonly IMediaConverter _mediaConverter;
         private readonly IMediaProvider _mediaProvider;
 
-        public ConversionModel(ILogger<ConversionModel> logger, IMediaConverter mediaConverter, IMediaProvider providerService)
+        public ConversionModel(IMediaConverter mediaConverter, IMediaProvider providerService)
         {
-            _logger = logger;
             _mediaConverter = mediaConverter;
             _mediaProvider = providerService;
         }
