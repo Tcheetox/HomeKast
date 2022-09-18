@@ -31,4 +31,9 @@
             }
         </div>
     </div>
+    @if (Model.Status == MediaStatus.Playable)
+    {
+        string resolutionTagPath = Model.Resolution == Xabe.FFmpeg.VideoSize.Hd1080 ? "/media/1080p.png" : "/media/720p.png";
+        <img src="@resolutionTagPath" class="resolution" width="40" height="31" alt="tag" />
+    }
 </div>

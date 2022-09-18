@@ -136,6 +136,12 @@ namespace Cast.Provider
 
             var (normalized, displayed) = CreateNames(filePath);
             var fileInfo = new FileInfo(filePath);
+            var videoStream = info.VideoStreams.FirstOrDefault();
+            var status = ConversionHelper.RequireConversion(info) ? MediaStatus.Unplayable : MediaStatus.Playable;
+            VideoSize resolution = default;
+            if (videoStream != null && status == MediaStatus.Playable)
+                resolution = (videoStream.Width >= 1920 || videoStream.Height >= 1080) ? VideoSize.Hd1080 : VideoSize.Hd720;
+
             return new Media()
             {
                 LocalPath = filePath,
@@ -146,7 +152,8 @@ namespace Cast.Provider
                 Length = info.Duration,
                 Info = info,
                 Metadata = await _metadataProvider.GetMetadataAsync(normalized),
-                Status = ConversionHelper.RequireConversion(info) ? MediaStatus.Unplayable : MediaStatus.Playable
+                Status = status,
+                Resolution = resolution
             };
         }
 

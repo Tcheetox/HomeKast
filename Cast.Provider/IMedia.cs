@@ -7,6 +7,7 @@ namespace Cast.Provider
     {
         string ConversionPath { get; }
         Guid Id { get; }
+
         MediaStatus Status { get; set; }
 
         string Name { get; init; }
@@ -17,5 +18,6 @@ namespace Cast.Provider
         IMediaInfo Info { get; init; }
         DateTime Creation { get; init; }
         Metadata Metadata { get; init; }
+        VideoSize Resolution { get; init; }
     }
 }

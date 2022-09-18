@@ -44,6 +44,13 @@
         opacity: 100%;
         background-color: rgba(0, 0, 0, 0.6);
     }
+
+    .resolution {
+        position: absolute;
+        right: 1rem;
+        bottom: 1rem;
+        pointer-events: none;
+    }
 }
 
 @keyframes rotate2 {

@@ -26,6 +26,7 @@ namespace Cast.Provider
         public MediaStatus Status { get; set; }
         public DateTime Creation { get; init; }
         public Metadata Metadata { get; init; }
+        public VideoSize Resolution { get; init; }
 
         #region Conversion members
         private Guid? _conversionId;
