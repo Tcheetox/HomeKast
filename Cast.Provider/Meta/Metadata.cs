@@ -4,10 +4,12 @@ namespace Cast.Provider.Meta
 {
     public class Metadata
     {
-        public readonly static Metadata Default = new()
-        {
-            Backdrop = "/media/notfound.png"
-        };
+        [JsonIgnore]
+        public bool HasImage => !string.IsNullOrWhiteSpace(Image);
+        [JsonIgnore]
+        public string ImageUrl { get; set; }
+        [JsonIgnore]
+        public string? Image => Poster ?? Backdrop;
 
         public bool? Adult { get; set; }
         [JsonProperty(PropertyName = "backdrop_path")]

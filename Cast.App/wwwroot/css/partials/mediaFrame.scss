@@ -1,16 +1,24 @@
 ﻿.media {
     border-radius: var(--border-radius);
-    width: 400px;
-    height: 300px;
+    width: 290px;
+    height: 435px;
     position: relative;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
 
     .title {
         font-weight: 600;
         font-size: 1.5rem;
         color: white;
+        text-align: center;
+
+        &.firm {
+            top: 0.5rem;
+            position: absolute;
+            text-align: center;
+            width: 100%;
+        }
     }
 
     .duration {
@@ -32,24 +40,31 @@
         cursor: pointer;
         padding: 0.5rem;
 
-        img {
+        img:not(.resolution) {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
         }
+
+        img.resolution {
+            position: absolute;
+            right: 1rem;
+            bottom: 1rem;
+            pointer-events: none;
+        }
     }
 
-    &:hover .overlay {
-        opacity: 100%;
-        background-color: rgba(0, 0, 0, 0.6);
-    }
+    transition: transform 200ms;
 
-    .resolution {
-        position: absolute;
-        right: 1rem;
-        bottom: 1rem;
-        pointer-events: none;
+    &:hover {
+        .overlay {
+            opacity: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        z-index:1;
+        transform: scale(1.05);
     }
 }
 

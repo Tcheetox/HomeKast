@@ -31,11 +31,8 @@ namespace Cast.Provider.Meta
             {
                 cancellation.CancelAfter(timeout);
                 var content = await _client.GetStringAsync($"{_baseUrl}?query={HttpUtility.UrlEncode(lookup)}", cancellation.Token);
-                if (string.IsNullOrWhiteSpace(content))
-                    return Metadata.Default;
-
                 var requests = JsonConvert.DeserializeObject<MediaMetadataResults>(content);
-                metadata = requests?.Results.FirstOrDefault()!;
+                metadata = requests?.Results.FirstOrDefault() ?? new Metadata();
             }
             catch (OperationCanceledException ex)
             {
@@ -50,13 +47,11 @@ namespace Cast.Provider.Meta
                 cancellation.Dispose();
             }
 
-            if (metadata == null)
-                return Metadata.Default;
-
-            metadata.Backdrop
-                = string.IsNullOrWhiteSpace(metadata.Backdrop)
-                ? Metadata.Default.Backdrop
-                : "https://image.tmdb.org/t/p/original" + metadata.Backdrop;
+            // Adjusting image
+            metadata.ImageUrl 
+                = metadata.HasImage
+                ? "https://image.tmdb.org/t/p/original" + metadata.Image
+                : "/media/notfound.png";
 
             return metadata;
         }

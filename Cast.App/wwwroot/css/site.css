@@ -95,17 +95,25 @@ header .logo:hover {
 
 .media {
   border-radius: var(--border-radius);
-  width: 400px;
-  height: 300px;
+  width: 290px;
+  height: 435px;
   position: relative;
   background-position: center;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: contain;
+  transition: transform 200ms;
 }
 .media .title {
   font-weight: 600;
   font-size: 1.5rem;
   color: white;
+  text-align: center;
+}
+.media .title.firm {
+  top: 0.5rem;
+  position: absolute;
+  text-align: center;
+  width: 100%;
 }
 .media .duration {
   position: absolute;
@@ -123,21 +131,25 @@ header .logo:hover {
   cursor: pointer;
   padding: 0.5rem;
 }
-.media .overlay img {
+.media .overlay img:not(.resolution) {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
-.media:hover .overlay {
-  opacity: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-}
-.media .resolution {
+.media .overlay img.resolution {
   position: absolute;
   right: 1rem;
   bottom: 1rem;
   pointer-events: none;
+}
+.media:hover {
+  z-index: 1;
+  transform: scale(1.05);
+}
+.media:hover .overlay {
+  opacity: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
 }
 
 @keyframes rotate2 {

@@ -8,7 +8,6 @@
     }
 }
 
-<h2>My library</h2>
 @Html.HiddenFor(m => m.MD5, new { @class="md5" })
 <div class="library" data-host="@Model.Uri">
     @foreach(var media in Model.Media.Where(m => m.Status != Provider.MediaStatus.Hidden))

@@ -5,7 +5,7 @@
     string state = Model.Status.ToString().ToLower();
 }
 
-<div class="media" data-status="@state" data-id="@Model.Id" data-title="@Model.Name" style="background-image: url('@Model.Metadata.Backdrop')">
+<div class="media" data-status="@state" data-id="@Model.Id" data-title="@Model.Name" style="background-image: url('@Model.Metadata.ImageUrl')">
     <div class="overlay">
         <div class="title">@Model.Name</div>
         @if (Model.Status == MediaStatus.Converting || Model.Status == MediaStatus.Unplayable)
@@ -30,10 +30,14 @@
                 @Model.Length.ToString(@"mm\:ss")
             }
         </div>
+        @if (Model.Status == MediaStatus.Playable)
+        {
+            string resolutionTagPath = Model.Resolution == Xabe.FFmpeg.VideoSize.Hd1080 ? "/media/1080p.png" : "/media/720p.png";
+            <img src="@resolutionTagPath" class="resolution" width="40" height="31" alt="tag" />
+        }
     </div>
-    @if (Model.Status == MediaStatus.Playable)
+    @if (!Model.Metadata.HasImage)
     {
-        string resolutionTagPath = Model.Resolution == Xabe.FFmpeg.VideoSize.Hd1080 ? "/media/1080p.png" : "/media/720p.png";
-        <img src="@resolutionTagPath" class="resolution" width="40" height="31" alt="tag" />
+        <div class="firm title">@Model.Name</div>
     }
 </div>
