@@ -2,6 +2,7 @@ using Cast.Provider;
 using Cast.Provider.Converter;
 using Cast.Provider.Meta;
 using Cast.SharedModels.User;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting.WindowsServices;
 
 namespace Cast.App
@@ -36,7 +37,8 @@ namespace Cast.App
             });
 
             builder.Services.AddSingleton<IMediaConverter, MediaConverter>();
-            builder.Services.AddSingleton<IMetadataProvider, MetadataProvider>();
+            builder.Services.AddSingleton<MetadataProvider>();
+            builder.Services.AddSingleton<IMetadataProvider, CachedMetadataProvider>();
             builder.Services.AddSingleton<IMediaProvider, CachedMediaProvider>();
             builder.Services.AddSingleton<FileWatcher>();
 
@@ -45,11 +47,24 @@ namespace Cast.App
             if (!app.Environment.IsDevelopment())
                 app.UseExceptionHandler("/Error");
 
+            app.UseStaticFiles();
+
             app.Services
                 .GetRequiredService<FileWatcher>()
                 .Start();
 
-            app.UseStaticFiles();
+            // Serve local metadata
+            var metadataFolder = app
+                .Services
+                .GetRequiredService<UserProfile>()
+                .Library
+                .Metadata;
+            Directory.CreateDirectory(metadataFolder);
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(metadataFolder),
+                RequestPath = new PathString(CachedMetadataProvider.VIRTUAL_DIRECTORY)
+            });
 
             app.UseRouting();
 

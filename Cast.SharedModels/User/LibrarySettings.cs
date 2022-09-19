@@ -21,6 +21,7 @@ namespace Cast.SharedModels.User
         {
             public List<string> Extensions { get; set; }
             public List<string> Directories { get; set; }
+            public string Metadata { get; set; }
             public bool IsMonitoredExtensions(string extension)
                 => Extensions?.Any(e => e.ToLower() == extension.ToLower()) ?? false;
         }

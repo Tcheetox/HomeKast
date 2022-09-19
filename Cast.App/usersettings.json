@@ -21,7 +21,8 @@
   },
   "Library": {
     "Extensions": [ ".mkv", ".mp4", ".webm" ],
-    "Directories": [ "D:\\TORRENTS" ]
+    "Directories": [ "D:\\TORRENTS" ],
+    "Metadata":  "D:\\TORRENTS\\Metadata"
   },
   "Ngrok": {
     "Token": "1kPZSjTBOHN3K7xj4VGmU826etK_67DY8ADU1mqHLv9RNPLFb"
