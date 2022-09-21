@@ -45,13 +45,13 @@ namespace Cast.Provider.Converter
 
         public static void MoveAndRename(ConversionState state, int timeout = 10000)
         {
-            if (!File.Exists(state.SourceMedia.ConversionPath))
+            if (!File.Exists(state.Media.ConversionPath))
                 return;
 
             if (File.Exists(state.TargetPath))
                 File.Delete(state.TargetPath);
 
-            AccessFileWithRetry(() => File.Move(state.SourceMedia.ConversionPath, state.TargetPath), timeout);
+            AccessFileWithRetry(() => File.Move(state.Media.ConversionPath, state.TargetPath), timeout);
         }
 
         public static void AccessFileWithRetry(Action action, int timeout)

@@ -5,15 +5,11 @@ namespace Cast.SharedModels.User
 {
     public class Settings
     {
-        public MediaSettings Media { get; set; }
-        public class MediaSettings
+        public PreferencesSettings Preferences { get; set; }
+        public class PreferencesSettings
         {
-            public List<PreferencesSettings> Preferences { get; set; }
-            public class PreferencesSettings
-            {
-                public string Language { get; set; }
-                public string Subtitles { get; set; }
-            }
+            public List<string> Language { get; set; }
+            public List<string> Subtitles { get; set; }
         }
 
         public LibrarySettings Library { get; set; }
@@ -37,7 +33,7 @@ namespace Cast.SharedModels.User
         {
             public string ApiToken { get; set; }
             public int Port { get; set; }
-
+            public string CacheDirectory { get; set; }
             public string BaseUrl { get; set; }
 
             private Uri _uri;

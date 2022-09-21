@@ -11,10 +11,10 @@ namespace Cast.App.Pages
     public class LibraryModel : PageModel
     {
         public readonly Uri Uri;
-        public IEnumerable<IMedia> Media { get; private set; }
+        public IEnumerable<IMedia> Library { get; private set; }
         public string MD5 { get; private set; } = string.Empty;
 
-        // Hide layout if this AJAX request
+        // Hide layout if AJAX request
         public bool HideLayout => HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
         private readonly ILogger<LibraryModel> _logger;
@@ -31,12 +31,12 @@ namespace Cast.App.Pages
 
         public async Task<IActionResult> OnGet(string md5 = "")
         {
-            Media = (await _mediaProvider.GetAllMedia())
+            Library = (await _mediaProvider.GetAllMedia())
                 .Select(m => m.Value)
                 .OrderByDescending(m => m.Creation)
                 .ThenByDescending(m => m.Status == MediaStatus.Playable);
 
-            MD5 = ComputeLibraryMD5(Media);
+            MD5 = ComputeLibraryMD5(Library);
 
             if (!string.IsNullOrWhiteSpace(md5) && md5 == MD5)
                 return new NoContentResult();

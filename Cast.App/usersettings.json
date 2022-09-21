@@ -2,27 +2,20 @@
   "ConnectionStrings": {
     "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB;Database=_CHANGE_ME;Trusted_Connection=True;MultipleActiveResultSets=true"
   },
-  "Media": {
-    "Preferences": [
-      {
-        "Language": "eng",
-        "Subtitles": "fre"
-      },
-      {
-        "Language": "fre",
-        "Subtitles": null
-      }
-    ]
+  "Preferences": {
+    "Subtitles": [ "fre" ],
+    "Languages": [ "eng", "fre" ]
   },
   "Application": {
     "Port": 8081,
     "ApiToken": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiMDY1MTAwOTk3MzA1MjhlMDZjNzIwMmViZDA2ZWRkZCIsInN1YiI6IjYyZDVjNDMzODlkOTdmMDA0YzkyNmJkNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.2bqhLtLHyU-Cr-O8A9cKRVcrYNnj-SVcHEkPcETt9-Q",
-    "BaseUrl": "https://api.themoviedb.org/3/search/multi"
+    "BaseUrl": "https://api.themoviedb.org/3/search/multi",
+    "CacheDirectory": "D:\\TORRENTS\\HomeCast"
   },
   "Library": {
     "Extensions": [ ".mkv", ".mp4", ".webm" ],
     "Directories": [ "D:\\TORRENTS" ],
-    "Metadata":  "D:\\TORRENTS\\Metadata"
+    "Metadata": "D:\\TORRENTS\\Metadata"
   },
   "Ngrok": {
     "Token": "1kPZSjTBOHN3K7xj4VGmU826etK_67DY8ADU1mqHLv9RNPLFb"

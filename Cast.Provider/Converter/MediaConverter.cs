@@ -78,16 +78,13 @@ namespace Cast.Provider.Converter
 
         public bool StartConversion(IMedia media)
         {
-            var (index, subtitles) = GetPreferredConversion(media.Info);
-
             IVideoStream videoStream = media.Info.VideoStreams
                 .First()
-                .AddSubtitles(subtitles)
                 .SetCodec(VideoCodec.h264)
                 .SetOptimalSize();
 
             IStream audioStream = media.Info.AudioStreams
-                .ElementAt(index)
+                .SetPreferredStream(_userProfile.Preferences)
                 .SetCodec(AudioCodec.mp3);
 
             IConversion conversion = FFmpeg.Conversions
@@ -101,23 +98,6 @@ namespace Cast.Provider.Converter
             else
                 _logger.LogCritical("Failed to enqueue conversion for {media.Name} ({media.Id})", media.Name, media.Id);
             return state;
-        }
-
-        private (int AudioIndex, IStream? Subtitles) GetPreferredConversion(IMediaInfo info)
-        {
-            foreach (var preference in _userProfile.Media.Preferences)
-            {
-                var audioIndex = (info.AudioStreams.FirstOrDefault(audio => audio.Language.ToLower() == preference.Language?.ToLower())?.Index ?? 0) - 1;
-                if (audioIndex >= 0 && preference.Subtitles == null)
-                    return (audioIndex, null);
-
-                var subtitles = info.SubtitleStreams.FirstOrDefault(subtitles => subtitles.Language.ToLower() == preference.Subtitles?.ToLower());
-                if (audioIndex >= 0 && subtitles != null)
-                    return (audioIndex, subtitles);
-            }
-
-            // Fallback to first audio without subtitles
-            return (0, null);
         }
 
         #region IDisposable

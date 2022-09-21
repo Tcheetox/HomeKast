@@ -9,7 +9,7 @@ namespace Cast.SharedModels.User
         public ConnectionSettings ConnectionStrings => _settings.ConnectionStrings;
         public LibrarySettings Library => _settings.Library;
         public ApplicationSettings Application => _settings.Application;
-        public MediaSettings Media => _settings.Media;
+        public PreferencesSettings Preferences => _settings.Preferences;
 
         private readonly Settings _settings;
         private readonly ILogger<UserProfile> _logger;

@@ -1,6 +1,7 @@
 using Cast.Provider;
 using Cast.Provider.Converter;
 using Cast.Provider.Meta;
+using Cast.SharedModels;
 using Cast.SharedModels.User;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting.WindowsServices;
@@ -18,7 +19,7 @@ namespace Cast.App
             };
 
             var builder = WebApplication.CreateBuilder(options);
-            builder.Services.AddLogging(logBuilder => 
+            builder.Services.AddLogging(logBuilder =>
             {
                 var path = Path.Combine(builder.Environment.ContentRootPath, "logs");
                 var template = "{Timestamp:g} [{Level}]   {Message} {NewLine}{Exception}";
@@ -37,7 +38,6 @@ namespace Cast.App
             });
 
             builder.Services.AddSingleton<IMediaConverter, MediaConverter>();
-            builder.Services.AddSingleton<MetadataProvider>();
             builder.Services.AddSingleton<IMetadataProvider, CachedMetadataProvider>();
             builder.Services.AddSingleton<IMediaProvider, CachedMediaProvider>();
             builder.Services.AddSingleton<FileWatcher>();
@@ -53,17 +53,17 @@ namespace Cast.App
                 .GetRequiredService<FileWatcher>()
                 .Start();
 
-            // Serve local metadata
-            var metadataFolder = app
+            // Serve local cached
+            var cacheFolder = app
                 .Services
                 .GetRequiredService<UserProfile>()
-                .Library
-                .Metadata;
-            Directory.CreateDirectory(metadataFolder);
+                .Application
+                .CacheDirectory;
+            Directory.CreateDirectory(cacheFolder);
             app.UseStaticFiles(new StaticFileOptions()
             {
-                FileProvider = new PhysicalFileProvider(metadataFolder),
-                RequestPath = new PathString(CachedMetadataProvider.VIRTUAL_DIRECTORY)
+                FileProvider = new PhysicalFileProvider(cacheFolder),
+                RequestPath = new PathString('/' + Helper.CACHE_FOLDER)
             });
 
             app.UseRouting();

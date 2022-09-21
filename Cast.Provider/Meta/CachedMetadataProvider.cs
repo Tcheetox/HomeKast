@@ -1,42 +1,25 @@
-﻿using Cast.SharedModels.User;
+﻿using System;
+using Cast.SharedModels;
+using Cast.SharedModels.User;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Cast.Provider.Meta
 {
-    public class CachedMetadataProvider : IMetadataProvider
+    public class CachedMetadataProvider : MetadataProvider
     {
-        public const string VIRTUAL_DIRECTORY = "/Metadata";
+        public CachedMetadataProvider(ILogger<MetadataProvider> logger, UserProfile userProfile) : base(logger, userProfile)
+        { }
 
-        private readonly ILogger<CachedMetadataProvider> _logger;
-        private readonly MetadataProvider _metadataProvider;
-        private readonly UserProfile _userProfile;
-
-        public CachedMetadataProvider(ILogger<CachedMetadataProvider> logger, MetadataProvider metadataProvider, UserProfile userProfile)
+        public override async Task<Metadata> GetMetadataAsync(string lookup)
         {
-            _logger = logger;
-            _metadataProvider = metadataProvider;
-            _userProfile = userProfile;
-        }
-
-        public async Task<Metadata> GetMetadataAsync(string lookup)
-        {
-            var metadata = await _metadataProvider.GetMetadataAsync(lookup);
+            var metadata = await base.GetMetadataAsync(lookup);
             if (!metadata.HasImage)
                 return metadata;
 
-            string path = Path.Combine(_userProfile.Library.Metadata, metadata.Image!.Trim('/'));
+            string path = Path.Combine(UserProfile.Application.CacheDirectory, metadata.Image!.Trim('/'));
             if (File.Exists(path))
             {
-                metadata.ImageUrl = VIRTUAL_DIRECTORY + metadata.Image!;
+                metadata.ImageUrl = Helper.CACHE_FOLDER + metadata.Image!;
                 return metadata;
             }
 
@@ -49,11 +32,11 @@ namespace Cast.Provider.Meta
                 await using var fs = File.Create(path);
                 ms.Seek(0, SeekOrigin.Begin);
                 ms.CopyTo(fs);
-                metadata.ImageUrl = VIRTUAL_DIRECTORY + metadata.Image!;
+                metadata.ImageUrl = Helper.CACHE_FOLDER + metadata.Image!;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Could not download image from {url}", metadata.ImageUrl);
+                Logger.LogError(ex, "Could not download image from {url}", metadata.ImageUrl);
             }
 
             return metadata;

@@ -115,49 +115,31 @@ namespace Cast.Provider
                                       let companion = companionEntry.Value
                                       select companion)
             {
-                var newCompanionStatus = ConversionHelper.RequireConversion(companion.Info)
+                companion.Status = ConversionHelper.RequireConversion(companion.Info)
                     ? MediaStatus.Unplayable
                     : MediaStatus.Playable;
 
-                if (newCompanionStatus == MediaStatus.Playable)
-                {
-                    companion.Status = newCompanionStatus;
+                if (companion.Status == MediaStatus.Playable)
                     break;
-                }
             }
 
             return library.Remove(media.Id, out _);
         }
 
-        private async Task<IMedia?> CreateMedia(string filePath)
+        private async Task<IMedia?> CreateMedia(string file)
         {
-            var info = await _mediaConverter.GetMediaInfo(filePath);
+            var info = await _mediaConverter.GetMediaInfo(file);
             if (info == null) return null;
 
-            var (normalized, displayed) = CreateNames(filePath);
-            var fileInfo = new FileInfo(filePath);
-            var videoStream = info.VideoStreams.FirstOrDefault();
-            var status = ConversionHelper.RequireConversion(info) ? MediaStatus.Unplayable : MediaStatus.Playable;
-            VideoSize resolution = default;
-            if (videoStream != null && status == MediaStatus.Playable)
-                resolution = (videoStream.Width >= 1920 || videoStream.Height >= 1080) ? VideoSize.Hd1080 : VideoSize.Hd720;
-
-            return new Media()
+            var (normalized, displayed) = CreateNames(file);
+            return new Media(info)
             {
-                LocalPath = filePath,
                 Name = displayed,
-                Created = File.GetCreationTime(filePath),
-                Size = fileInfo.Length,
-                Creation = fileInfo.CreationTime,
-                Length = info.Duration,
-                Info = info,
-                Metadata = await _metadataProvider.GetMetadataAsync(normalized),
-                Status = status,
-                Resolution = resolution
-            };
+                Metadata = await _metadataProvider.GetMetadataAsync(normalized)
+            }.WithSubtitles(_userProfile);
         }
 
-        #region Name Normalization
+        #region Naming
         private static readonly List<string> _specific = new()
         {
             "webrip",
@@ -238,7 +220,6 @@ namespace Cast.Provider
             return (normalizedName, displayName);
         }
         #endregion
-
         #endregion
     }
 }

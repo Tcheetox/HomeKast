@@ -1,23 +1,25 @@
 ﻿using Xabe.FFmpeg;
 using Cast.Provider.Meta;
+using Cast.Provider.Converter;
 
 namespace Cast.Provider
 {
     public interface IMedia
     {
+        MediaStatus Status { get; set; }
+
+        Metadata Metadata { get; init; }
+        string Name { get; init; }
+
         string ConversionPath { get; }
         Guid Id { get; }
 
-        MediaStatus Status { get; set; }
-
-        string Name { get; init; }
-        string LocalPath { get; init; }
-        DateTime Created { get; init; }
-        long Size { get; init; }
-        TimeSpan Length { get; init; }
-        IMediaInfo Info { get; init; }
-        DateTime Creation { get; init; }
-        Metadata Metadata { get; init; }
-        VideoSize Resolution { get; init; }
+        string LocalPath { get; }
+        long Size { get; }
+        TimeSpan Length { get; }
+        IMediaInfo Info { get; }
+        DateTime Creation { get; }
+        VideoSize Resolution { get; }
+        List<Subtitles> Subtitles { get; }
     }
 }

@@ -7,13 +7,13 @@ namespace Cast.Provider.Converter
     public class ConversionState
     {
         [JsonIgnore]
-        public readonly IMedia SourceMedia;
+        public readonly IMedia Media;
         [JsonIgnore]
         public readonly string TargetPath;
-        public string Name => SourceMedia.Name;
+        public string Name => Media.Name;
         public int QueueLength => _queue.Count;
-        public Guid Id => SourceMedia.Id;
-        public string Status => SourceMedia.Status.ToString().ToLower();
+        public Guid Id => Media.Id;
+        public string Status => Media.Status.ToString().ToLower();
         public ConversionProgressEventArgs Progress { get; private set; }
 
         private CancellationTokenSource? _canceller;
@@ -25,27 +25,27 @@ namespace Cast.Provider.Converter
         public ConversionState(ConcurrentDictionary<string, ConversionState> queue, IMedia media)
         {
             _queue = queue;
-            SourceMedia = media;
+            Media = media;
 
             string targetDirectory = Path.GetDirectoryName(media.LocalPath)!;
-            string fileName = "_" 
+            string fileName = "_"
                 + Path.GetFileNameWithoutExtension(media.LocalPath)
                 + Path.GetExtension(media.ConversionPath);
             TargetPath = Path.Combine(targetDirectory, fileName);
         }
 
         public void UpdateProgress()
-            => SourceMedia.Status = ConversionHelper.RequireConversion(SourceMedia.Info) 
-            ? MediaStatus.Unplayable 
+            => Media.Status = ConversionHelper.RequireConversion(Media.Info)
+            ? MediaStatus.Unplayable
             : MediaStatus.Playable;
 
         public void UpdateProgress(ConversionProgressEventArgs progress)
         {
             Progress = progress;
             if (Progress.Percent >= 0)
-                SourceMedia.Status = MediaStatus.Converting;
+                Media.Status = MediaStatus.Converting;
             else
-                SourceMedia.Status = MediaStatus.Queued;
+                Media.Status = MediaStatus.Queued;
         }
     }
 }
