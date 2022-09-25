@@ -34,8 +34,7 @@ namespace Cast.Provider
 
         public MediaStatus Status { get; private set; }
 
-        public List<Subtitles> Subtitles { get; set; }
-
+        public SubtitlesCollection Subtitles { get; init; }
         public IMediaInfo Info { get; init; }
         public string Name { get; init; }
         public Metadata Metadata { get; init; }
@@ -63,8 +62,6 @@ namespace Cast.Provider
             }
         }
 
-        public bool IsMissingSubtitles => Info.SubtitleStreams.Any() && !Subtitles.Any(s => s.Exists());
-
         public MediaStatus UpdateStatus(MediaStatus status)
         {
             Status = status;
@@ -81,15 +78,22 @@ namespace Cast.Provider
             }
             else
             {
+                bool isMissingSubtitles = Info.SubtitleStreams.Any() && !Subtitles.Any(s => s.Exists());
                 if (ConversionHelper.IsConversionRequired(Info))
                     Status = MediaStatus.Unplayable;
-                else if (IsMissingSubtitles)
+                else if (isMissingSubtitles)
                     Status = MediaStatus.MissingSubtitles;
                 else
                     Status = MediaStatus.Playable;
             }
 
             return Status;
+        }
+
+        public void UpdateSubtitles()
+        {
+            Subtitles.Refresh();
+            UpdateStatus();
         }
     }
 }

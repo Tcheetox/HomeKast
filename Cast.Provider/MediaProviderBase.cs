@@ -106,9 +106,7 @@ namespace Cast.Provider
             if (media == null)
                 return;
 
-            media.Subtitles = Subtitles.Create(media.Info, _userProfile);
-            media.UpdateStatus();
-
+            media.UpdateSubtitles();
             _logger.LogInformation("MediaProvider updated {name} ({guid}) subtitles", media.Name, media.Id);
         }
         #endregion
@@ -154,7 +152,7 @@ namespace Cast.Provider
                 Info = info,
                 Name = displayed,
                 Metadata = await _metadataProvider.GetMetadataAsync(normalized),
-                Subtitles = Subtitles.Create(info, _userProfile)
+                Subtitles = new SubtitlesCollection(info, _userProfile)
             };
             media.UpdateStatus();
             return media;
