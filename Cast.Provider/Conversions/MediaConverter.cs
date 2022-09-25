@@ -1,16 +1,15 @@
 ﻿using System;
-using Cast.SharedModels.User;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xabe.FFmpeg;
+using Cast.SharedModels.User;
+using System.Diagnostics;
 
-namespace Cast.Provider.Converter
+namespace Cast.Provider.Conversions
 {
     public class MediaConverter : IMediaConverter, IDisposable
     {
         private readonly ILogger<MediaConverter> _logger;
         private readonly ConversionQueue _conversionQueue;
-        private readonly UserProfile _userProfile;
 
         public IMedia? Current => _conversionQueue.Current;
         public bool HasPendingConversions => _conversionQueue.IsQueueEmpty;
@@ -22,11 +21,10 @@ namespace Cast.Provider.Converter
             remove => _conversionQueue.OnMediaConverted -= value;
         }
 
-        public MediaConverter(ILogger<MediaConverter> logger, IServiceProvider serviceProvider, UserProfile userProfile)
+        public MediaConverter(ILoggerFactory loggerFactory, UserProfile userProfile)
         {
-            _logger = logger;
-            _userProfile = userProfile;
-            _conversionQueue = new ConversionQueue(serviceProvider.GetRequiredService<ILogger<ConversionQueue>>());
+            _logger = loggerFactory.CreateLogger<MediaConverter>();
+            _conversionQueue = new ConversionQueue(userProfile, loggerFactory);
 
             var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "FFmpeg");
             if (!Directory.Exists(directory))
@@ -36,7 +34,7 @@ namespace Cast.Provider.Converter
             _logger.LogDebug("FFmpeg directory {directory}", directory);
         }
 
-        public async Task<IMediaInfo?> GetMediaInfo(string path, int timeout = 1000)
+        public async Task<IMediaInfo?> GetMediaInfo(string path, int timeout = 3000)
         {
             var canceller = new CancellationTokenSource();
 
@@ -78,25 +76,19 @@ namespace Cast.Provider.Converter
 
         public bool StartConversion(IMedia media)
         {
-            IVideoStream videoStream = media.Info.VideoStreams
-                .First()
-                .SetCodec(VideoCodec.h264)
-                .SetOptimalSize();
+            var state = _conversionQueue.TryAdd(new ConversionOptions()
+            {
+                Media = media,
+                ConversionType = media.Status == MediaStatus.MissingSubtitles
+                    ? ConversionType.SubtitlesOnly
+                    : ConversionType.FullConversion
+            });
 
-            IStream audioStream = media.Info.AudioStreams
-                .SetPreferredStream(_userProfile.Preferences)
-                .SetCodec(AudioCodec.mp3);
-
-            IConversion conversion = FFmpeg.Conversions
-                .New()
-                .AddStream(audioStream, videoStream)
-                .SetOutput(media.ConversionPath);
-
-            var state = _conversionQueue.TryAdd(media, conversion);
             if (state)
-                _logger.LogInformation("Conversion successfuly enqueued for {media.Name} ({media.Id})", media.Name, media.Id);
+                _logger.LogInformation("Conversion successfully enqueued for {media.Name} ({media.Id})", media.Name, media.Id);
             else
                 _logger.LogCritical("Failed to enqueue conversion for {media.Name} ({media.Id})", media.Name, media.Id);
+
             return state;
         }
 

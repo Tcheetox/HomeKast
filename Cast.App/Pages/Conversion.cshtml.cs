@@ -1,7 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Cast.Provider.Converter;
+using Cast.Provider.Conversions;
 using Cast.Provider;
 
 namespace Cast.App.Pages
@@ -20,7 +20,7 @@ namespace Cast.App.Pages
         public async Task<IActionResult> OnPostStartConversionAsync(Guid guid)
         {
             var media = await _mediaProvider.GetMedia(guid);
-            if (media != null && media.Status == MediaStatus.Unplayable && _mediaConverter.StartConversion(media))
+            if (media != null && _mediaConverter.StartConversion(media))
                 return Partial("_MediaFrame", media);
             return BadRequest();
         }
@@ -31,6 +31,15 @@ namespace Cast.App.Pages
             if (media != null && _mediaConverter.StopConvertion(media))
                 return Partial("_MediaFrame", media);
             return BadRequest();
+        }
+
+        public async Task<IActionResult> OnGetMediaConversionStateAsync(Guid? guid)
+        {
+            IMedia? media = guid == null ? _mediaConverter.Current : await _mediaProvider.GetMedia(guid.Value);
+            if (media == null || !_mediaConverter.TryGetMediaState(media, out ConversionState state))
+                return new NoContentResult();
+
+            return new JsonResult(state);
         }
     }
 }

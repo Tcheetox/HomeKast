@@ -33,7 +33,7 @@ namespace Cast.SharedModels.User
         {
             public string ApiToken { get; set; }
             public int Port { get; set; }
-            public string CacheDirectory { get; set; }
+            public string StaticFilesDirectory { get; set; }
             public string BaseUrl { get; set; }
 
             private Uri _uri;

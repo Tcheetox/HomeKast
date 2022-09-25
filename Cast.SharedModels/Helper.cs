@@ -10,7 +10,7 @@ namespace Cast.SharedModels
 {
     public static class Helper
     {
-        public const string CACHE_FOLDER = "HomeCast";
+        public const string STATIC_FILES_DIRECTORY = "HomeCast";
 
         public static IPAddress GetLocalIPAddress()
             => Dns.GetHostEntry(Dns.GetHostName()).AddressList.First(ip => ip.AddressFamily == AddressFamily.InterNetwork);
@@ -37,5 +37,13 @@ namespace Cast.SharedModels
                 (Convert.ToByte(match.Groups[1].Value, 16), Convert.ToByte(match.Groups[2].Value, 16), Convert.ToByte(match.Groups[3].Value, 16))
                 : (0, 0, 0);
         }
+
+        public static string Capitalize(this string input) =>
+            input switch
+            {
+                null => throw new ArgumentNullException(nameof(input)),
+                "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
+                _ => string.Concat(input[0].ToString().ToUpper(), input.AsSpan(1))
+            };
     }
 }

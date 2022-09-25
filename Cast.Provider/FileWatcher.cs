@@ -1,4 +1,5 @@
 ﻿using System;
+using Cast.Provider.Conversions;
 using Cast.SharedModels.User;
 using Microsoft.Extensions.Logging;
 
@@ -63,25 +64,47 @@ namespace Cast.Provider
         private void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
             var extension = Path.GetExtension(e.FullPath);
-            if (!_userProfile.Library.IsMonitoredExtensions(extension))
+            if (extension.ToLower() == ".vtt")
+                _mediaProvider.UpdateMediaSubtitles(e.FullPath);
+            else if (!_userProfile.Library.IsMonitoredExtensions(extension))
                 return;
 
             switch (e.ChangeType)
             {
                 case WatcherChangeTypes.Created:
-                    _mediaProvider.TryAddMediaFromPath(e.FullPath);
+                    if (IsFileAvailable(e.FullPath, e))
+                        _mediaProvider.TryAddMedia(e.FullPath);
                     break;
+
                 case WatcherChangeTypes.Deleted:
-                    _mediaProvider.TryRemoveMediaFromPath(e.FullPath);
+                    _mediaProvider.TryRemoveMedia(e.FullPath);
                     break;
+
                 case WatcherChangeTypes.Renamed:
                     var re = (RenamedEventArgs)e;
-                    _mediaProvider.TryRemoveMediaFromPath(re.OldFullPath);
-                    _mediaProvider.TryAddMediaFromPath(re.FullPath);
+                    if (IsFileAvailable(re.FullPath, e))
+                    {
+                        _mediaProvider.TryRemoveMedia(re.OldFullPath);
+                        _mediaProvider.TryAddMedia(re.FullPath);
+                    }
                     break;
+
                 default:
                     break;
             }
+        }
+
+        private bool IsFileAvailable(string path, FileSystemEventArgs e)
+        {
+            if (!ConversionHelper.IsFileAvailableWithRetry(path, 5000))
+            {
+                _logger.LogWarning("File watcher triggered by a '{event}' event did not get access to {file}",
+                    e.ChangeType.ToString().ToLower(),
+                    e.FullPath);
+                return false;
+            }
+
+            return true;
         }
 
         #region IDisposable

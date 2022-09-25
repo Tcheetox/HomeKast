@@ -6,8 +6,11 @@ namespace Cast.Provider
     {
         Task<ConcurrentDictionary<Guid, IMedia>> GetAllMedia();
         Task<IMedia> GetMedia(Guid guid);
-        Task<bool> TryAddMediaFromPath(string filePath);
-        Task<bool> TryRemoveMediaFromPath(string filePath);
+        Task<bool> TryAddOrUpdateMedia(string path);
+        Task<bool> TryAddMedia(string path);
+        Task<bool> TryRemoveMedia(string path);
+        void UpdateMediaSubtitles(string path);
+
         bool IsCached { get; }
     }
 }

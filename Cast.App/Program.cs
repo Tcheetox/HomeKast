@@ -1,13 +1,16 @@
 using Cast.Provider;
-using Cast.Provider.Converter;
+using Cast.Provider.Conversions;
 using Cast.Provider.Meta;
 using Cast.SharedModels;
 using Cast.SharedModels.User;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting.WindowsServices;
+using Microsoft.Net.Http.Headers;
 
 namespace Cast.App
 {
+    // TODO: centralize and rework Media status management
     public static class Program
     {
         public static void Main(string[] args)
@@ -47,28 +50,36 @@ namespace Cast.App
             if (!app.Environment.IsDevelopment())
                 app.UseExceptionHandler("/Error");
 
-            app.UseStaticFiles();
-
             app.Services
                 .GetRequiredService<FileWatcher>()
                 .Start();
 
-            // Serve local cached
-            var cacheFolder = app
+            // Serve specific local directory
+            var staticFilesDirectory = app
                 .Services
                 .GetRequiredService<UserProfile>()
                 .Application
-                .CacheDirectory;
-            Directory.CreateDirectory(cacheFolder);
+                .StaticFilesDirectory;
+            Directory.CreateDirectory(staticFilesDirectory);
+
+            void staticCaching(StaticFileResponseContext ctx) =>
+                ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromDays(30),
+                };
+
+            // Serve wwwroot
+            app.UseStaticFiles(new StaticFileOptions() 
+            { 
+                OnPrepareResponse = staticCaching 
+            }); 
             app.UseStaticFiles(new StaticFileOptions()
             {
-                FileProvider = new PhysicalFileProvider(cacheFolder),
-                RequestPath = new PathString('/' + Helper.CACHE_FOLDER)
+                FileProvider = new PhysicalFileProvider(staticFilesDirectory),
+                RequestPath = new PathString('/' + Helper.STATIC_FILES_DIRECTORY),
+                OnPrepareResponse = staticCaching
             });
-
-            app.UseRouting();
-
-            app.UseAuthorization();
 
             app.MapRazorPages();
 

@@ -30,35 +30,59 @@ $('body').on('click', '.conversion-state .stop-icon', (e) => {
 
 // Load/Refresh library
 const $main = $('main')
-const loadLibrary = () => {
+const loadLibrary = callback => {
     const md5 = $('.md5').val()
-    $.get(md5 ? `library?md5=${md5}` : 'library', data => {
-        if (data) $main.html(data)
-    })
+    $.get(md5 ? `library?md5=${md5}` : 'library')
+        .done((data) => {
+            $main.html(data)
+            if (callback)
+                callback()
+        })
 }
-setInterval(loadLibrary, 1000)
+
+(function selfReloadLibrary() {
+    const every = 1000
+    setTimeout(() => loadLibrary(selfReloadLibrary), every)
+})()
 
 // Media trigger
 $('main').on('click', '.library .media', (e) => {
-    if (!player) return
     const $media = $(e.currentTarget)
     const status = $media.data('status')
+    const id = $media.data('id')
     switch (status) {
         case 'playable':
-            player.cast(`${$('.library').data('host')}library?handler=mediaStream&guid=${$media.data('id')}`, {
-                title: $media.data('title')
+            $.ajax({
+                url: 'library?handler=media',
+                type: 'get',
+                data: { guid: id }
+            }).done(data => {   
+                const host = $('.library').data('host')
+                const options = {
+                    poster: host + data.metadata.imageUrl,
+                    title: data.name,
+                    subtitles: data.subtitles.map((s, i) => ({
+                        active: s.active,
+                        label: s.displayLabel,
+                        src: `${host}library?handler=mediaSubtitles&guid=${id}&idx=${i}`
+                    }))
+                }
+
+                console.log(options)
+
+                player.cast(`${host}library?handler=mediaStream&guid=${id}`, options)
             })
             break;
+        case 'missingsubtitles':
         case 'unplayable':
-            const id = $media.data('id')
             $.ajax({
                 url: 'conversion?handler=startConversion',
                 type: 'post',
                 data: { guid: id },
                 headers: { RequestVerificationToken: $csrf.val() },
             }).done(data => {
-                $(`[data-id="${id}"]`).html(data)
-                $('#MediaMD5').val(null)
+                $(`[data-id="${id}"]`).replaceWith(data)
+                $('.md5').val(null)
             })
             break;
         default:
@@ -69,7 +93,7 @@ $('main').on('click', '.library .media', (e) => {
 // Check for current media being converted
 let previouslyConverting = false
 const checkConverting = () => {
-    $.get('/library?handler=mediaConversionState', (data, status) => {
+    $.get('/conversion?handler=mediaConversionState', (data, status) => {
         const currentlyConverting = (data?.queueLength > 0) ?? false
         // Update conversion button visibility
         if (previouslyConverting !== currentlyConverting)

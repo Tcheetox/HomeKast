@@ -50,19 +50,16 @@ export default class Player {
                 console.log('> Unmuted')
                 this.#onSpeaker(false)
             })
-            this.#cjs.on('statechange', () => {
-                console.log('> State change')
-                this.#onState()
-            })
         })
     }
 
-    cast = (args) => this.#cjs.cast(args)
+    cast = (uri, args) => this.#cjs.cast(uri, args)
+    subtitles = args => this.#cjs.subtitle(args)
 
-    #updateTitle = (title = player.title) => {
+    #updateTitle = title => {
         if (!title || title === '')
             title = 'No title'
-        if (title != $castTitle.html())
+        if (title != this.#$castTitle.html())
             this.#$castTitle.html(title)
     }
 

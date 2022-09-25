@@ -35,7 +35,7 @@ namespace Cast.Provider.Meta
                 cancellation.CancelAfter(timeout);
                 var content = await _client.GetStringAsync($"{_baseUrl}?query={HttpUtility.UrlEncode(lookup)}", cancellation.Token);
                 var requests = JsonConvert.DeserializeObject<MediaMetadataResults>(content);
-                metadata = requests?.Results.FirstOrDefault() ?? new Metadata();
+                metadata = requests?.Results.FirstOrDefault()!;
             }
             catch (OperationCanceledException ex)
             {
@@ -45,8 +45,13 @@ namespace Cast.Provider.Meta
             {
                 Logger.LogError(ex, "Could not deserialize metadata for {lookup}", lookup);
             }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Unexpected error retrieving metadata for {lookup}", lookup);
+            }
             finally
             {
+                metadata ??= metadata ?? new Metadata();
                 cancellation.Dispose();
             }
 

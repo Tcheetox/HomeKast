@@ -4,13 +4,13 @@
   },
   "Preferences": {
     "Subtitles": [ "fre" ],
-    "Languages": [ "eng", "fre" ]
+    "Language": [ "eng", "fre" ]
   },
   "Application": {
     "Port": 8081,
     "ApiToken": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiMDY1MTAwOTk3MzA1MjhlMDZjNzIwMmViZDA2ZWRkZCIsInN1YiI6IjYyZDVjNDMzODlkOTdmMDA0YzkyNmJkNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.2bqhLtLHyU-Cr-O8A9cKRVcrYNnj-SVcHEkPcETt9-Q",
     "BaseUrl": "https://api.themoviedb.org/3/search/multi",
-    "CacheDirectory": "D:\\TORRENTS\\HomeCast"
+    "StaticFilesDirectory": "D:\\TORRENTS\\HomeCast"
   },
   "Library": {
     "Extensions": [ ".mkv", ".mp4", ".webm" ],

@@ -1,32 +1,32 @@
 using System.Text;
 using Cast.Provider;
-using Cast.Provider.Converter;
+using Cast.Provider.Conversions;
 using Cast.SharedModels;
 using Cast.SharedModels.User;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Net.Http.Headers;
 
 namespace Cast.App.Pages
 {
     public class LibraryModel : PageModel
     {
-        public readonly Uri Uri;
+        public Uri Uri => _userProfile.Application.Uri;
         public IEnumerable<IMedia> Library { get; private set; }
-        public string MD5 { get; private set; } = string.Empty;
+        public string MD5 { get; private set; }
 
         // Hide layout if AJAX request
         public bool HideLayout => HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
         private readonly ILogger<LibraryModel> _logger;
         private readonly IMediaProvider _mediaProvider;
-        private readonly IMediaConverter _mediaConverter;
+        private readonly UserProfile _userProfile;
 
-        public LibraryModel(ILogger<LibraryModel> logger, IMediaProvider mediaProvider, IMediaConverter mediaConverter, UserProfile userProfile)
+        public LibraryModel(ILogger<LibraryModel> logger, IMediaProvider mediaProvider, UserProfile userProfile)
         {
             _logger = logger;
             _mediaProvider = mediaProvider;
-            _mediaConverter = mediaConverter;
-            Uri = userProfile.Application.Uri;
+            _userProfile = userProfile;
         }
 
         public async Task<IActionResult> OnGet(string md5 = "")
@@ -45,33 +45,13 @@ namespace Cast.App.Pages
             return Page();
         }
 
-        private static string ComputeLibraryMD5(IEnumerable<IMedia> library)
-        {
-            StringBuilder builder = new();
-            foreach (var media in library)
-            {
-                builder.Append(media.Id.ToString());
-                builder.Append(media.Status);
-            }
-            return Helper.ComputeMD5(builder.ToString());
-        }
-
         public async Task<IActionResult> OnGetMediaAsync(Guid guid)
         {
             var media = await _mediaProvider.GetMedia(guid);
             if (media == null)
                 return new NoContentResult();
 
-            return Partial("_MediaFrame", media);
-        }
-
-        public async Task<IActionResult> OnGetMediaConversionStateAsync(Guid? guid)
-        {
-            IMedia? media = guid == null ? _mediaConverter.Current : await _mediaProvider.GetMedia(guid.Value);
-            if (media == null || !_mediaConverter.TryGetMediaState(media, out ConversionState state))
-                return new NoContentResult();
-
-            return new JsonResult(state);
+            return new JsonResult(media);
         }
 
         public async Task<IActionResult> OnGetMediaStream(Guid guid)
@@ -86,5 +66,31 @@ namespace Cast.App.Pages
                 EnableRangeProcessing = true
             };
         }
+
+        public async Task<IActionResult> OnGetMediaSubtitles(Guid guid, int idx)
+        {
+            var media = await _mediaProvider.GetMedia(guid);
+            if (media == null || media.Subtitles.Count <= idx || !media.Subtitles[idx].Exists())
+                return new NoContentResult();
+
+            Response.Headers.Add(HeaderNames.AccessControlAllowOrigin, "*");
+            return new PhysicalFileResult(media.Subtitles[idx].LocalPath, "text/vtt; charset=utf-8")
+            {
+                EnableRangeProcessing = true
+            };
+        }
+
+        #region Private Helper
+        private static string ComputeLibraryMD5(IEnumerable<IMedia> library)
+        {
+            StringBuilder builder = new();
+            foreach (var media in library)
+            {
+                builder.Append(media.Id.ToString());
+                builder.Append(media.Status);
+            }
+            return Helper.ComputeMD5(builder.ToString());
+        }
+        #endregion
     }
 }

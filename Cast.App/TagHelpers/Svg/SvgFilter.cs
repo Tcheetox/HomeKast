@@ -39,7 +39,7 @@
             for (int i = 0; loss > 25 && i < 3; i++)
             {
                 var initial = new double[] { 50, 20, 3750, 50, 100, 100 };
-                var result = Spsa(A, a, c, initial, 5000);
+                var result = Spsa(A, a, c, initial, 1000);
                 if (result.Loss < loss)
                 {
                     best = result.Best;

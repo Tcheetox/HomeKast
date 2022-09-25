@@ -5,18 +5,22 @@
     string state = Model.Status.ToString().ToLower();
 }
 
-<div class="media" data-status="@state" data-id="@Model.Id" data-title="@Model.Name" style="background-image: url('@Model.Metadata.ImageUrl')">
+<div class="media" data-status="@state" data-id="@Model.Id" style="background-image: url('@Model.Metadata.ImageUrl')">
     <div class="overlay">
         <div class="title">@Model.Name</div>
-        @if (Model.Status == MediaStatus.Converting || Model.Status == MediaStatus.Unplayable)
+        @if (Model.Status == MediaStatus.Converting || Model.Status == MediaStatus.Unplayable || Model.Status == MediaStatus.MissingSubtitles)
         {
             <smart-svg color="#FFFFFF" src="~/media/convert.svg" class="icon" height="50" width="50"></smart-svg>
+            if (Model.Status == MediaStatus.MissingSubtitles)
+            {
+                <smart-svg color="#FFFFFF" src="~/media/subtitles.svg" class="icon subtitles" height="14" width="18"></smart-svg>
+            }
         }
         else if (Model.Status == MediaStatus.Queued)
         {
             <smart-svg color="#FFFFFF" src="~/media/queued.svg" class="icon" height="50" width="50"></smart-svg>
         }
-        else if (Model.Status == MediaStatus.Playable)
+        else
         {
             <smart-svg color="#FFFFFF" src="~/media/play.svg" class="icon" height="50" width="50"></smart-svg>
         }

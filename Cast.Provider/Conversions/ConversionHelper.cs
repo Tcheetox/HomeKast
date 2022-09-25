@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Xabe.FFmpeg;
 
-namespace Cast.Provider.Converter
+namespace Cast.Provider.Conversions
 {
     internal static class ConversionHelper
     {
@@ -31,7 +31,7 @@ namespace Cast.Provider.Converter
         public static bool IsAcceptedExtension(string extension)
             => _acceptedExtensions.Any(e => e.ToLower() == extension.ToLower());
 
-        public static bool RequireConversion(IMediaInfo info)
+        public static bool IsConversionRequired(IMediaInfo info)
         {
             var video = info.VideoStreams.First();
             var audio = info.AudioStreams.First();
@@ -43,18 +43,18 @@ namespace Cast.Provider.Converter
                 || !_audioCodecs.Any(e => e == audio.Codec.ToLower());
         }
 
-        public static void MoveAndRename(ConversionState state, int timeout = 10000)
+        public static void MoveAndRename(string from, string to, int timeout = 10000)
         {
-            if (!File.Exists(state.Media.ConversionPath))
+            if (!File.Exists(from))
                 return;
 
-            if (File.Exists(state.TargetPath))
-                File.Delete(state.TargetPath);
+            if (File.Exists(to))
+                File.Delete(to);
 
-            AccessFileWithRetry(() => File.Move(state.Media.ConversionPath, state.TargetPath), timeout);
+            AccessFileWithRetry(() => File.Move(from, to), timeout);
         }
 
-        public static void AccessFileWithRetry(Action action, int timeout)
+        private static void AccessFileWithRetry(Action action, int timeout)
         {
             var time = Stopwatch.StartNew();
 
@@ -65,14 +65,32 @@ namespace Cast.Provider.Converter
                     action();
                     return;
                 }
-                catch (IOException e)
+                catch (IOException)
                 {
-                    if (e.HResult != -2147024864)
-                        throw;
+                    // No trace needed
+                }
+            }
+        }
+
+        public static bool IsFileAvailableWithRetry(string path, int timeout)
+        {
+            var time = Stopwatch.StartNew();
+
+            while (time.ElapsedMilliseconds < timeout)
+            {
+                try
+                {
+                    using FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None);
+                    stream.Close();
+                    return true;
+                }
+                catch (IOException)
+                {
+                    // No trace needed
                 }
             }
 
-            throw new IOException($"Failed to perform action within {timeout} ms");
+            return false;
         }
     }
 }

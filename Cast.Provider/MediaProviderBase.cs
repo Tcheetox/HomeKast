@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
-using Cast.Provider.Converter;
+using Cast.Provider.Conversions;
 using Cast.Provider.Meta;
 using Cast.SharedModels.User;
 
@@ -31,7 +31,7 @@ namespace Cast.Provider
         {
             _logger = logger;
             _mediaConverter = mediaConverter;
-            _mediaConverter.OnMediaConverted += async (sender, e) => await TryAddMediaFromPath(e.State.TargetPath);
+            _mediaConverter.OnMediaConverted += async (sender, e) => await TryAddOrUpdateMedia(e.Options.TargetPath);
             _metadataProvider = metadataProvider;
             _userProfile = profile;
         }
@@ -61,9 +61,15 @@ namespace Cast.Provider
             return library;
         }
 
-        public async Task<bool> TryAddMediaFromPath(string filePath)
+        public async Task<bool> TryAddOrUpdateMedia(string path)
         {
-            var media = await CreateMedia(filePath);
+            await TryRemoveMedia(path);
+            return await TryAddMedia(path);
+        }
+
+        public async Task<bool> TryAddMedia(string path)
+        {
+            var media = await CreateMedia(path);
             if (media == null)
                 return false;
 
@@ -73,15 +79,15 @@ namespace Cast.Provider
 
             var state = AddMediaAndUpdateCompanions(library, media);
             var info = state ? "added" : "could not add";
-            _logger.LogInformation("MediaProvider {state} {name} ({guid}) to library from {path}", info, media.Name, media.Id, filePath);
+            _logger.LogInformation("MediaProvider {state} {name} ({guid}) to library from {path}", info, media.Name, media.Id, path);
 
             return state;
         }
 
-        public async Task<bool> TryRemoveMediaFromPath(string filePath)
+        public async Task<bool> TryRemoveMedia(string path)
         {
             var allMedia = await GetAllMedia();
-            var media = allMedia.FirstOrDefault(m => m.Value.LocalPath == filePath).Value;
+            var media = allMedia.FirstOrDefault(m => m.Value.LocalPath == path).Value;
             if (media == null)
                 return false;
 
@@ -90,6 +96,19 @@ namespace Cast.Provider
             _logger.LogInformation("MediaProvider {state} {name} ({guid}) from library", info, media.Name, media.Id);
 
             return state;
+        }
+
+        public async void UpdateMediaSubtitles(string path)
+        {
+            var media = (await GetAllMedia())
+                .Select(m => m.Value)
+                .FirstOrDefault(m => m.Subtitles.Any(s => s.LocalPath == path));
+            if (media == null)
+                return;
+
+            media.Subtitles = Subtitles.Create(media.Info, _userProfile);
+            media.SetBasicStatus();
+            _logger.LogInformation("MediaProvider updated {name} ({guid}) subtitles", media.Name, media.Id);
         }
         #endregion
 
@@ -100,7 +119,8 @@ namespace Cast.Provider
                                       let companion = companionEntry.Value
                                       select companion)
             {
-                if (companion.Status != MediaStatus.Playable && media.Status == MediaStatus.Playable)
+                if (companion.Status != MediaStatus.Playable 
+                    && (media.Status == MediaStatus.Playable || media.Status == MediaStatus.MissingSubtitles))
                     companion.Status = MediaStatus.Hidden;
                 else if (companion.Status == MediaStatus.Playable && media.Status != MediaStatus.Playable)
                     media.Status = MediaStatus.Hidden;
@@ -115,11 +135,7 @@ namespace Cast.Provider
                                       let companion = companionEntry.Value
                                       select companion)
             {
-                companion.Status = ConversionHelper.RequireConversion(companion.Info)
-                    ? MediaStatus.Unplayable
-                    : MediaStatus.Playable;
-
-                if (companion.Status == MediaStatus.Playable)
+                if (companion.SetBasicStatus() == MediaStatus.Playable)
                     break;
             }
 
@@ -132,14 +148,21 @@ namespace Cast.Provider
             if (info == null) return null;
 
             var (normalized, displayed) = CreateNames(file);
-            return new Media(info)
+            var media = new Media()
             {
+                Info = info,
                 Name = displayed,
-                Metadata = await _metadataProvider.GetMetadataAsync(normalized)
-            }.WithSubtitles(_userProfile);
-        }
+                Metadata = await _metadataProvider.GetMetadataAsync(normalized),
+                Subtitles = Subtitles.Create(info, _userProfile)
+            };
 
-        #region Naming
+            ((IMedia)media).SetBasicStatus();
+
+            return media;
+        }
+        #endregion
+
+        #region Private Normalization
         private static readonly List<string> _specific = new()
         {
             "webrip",
@@ -219,7 +242,6 @@ namespace Cast.Provider
             string normalizedName = idx > 0 ? string.Join(' ', splittedName[0..idx]) : displayName;
             return (normalizedName, displayName);
         }
-        #endregion
         #endregion
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using Cast.Provider.Converter;
+using Cast.Provider.Conversions;
 using Cast.Provider.Meta;
 using Cast.SharedModels.User;
 using LazyCache;
