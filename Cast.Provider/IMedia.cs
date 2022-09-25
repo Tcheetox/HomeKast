@@ -7,13 +7,13 @@ namespace Cast.Provider
 {
     public interface IMedia
     {
-        MediaStatus Status { get; set; }
         List<Subtitles> Subtitles { get; set; }
 
         IMediaInfo Info { get; init; }
         Metadata Metadata { get; init; }
         string Name { get; init; }
 
+        MediaStatus Status { get; }
         Guid Id { get; }
         string LocalPath { get; }
         long Size { get; }
@@ -22,16 +22,7 @@ namespace Cast.Provider
         DateTime Creation { get; }
         VideoSize Resolution { get; }
 
-        public MediaStatus SetBasicStatus()
-        {
-            if (ConversionHelper.IsConversionRequired(Info))
-                Status = MediaStatus.Unplayable;
-            else if (IsMissingSubtitles)
-                Status = MediaStatus.MissingSubtitles;
-            else
-                Status = MediaStatus.Playable;
-
-            return Status;
-        }
+        MediaStatus UpdateStatus(MediaStatus status);
+        MediaStatus UpdateStatus(ConversionState? state = null);
     }
 }

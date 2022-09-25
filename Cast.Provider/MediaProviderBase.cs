@@ -107,7 +107,8 @@ namespace Cast.Provider
                 return;
 
             media.Subtitles = Subtitles.Create(media.Info, _userProfile);
-            media.SetBasicStatus();
+            media.UpdateStatus();
+
             _logger.LogInformation("MediaProvider updated {name} ({guid}) subtitles", media.Name, media.Id);
         }
         #endregion
@@ -121,9 +122,9 @@ namespace Cast.Provider
             {
                 if (companion.Status != MediaStatus.Playable 
                     && (media.Status == MediaStatus.Playable || media.Status == MediaStatus.MissingSubtitles))
-                    companion.Status = MediaStatus.Hidden;
+                    companion.UpdateStatus(MediaStatus.Hidden);
                 else if (companion.Status == MediaStatus.Playable && media.Status != MediaStatus.Playable)
-                    media.Status = MediaStatus.Hidden;
+                    media.UpdateStatus(MediaStatus.Hidden);
             }
 
             return library.TryAdd(media.Id, media);
@@ -135,7 +136,7 @@ namespace Cast.Provider
                                       let companion = companionEntry.Value
                                       select companion)
             {
-                if (companion.SetBasicStatus() == MediaStatus.Playable)
+                if (companion.UpdateStatus() == MediaStatus.Playable)
                     break;
             }
 
@@ -155,9 +156,7 @@ namespace Cast.Provider
                 Metadata = await _metadataProvider.GetMetadataAsync(normalized),
                 Subtitles = Subtitles.Create(info, _userProfile)
             };
-
-            ((IMedia)media).SetBasicStatus();
-
+            media.UpdateStatus();
             return media;
         }
         #endregion

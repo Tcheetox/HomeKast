@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Security;
 using System.Runtime.CompilerServices;
+using Cast.Provider.Conversions;
 using Cast.Provider.Meta;
 using Cast.SharedModels;
 using Cast.SharedModels.User;
@@ -31,7 +32,8 @@ namespace Cast.Provider
         public TimeSpan Length => Info.Duration;
         public DateTime Creation => FileInfo.CreationTime;
 
-        public MediaStatus Status { get; set; }
+        public MediaStatus Status { get; private set; }
+
         public List<Subtitles> Subtitles { get; set; }
 
         public IMediaInfo Info { get; init; }
@@ -62,5 +64,32 @@ namespace Cast.Provider
         }
 
         public bool IsMissingSubtitles => Info.SubtitleStreams.Any() && !Subtitles.Any(s => s.Exists());
+
+        public MediaStatus UpdateStatus(MediaStatus status)
+        {
+            Status = status;
+            return Status;
+        }
+
+        public MediaStatus UpdateStatus(ConversionState? state = null)
+        {
+            if (state?.Progress != null)
+            {
+                Status = state.Progress.Percent >= 0
+                    ? MediaStatus.Converting
+                    : MediaStatus.Queued;
+            }
+            else
+            {
+                if (ConversionHelper.IsConversionRequired(Info))
+                    Status = MediaStatus.Unplayable;
+                else if (IsMissingSubtitles)
+                    Status = MediaStatus.MissingSubtitles;
+                else
+                    Status = MediaStatus.Playable;
+            }
+
+            return Status;
+        }
     }
 }

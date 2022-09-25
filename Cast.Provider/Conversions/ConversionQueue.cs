@@ -81,7 +81,7 @@ namespace Cast.Provider.Conversions
             if (!_conversions.TryAdd(options.Media.Id, state))
                 return false;
 
-            options.Media.Status = MediaStatus.Queued;
+            options.Media.UpdateStatus(MediaStatus.Queued);
             _queue.Enqueue(options);
             
             return true;

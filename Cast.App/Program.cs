@@ -10,7 +10,6 @@ using Microsoft.Net.Http.Headers;
 
 namespace Cast.App
 {
-    // TODO: centralize and rework Media status management
     public static class Program
     {
         public static void Main(string[] args)

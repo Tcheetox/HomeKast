@@ -28,16 +28,14 @@ namespace Cast.Provider.Conversions
             _media = media;
         }
 
-        public void UpdateProgress() => _media.SetBasicStatus();
+        public void UpdateProgress() => _media.UpdateStatus();
 
         public void UpdateProgress(ConversionProgressEventArgs progress, FactoryTarget target)
         {
             Progress = progress;
             Target = target;
-            if (Progress.Percent >= 0)
-                _media.Status = MediaStatus.Converting;
-            else
-                _media.Status = MediaStatus.Queued;
+
+            _media.UpdateStatus(this);
         }
     }
 }
