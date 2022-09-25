@@ -96,7 +96,7 @@ namespace Cast.Provider
 
         private bool IsFileAvailable(string path, FileSystemEventArgs e)
         {
-            if (!ConversionHelper.IsFileAvailableWithRetry(path, 5000))
+            if (!ConversionHelper.IsFileAvailableWithRetry(path, 1000))
             {
                 _logger.LogWarning("File watcher triggered by a '{event}' event did not get access to {file}",
                     e.ChangeType.ToString().ToLower(),

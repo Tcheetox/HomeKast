@@ -40,12 +40,14 @@ namespace Cast.Provider.Conversions
             }
         }
 
-        public void DeleteTarget()
+        public void DeleteTemporaryFiles()
         {
             try
             {
-                if (File.Exists(TargetPath))
-                    File.Delete(TargetPath);
+                foreach (var path in Media.Subtitles.Select(s => s.TemporaryPath).Where(p => File.Exists(p)))
+                    File.Delete(path);
+                if (File.Exists(TemporaryPath))
+                    File.Delete(TemporaryPath);
             }
             catch (Exception)
             {

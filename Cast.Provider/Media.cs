@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
-using System.Net.Security;
-using System.Runtime.CompilerServices;
+using Xabe.FFmpeg;
 using Cast.Provider.Conversions;
 using Cast.Provider.Meta;
-using Cast.SharedModels;
-using Cast.SharedModels.User;
-using Xabe.FFmpeg;
 
 namespace Cast.Provider
 {

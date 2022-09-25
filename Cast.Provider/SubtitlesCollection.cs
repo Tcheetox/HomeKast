@@ -30,12 +30,13 @@ namespace Cast.Provider
             {
                 var sub = _info.SubtitleStreams.ElementAt(i);
                 var displayLabel = PrettyName(sub);
+                var prefixedName = mediaName.StartsWith('_') ? mediaName : '_' + mediaName;
                 _subtitles.Add(new Subtitles()
                 {
                     Index = i,
                     Label = sub.Language,
                     DisplayLabel = displayLabel,
-                    LocalPath = Path.Combine(_userProfile.Application.StaticFilesDirectory, $"{mediaName}_{sub.Language}_{i}_{displayLabel}.vtt")
+                    LocalPath = Path.Combine(_userProfile.Application.StaticFilesDirectory, $"{prefixedName}_{sub.Language}_{i}_{displayLabel}.vtt")
                 });
             }
 

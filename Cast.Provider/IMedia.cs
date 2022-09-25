@@ -1,7 +1,7 @@
-﻿using Xabe.FFmpeg;
+﻿using System;
+using Xabe.FFmpeg;
 using Cast.Provider.Meta;
 using Cast.Provider.Conversions;
-using System;
 
 namespace Cast.Provider
 {

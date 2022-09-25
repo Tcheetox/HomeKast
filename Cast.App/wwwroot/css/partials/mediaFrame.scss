@@ -6,6 +6,8 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
+    z-index: 0;
+    transition: all var(--animation-duration);
 
     .title {
         font-weight: 600;
@@ -33,10 +35,10 @@
 
     .overlay {
         border-radius: var(--border-radius);
+        transition: all var(--animation-duration);
         width: 100%;
         height: 100%;
         opacity: 0%;
-        // transition: all var(--animation-duration);
         cursor: pointer;
         padding: 0.5rem;
 
@@ -55,16 +57,22 @@
         }
     }
 
-    transition: transform 200ms;
-
     &:hover {
         .overlay {
             opacity: 100%;
             background-color: rgba(0, 0, 0, 0.6);
         }
 
-        z-index:1;
+        z-index: 1;
         transform: scale(1.05);
+    }
+
+    // Fast transition when jQuery do its thing!
+    &.fast-transition {
+        transition: unset;
+        .overlay {
+            transition: unset;
+        }
     }
 }
 

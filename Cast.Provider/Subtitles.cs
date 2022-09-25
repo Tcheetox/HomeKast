@@ -1,9 +1,5 @@
-﻿using Cast.SharedModels.User;
-using Cast.SharedModels;
+﻿using System.Diagnostics;
 using Newtonsoft.Json;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-using Xabe.FFmpeg;
 
 namespace Cast.Provider
 {
@@ -19,5 +15,20 @@ namespace Cast.Provider
         public string LocalPath { get; init; }
 
         public bool Exists() => !string.IsNullOrEmpty(LocalPath) && File.Exists(LocalPath);
+
+        private Guid? _conversionId;
+        public Guid Id
+        {
+            get
+            {
+                if (!_conversionId.HasValue)
+                    _conversionId = Guid.NewGuid();
+                return _conversionId.Value;
+            }
+        }
+
+        private string? _temporaryPath;
+        public string TemporaryPath
+            => _temporaryPath ??= Path.Combine(Path.GetTempPath(), $"{Id}.vtt");
     }
 }

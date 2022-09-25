@@ -1,14 +1,8 @@
-﻿using Cast.SharedModels.User;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using Xabe.FFmpeg;
 using Xabe.FFmpeg.Events;
+using Microsoft.Extensions.Logging;
+using Cast.SharedModels.User;
 
 namespace Cast.Provider.Conversions.Factory
 {
@@ -53,6 +47,10 @@ namespace Cast.Provider.Conversions.Factory
 
                 conversion.OnProgress += (object sender, ConversionProgressEventArgs args)
                     => state.UpdateProgress(args, Target);
+
+                _logger.LogInformation("Beginning conversion for {media.Name} ({media.Id})",
+                   options.Media.Name,
+                   options.Media.Id);
 
                 await conversion.Start(state.Canceller.Token);
 

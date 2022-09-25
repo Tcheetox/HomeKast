@@ -34,7 +34,7 @@ namespace Cast.Provider.Conversions
             _logger.LogDebug("FFmpeg directory {directory}", directory);
         }
 
-        public async Task<IMediaInfo?> GetMediaInfo(string path, int timeout = 3000)
+        public async Task<IMediaInfo?> GetMediaInfo(string path, int timeout = 1000)
         {
             var canceller = new CancellationTokenSource();
 

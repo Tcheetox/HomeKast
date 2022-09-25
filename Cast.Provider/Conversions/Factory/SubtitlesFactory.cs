@@ -3,7 +3,6 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Xabe.FFmpeg.Exceptions;
 using Xabe.FFmpeg;
-using Microsoft.VisualBasic;
 using Xabe.FFmpeg.Events;
 
 namespace Cast.Provider.Conversions.Factory
@@ -26,14 +25,11 @@ namespace Cast.Provider.Conversions.Factory
                 clock.Restart();
 
                 StringBuilder command = new($"-i {options.Media.LocalPath}");
-                List<string> targets = new();
                 foreach (var subtitle in options.Media.Subtitles)
                 {
-                   // string targetPath = subtitle.Path.ChangeExtension(subtitle.LocalPath, ".srt");
-                    targets.Add(subtitle.LocalPath);
-                    if (File.Exists(subtitle.LocalPath))
-                        File.Delete(subtitle.LocalPath);
-                    command.AppendFormat(" -map 0:s:{0} -f webvtt {1}", subtitle.Index, subtitle.LocalPath);
+                    if (File.Exists(subtitle.TemporaryPath))
+                        File.Delete(subtitle.TemporaryPath);
+                    command.AppendFormat(" -map 0:s:{0} -f webvtt {1}", subtitle.Index, subtitle.TemporaryPath);
                 }
 
                 try
@@ -45,7 +41,20 @@ namespace Cast.Provider.Conversions.Factory
                     conversion.OnProgress += (object sender, ConversionProgressEventArgs args)
                         => state.UpdateProgress(args, Target);
 
+                    _logger.LogInformation("Beginning subtitles ({count}) extraction for {media.Name} ({media.Id})",
+                       options.Media.Subtitles.Count,
+                       options.Media.Name,
+                       options.Media.Id);
+
                     await conversion.Start(state.Canceller.Token);
+
+                    // Put converted caption files under user preferred folder
+                    foreach (var subtitles in from subtitles in options.Media.Subtitles
+                                              where File.Exists(subtitles.TemporaryPath)
+                                              select subtitles)
+                    {
+                        ConversionHelper.MoveAndRename(subtitles.TemporaryPath, subtitles.LocalPath);
+                    }
 
                     clock.Stop();
                     _logger.LogInformation("Extracted {subtitles.count} subtitles stream(s) for {media.Name} ({media.Id}) in {time} ms",
@@ -56,10 +65,6 @@ namespace Cast.Provider.Conversions.Factory
                 }
                 catch (ConversionException ex)
                 {
-                    // TODO: nuke temp convert (stream) file as well please
-                    foreach (var path in targets.Where(p => File.Exists(p)))
-                        File.Delete(path);
-
                     _logger.LogError(ex, "Subtitles conversion error for {media.Name} ({media.Id})", options.Media.Name, options.Media.Id);
                 }
             }, state.Canceller.Token);

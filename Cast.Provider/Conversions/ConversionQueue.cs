@@ -38,7 +38,7 @@ namespace Cast.Provider.Conversions
                             Current = options.Media;
 
                             // Extract and assign subtitles
-                            await _subtitlesFactory.CreateTask(options, state);                               
+                            await _subtitlesFactory.CreateTask(options, state);
 
                             // Proceed to media conversion
                             if (options.ConversionType != ConversionType.SubtitlesOnly)
@@ -49,12 +49,12 @@ namespace Cast.Provider.Conversions
                         }
                         catch (OperationCanceledException ex)
                         {
-                            options.DeleteTarget();
+                            options.DeleteTemporaryFiles();
                             _logger.LogError(ex, "Conversion cancelled by user for {media.Name} ({media.Id})", options.Media.Name, options.Media.Id);
                         }
                         catch (ConversionException ex)
                         {
-                            options.DeleteTarget();
+                            options.DeleteTemporaryFiles();
                             _logger.LogError(ex, "Conversion error for {media.Name} ({media.Id})", options.Media.Name, options.Media.Id);
                         }
                         finally
@@ -83,7 +83,7 @@ namespace Cast.Provider.Conversions
 
             options.Media.UpdateStatus(MediaStatus.Queued);
             _queue.Enqueue(options);
-            
+
             return true;
         }
 

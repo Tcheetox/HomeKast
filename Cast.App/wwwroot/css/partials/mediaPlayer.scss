@@ -4,7 +4,7 @@
     flex-direction: column;
     position: absolute;
     left: 50%;
-    top: 50%;
+    top: 48%;
     transform: translate(-50%, -50%);
     transition: all var(--animation-duration);
     min-width: 300px;
@@ -18,6 +18,12 @@
     .cast-icons {
         display: flex;
         justify-content: space-evenly;
+        width: 260px;
+        margin: auto;
+
+        img {
+            filter: invert(96%) sepia(4%) saturate(14%) hue-rotate(98deg) brightness(105%) contrast(103%);
+        }
     }
 
     .cast-progression {

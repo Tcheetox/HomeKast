@@ -2,12 +2,13 @@
 header {
     height: auto;
     box-shadow: 0px 6px 9px 0px rgba(0, 0, 0, 0.05);
-    padding: 0.3rem 0;
+    padding: 0.5rem 0;
     transition: all var(--animation-duration);
     position: fixed;
     width: 100%;
-    z-index: 1;
+    z-index: 10;
     background-color: var(--background-color);
+    color: white;
 
     .navbar-brand {
         margin-right: 0;
@@ -18,16 +19,11 @@ header {
         height: 64px;
     }
 
-    .info-bar {
-        width: 100%;
-        font-size: 24px;
-        display: flex;
-        margin-right: 44px;
-        position: relative;
-    }
-
     .header-title {
+        font-size: 24px;
         margin-left: 0.5rem;
+        margin-right: auto;
+        user-select: none;
     }
 
     .logo {

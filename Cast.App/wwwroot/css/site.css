@@ -4,6 +4,12 @@
   justify-content: space-evenly;
   gap: 0.5rem;
 }
+.library.fast-transition .media {
+  transition: unset;
+}
+.library.fast-transition .media .overlay {
+  transition: unset;
+}
 
 footer {
   margin-top: auto;
@@ -18,12 +24,13 @@ footer {
 header {
   height: auto;
   box-shadow: 0px 6px 9px 0px rgba(0, 0, 0, 0.05);
-  padding: 0.3rem 0;
+  padding: 0.5rem 0;
   transition: all var(--animation-duration);
   position: fixed;
   width: 100%;
-  z-index: 1;
+  z-index: 10;
   background-color: var(--background-color);
+  color: white;
 }
 header .navbar-brand {
   margin-right: 0;
@@ -32,15 +39,11 @@ header nav {
   padding: 0 !important;
   height: 64px;
 }
-header .info-bar {
-  width: 100%;
-  font-size: 24px;
-  display: flex;
-  margin-right: 44px;
-  position: relative;
-}
 header .header-title {
+  font-size: 24px;
   margin-left: 0.5rem;
+  margin-right: auto;
+  user-select: none;
 }
 header .logo {
   transition: all var(--animation-duration);
@@ -101,7 +104,8 @@ header .logo:hover {
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
-  transition: transform 200ms;
+  z-index: 0;
+  transition: all var(--animation-duration);
 }
 .media .title {
   font-weight: 600;
@@ -125,6 +129,7 @@ header .logo:hover {
 }
 .media .overlay {
   border-radius: var(--border-radius);
+  transition: all var(--animation-duration);
   width: 100%;
   height: 100%;
   opacity: 0%;
@@ -151,6 +156,12 @@ header .logo:hover {
   opacity: 100%;
   background-color: rgba(0, 0, 0, 0.6);
 }
+.media.fast-transition {
+  transition: unset;
+}
+.media.fast-transition .overlay {
+  transition: unset;
+}
 
 @keyframes rotate2 {
   to {
@@ -162,7 +173,7 @@ header .logo:hover {
   flex-direction: column;
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 48%;
   transform: translate(-50%, -50%);
   transition: all var(--animation-duration);
   min-width: 300px;
@@ -174,6 +185,11 @@ header .logo:hover {
 .media-player .cast-icons {
   display: flex;
   justify-content: space-evenly;
+  width: 260px;
+  margin: auto;
+}
+.media-player .cast-icons img {
+  filter: invert(96%) sepia(4%) saturate(14%) hue-rotate(98deg) brightness(105%) contrast(103%);
 }
 .media-player .cast-progression {
   display: flex;
