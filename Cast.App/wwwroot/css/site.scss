@@ -46,6 +46,14 @@ main {
     flex-grow: 1;
     padding-top: 6rem;
     flex-direction: column;
+
+    // Fast transition when jQuery do its thing!
+    &.fast-transition {
+        .media, 
+        .overlay {
+            transition: unset;
+        }
+    }
 }
 
 .loading-logo {

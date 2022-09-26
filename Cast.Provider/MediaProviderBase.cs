@@ -106,7 +106,8 @@ namespace Cast.Provider
             if (media == null)
                 return;
 
-            media.UpdateSubtitles();
+            _mediaConverter.TryGetMediaState(media, out var state);
+            media.UpdateSubtitles(state);
             _logger.LogInformation("MediaProvider updated {name} ({guid}) subtitles", media.Name, media.Id);
         }
         #endregion

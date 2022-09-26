@@ -85,10 +85,10 @@ namespace Cast.Provider
             return Status;
         }
 
-        public void UpdateSubtitles()
+        public void UpdateSubtitles(ConversionState? state = null)
         {
             Subtitles.Refresh();
-            UpdateStatus();
+            UpdateStatus(state);
         }
     }
 }

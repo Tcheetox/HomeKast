@@ -4,12 +4,6 @@
   justify-content: space-evenly;
   gap: 0.5rem;
 }
-.library.fast-transition .media {
-  transition: unset;
-}
-.library.fast-transition .media .overlay {
-  transition: unset;
-}
 
 footer {
   margin-top: auto;
@@ -156,12 +150,6 @@ header .logo:hover {
   opacity: 100%;
   background-color: rgba(0, 0, 0, 0.6);
 }
-.media.fast-transition {
-  transition: unset;
-}
-.media.fast-transition .overlay {
-  transition: unset;
-}
 
 @keyframes rotate2 {
   to {
@@ -273,6 +261,10 @@ main {
   flex-grow: 1;
   padding-top: 6rem;
   flex-direction: column;
+}
+main.fast-transition .media,
+main.fast-transition .overlay {
+  transition: unset;
 }
 
 .loading-logo {

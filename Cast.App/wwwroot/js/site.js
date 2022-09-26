@@ -23,6 +23,7 @@ $('body').on('click', '.conversion-state .stop-icon', (e) => {
         data: { guid: targetId },
         headers: { RequestVerificationToken: $csrf.val() }
     }).done(data => {
+        if (!data) return
         $(`[data-id="${targetId}"]`).replaceWith(data)
         $popoverButton.popover('hide')
     })
@@ -34,9 +35,8 @@ const loadLibrary = callback => {
     const md5 = $('.md5').val()
     $.get(md5 ? `library?md5=${md5}` : 'library')
         .done((data) => {
-            $main.html(data)
-            if (callback)
-                callback()
+            if (data) $main.html(data)
+            if (callback) callback()
         })
 }
 
@@ -67,9 +67,6 @@ $('main').on('click', '.library .media', (e) => {
                         src: `${host}library?handler=mediaSubtitles&guid=${id}&idx=${i}`
                     }))
                 }
-
-                console.log(options)
-
                 player.cast(`${host}library?handler=mediaStream&guid=${id}`, options)
             })
             break;
@@ -81,6 +78,7 @@ $('main').on('click', '.library .media', (e) => {
                 data: { guid: id },
                 headers: { RequestVerificationToken: $csrf.val() },
             }).done(data => {
+                if (!data) return
                 $(`[data-id="${id}"]`).replaceWith(data)
                 $('.md5').val(null)
             })

@@ -22,6 +22,6 @@ namespace Cast.Provider
 
         MediaStatus UpdateStatus(MediaStatus status);
         MediaStatus UpdateStatus(ConversionState? state = null);
-        void UpdateSubtitles();
+        void UpdateSubtitles(ConversionState? state = null);
     }
 }

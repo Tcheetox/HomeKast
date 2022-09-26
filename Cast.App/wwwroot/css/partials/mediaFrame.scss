@@ -66,14 +66,6 @@
         z-index: 1;
         transform: scale(1.05);
     }
-
-    // Fast transition when jQuery do its thing!
-    &.fast-transition {
-        transition: unset;
-        .overlay {
-            transition: unset;
-        }
-    }
 }
 
 @keyframes rotate2 {
