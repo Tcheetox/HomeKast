@@ -1,5 +1,4 @@
 ﻿@using Cast.Provider
-@using Cast.App.TagHelpers
 @model IMedia
 @{
     string state = Model.Status.ToString().ToLower();
@@ -10,19 +9,19 @@
         <div class="title">@Model.Name</div>
         @if (Model.Status == MediaStatus.Converting || Model.Status == MediaStatus.Unplayable || Model.Status == MediaStatus.MissingSubtitles)
         {
-            <smart-svg color="#FFFFFF" src="~/media/convert.svg" class="icon" height="50" width="50"></smart-svg>
+            <img src="/media/convert.svg" class="icon" height="50" width="50" />
             if (Model.Status == MediaStatus.MissingSubtitles)
             {
-                <smart-svg color="#FFFFFF" src="~/media/subtitles.svg" class="icon subtitles" height="14" width="18"></smart-svg>
+                <img src="/media/subtitles.svg" class="icon subtitles" height="14" width="18" />
             }
         }
         else if (Model.Status == MediaStatus.Queued)
         {
-            <smart-svg color="#FFFFFF" src="~/media/queued.svg" class="icon" height="50" width="50"></smart-svg>
+            <img src="/media/queued.svg" class="icon" height="50" width="50" />
         }
         else
         {
-            <smart-svg color="#FFFFFF" src="~/media/play.svg" class="icon" height="50" width="50"></smart-svg>
+            <img src="/media/play.svg" class="icon" height="50" width="50" />
         }
         <div class="duration">
             @if(Model.Length > TimeSpan.FromMinutes(60))

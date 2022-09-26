@@ -28,6 +28,7 @@ header {
 
     .logo {
         transition: all var(--animation-duration);
+        filter: invert(35%) sepia(46%) saturate(5750%) hue-rotate(200deg) brightness(102%) contrast(107%);
 
         &:hover {
             filter: invert(19%) sepia(32%) saturate(6935%) hue-rotate(200deg) brightness(98%) contrast(102%) !important;

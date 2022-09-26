@@ -41,6 +41,7 @@ header .header-title {
 }
 header .logo {
   transition: all var(--animation-duration);
+  filter: invert(35%) sepia(46%) saturate(5750%) hue-rotate(200deg) brightness(102%) contrast(107%);
 }
 header .logo:hover {
   filter: invert(19%) sepia(32%) saturate(6935%) hue-rotate(200deg) brightness(98%) contrast(102%) !important;
@@ -99,7 +100,6 @@ header .logo:hover {
   background-repeat: no-repeat;
   background-size: contain;
   z-index: 0;
-  transition: all var(--animation-duration);
 }
 .media .title {
   font-weight: 600;
@@ -123,7 +123,6 @@ header .logo:hover {
 }
 .media .overlay {
   border-radius: var(--border-radius);
-  transition: all var(--animation-duration);
   width: 100%;
   height: 100%;
   opacity: 0%;
@@ -141,6 +140,9 @@ header .logo:hover {
   right: 1rem;
   bottom: 1rem;
   pointer-events: none;
+}
+.media .overlay img {
+  filter: var(--svg-white-filter);
 }
 .media:hover {
   z-index: 1;
@@ -177,7 +179,7 @@ header .logo:hover {
   margin: auto;
 }
 .media-player .cast-icons img {
-  filter: invert(96%) sepia(4%) saturate(14%) hue-rotate(98deg) brightness(105%) contrast(103%);
+  filter: var(--svg-white-filter);
 }
 .media-player .cast-progression {
   display: flex;
@@ -231,7 +233,7 @@ html {
 :root {
   --animation-duration: 150ms;
   --main-color: #007bff;
-  /*  --main-color: #e50914;*/
+  --svg-white-filter: invert(96%) sepia(4%) saturate(14%) hue-rotate(98deg) brightness(105%) contrast(103%);
   --main-hover-color: #0056b3;
   --border-radius: 5px;
   --success: #198754;
@@ -273,6 +275,7 @@ main.fast-transition .overlay {
   width: 2rem;
   animation: logoRorate 1s infinite linear;
   margin: 0.5rem;
+  filter: var(--svg-white-filter);
 }
 
 @keyframes logoRorate {

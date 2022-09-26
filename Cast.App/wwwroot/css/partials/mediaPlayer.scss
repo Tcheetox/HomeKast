@@ -22,7 +22,7 @@
         margin: auto;
 
         img {
-            filter: invert(96%) sepia(4%) saturate(14%) hue-rotate(98deg) brightness(105%) contrast(103%);
+            filter: var(--svg-white-filter);
         }
     }
 
