@@ -107,12 +107,14 @@ const checkConverting = () => {
             $progressBar.css('width', progress)
             $conversionState.find('.mediaTitle').html(data.name)
             $('.queueLength').html(`${data.queueLength} item(s)`)
+            $('.popover-header .target').html(data.target === 2 ? 'Extracting...' : 'Converting...')
         } else {
             $conversionState.find('.stop-icon').attr('data-media-id', null)
             $progressBar.html('0%')
             $progressBar.css('width', '0%')
             $conversionState.find('.mediaTitle').html('')
             $('.queueLength').html('0 item(s)')
+            $('.popover-header .target').html('Converting...')
         }
 
         // Reload entire library when done converting

@@ -56,6 +56,10 @@ header {
     .toggler-icon {
         animation: rotate 2s linear infinite;
     }
+
+    img {
+        filter: var(--svg-white-filter);
+    }
 }
 
 .conversion-state {
