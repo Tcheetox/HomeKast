@@ -8,7 +8,7 @@
     transform: translate(-50%, -50%);
     transition: all var(--animation-duration);
     min-width: 300px;
-
+    display: none;
 
     .cast-title {
         font-size: 1rem;
@@ -52,16 +52,14 @@
     img {
         transition: all var(--animation-duration);
     }
-
-    .inactive {
+    /*    .inactive {
         pointer-events: none;
     }
 
     .inactive img {
         filter: invert(98%) sepia(2%) saturate(541%) hue-rotate(175deg) brightness(94%) contrast(92%);
-    }
-
-    .active {
+    }*/
+    /*    .active {
         pointer-events: initial;
 
         img {
@@ -72,9 +70,8 @@
                 filter: invert(46%) sepia(14%) saturate(284%) hue-rotate(167deg) brightness(94%) contrast(91%);
             }
         }
-    }
-
-    svg {
+    }*/
+    /*   svg {
         filter: invert(1);
-    }
+    }*/
 }

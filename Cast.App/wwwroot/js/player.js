@@ -2,13 +2,11 @@
 // Manage ChromeCast player
 // https://github.com/castjs/castjs
 
-// TODO: check for Chrome browser
-// TODO: check for events: statechange, event
-
 import Castjs from './cast.js'
 
 export default class Player {
-    #$headerBar = $('.info-bar')
+    #isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor)
+
     #$playerBar = $('.media-player')
     #$headerTitle = $('.header-title')
     #$speaker = $('img.speaker')
@@ -18,7 +16,8 @@ export default class Player {
     #cjs = null
 
     constructor() {
-        if (this.#$headerBar.length === 0) return
+        if (this.#$playerBar.length === 0 || !this.#isChrome) return
+
         this.#cjs = new Castjs();
         if (!this.#cjs) return
 
@@ -26,7 +25,7 @@ export default class Player {
         this.#cjs.on('available', () => {
             this.#cjs.on('connect', () => {
                 console.log('> Connected')
-                this.#onDevice(true)
+                this.#onConnected(true)
             })
             this.#cjs.on('playing', () => {
                 console.log('> Playing')
@@ -38,7 +37,7 @@ export default class Player {
             })
             this.#cjs.on('disconnect', () => {
                 console.log('> Disconnected')
-                this.#onDevice(false)
+                this.#onConnected(false)
             })
             this.#cjs.on('end', this.#onEnded)
             this.#cjs.on('error', this.#onError)
@@ -53,8 +52,8 @@ export default class Player {
         })
     }
 
-    cast = (uri, args) => this.#cjs.cast(uri, args)
-    subtitles = args => this.#cjs.subtitle(args)
+    cast = (uri, args) => this.#cjs?.cast(uri, args)
+    subtitles = args => this.#cjs?.subtitle(args)
 
     #updateTitle = title => {
         if (!title || title === '')
@@ -63,16 +62,13 @@ export default class Player {
             this.#$castTitle.html(title)
     }
 
-    #onState = () => {
-        this.#updateTitle()
-    }
-
-    #onDevice = (active) => {
+    #onConnected = (active) => {
         if (active) {
-            this.#$playerBar.addClass('active')
-            this.#updateTitle()
+            this.#$playerBar.show()
+            //this.#$playerBar.addClass('active')
         } else {
-            this.#$playerBar.removeClass('inactive')
+            this.#$playerBar.hide()
+            //this.#$playerBar.removeClass('inactive')
         }
     }
 

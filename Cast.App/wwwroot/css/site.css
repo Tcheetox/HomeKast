@@ -144,7 +144,7 @@ header .logo:hover {
   bottom: 1rem;
   pointer-events: none;
 }
-.media .overlay img {
+.media .overlay img.icon {
   filter: var(--svg-white-filter);
 }
 .media:hover {
@@ -170,6 +170,29 @@ header .logo:hover {
   transform: translate(-50%, -50%);
   transition: all var(--animation-duration);
   min-width: 300px;
+  display: none;
+  /*    .inactive {
+      pointer-events: none;
+  }
+
+  .inactive img {
+      filter: invert(98%) sepia(2%) saturate(541%) hue-rotate(175deg) brightness(94%) contrast(92%);
+  }*/
+  /*    .active {
+      pointer-events: initial;
+
+      img {
+          filter: invert(78%) sepia(10%) saturate(227%) hue-rotate(169deg) brightness(91%) contrast(91%);
+          cursor: pointer;
+
+          &:hover {
+              filter: invert(46%) sepia(14%) saturate(284%) hue-rotate(167deg) brightness(94%) contrast(91%);
+          }
+      }
+  }*/
+  /*   svg {
+      filter: invert(1);
+  }*/
 }
 .media-player .cast-title {
   font-size: 1rem;
@@ -206,31 +229,13 @@ header .logo:hover {
 .media-player img {
   transition: all var(--animation-duration);
 }
-.media-player .inactive {
-  pointer-events: none;
-}
-.media-player .inactive img {
-  filter: invert(98%) sepia(2%) saturate(541%) hue-rotate(175deg) brightness(94%) contrast(92%);
-}
-.media-player .active {
-  pointer-events: initial;
-}
-.media-player .active img {
-  filter: invert(78%) sepia(10%) saturate(227%) hue-rotate(169deg) brightness(91%) contrast(91%);
-  cursor: pointer;
-}
-.media-player .active img:hover {
-  filter: invert(46%) sepia(14%) saturate(284%) hue-rotate(167deg) brightness(94%) contrast(91%);
-}
-.media-player svg {
-  filter: invert(1);
-}
 
 html {
   font-size: 24px;
   overflow-x: hidden;
   position: relative;
   min-height: 100%;
+  overflow-y: overlay;
 }
 
 :root {

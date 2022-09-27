@@ -3,12 +3,14 @@
 @import 'partials/header.scss';
 @import 'partials/mediaFrame.scss';
 @import 'partials/mediaPlayer.scss';
-// TODO: layout shift on lib load because of scrollbar...
+
 html {
     font-size: 24px;
     overflow-x: hidden;
     position: relative;
     min-height: 100%;
+    // Will only work in Chrome but still, it makes stuff a little smoother when loading library for the first time
+    overflow-y: overlay;
 }
 
 :root {
