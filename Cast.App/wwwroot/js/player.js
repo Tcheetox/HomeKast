@@ -8,12 +8,17 @@ export default class Player {
     #isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor)
 
     #$playerBar = $('.media-player')
-    #$headerTitle = $('.header-title')
-    #$speaker = $('img.speaker')
-    #$castTitle = $('.cast-title')
-    #$playPause = $('img.playPause')
+    #$currentTime = this.#$playerBar.find('.current')
+    #$totalTime = this.#$playerBar.find('.total')
+    #$speaker = this.#$playerBar.find('img.speaker')
+    #$castTitle = this.#$playerBar.find('.cast-title')
+    #$playPause = this.#$playerBar.find('img.playPause')
+    #$previous = this.#$playerBar.find('img.previous')
+    #$next = this.#$playerBar.find('img.next')
+    #$range = this.#$playerBar.find('.cast-progression input[type=range]')
 
     #cjs = null
+    #currentMedia = null
 
     constructor() {
         if (this.#$playerBar.length === 0 || !this.#isChrome) return
@@ -23,82 +28,146 @@ export default class Player {
 
         // Bind
         this.#cjs.on('available', () => {
-            this.#cjs.on('connect', () => {
-                console.log('> Connected')
-                this.#onConnected(true)
-            })
-            this.#cjs.on('playing', () => {
-                console.log('> Playing')
-                this.#onPlayPause(false)
-            })
-            this.#cjs.on('pause', () => {
-                console.log('> Paused')
-                this.#onPlayPause(true)
-            })
-            this.#cjs.on('disconnect', () => {
-                console.log('> Disconnected')
-                this.#onConnected(false)
-            })
-            this.#cjs.on('end', this.#onEnded)
+            // Cast callback handlers
             this.#cjs.on('error', this.#onError)
-            this.#cjs.on('mute', () => {
-                console.log('> Muted')
-                this.#onSpeaker(true)
+            this.#cjs.on('event', (e) => {
+                switch (e) {
+                    case 'connect':
+                        this.#onConnected(true)
+                        break;
+                    case 'disconnect':
+                        this.#onConnected(false)
+                        break;
+                    case 'pause':
+                        this.#onPlay(true)
+                        break;
+                    case 'playing':
+                        this.#onPlay(false)
+                        break;
+                    case 'mute':
+                        this.#onSpeaker(true)
+                        break;
+                    case 'unmute':
+                        this.#onSpeaker(false)
+                        break;
+                    case 'end':
+                        this.#onEnded()
+                        break;
+                    case 'timeupdate':
+                        this.#$currentTime.html(this.#formatTimeSpan(this.#cjs.timePretty))
+                        if (this.#cjs.time && this.#cjs.duration && this.#cjs.duration !== 0) {
+                            const progressPercentage = parseInt((100 * this.#cjs.time) / this.#cjs.duration)
+                            this.#$range.attr('value', progressPercentage)
+                        }
+                        break;
+                }
             })
-            this.#cjs.on('unmute', () => {
-                console.log('> Unmuted')
-                this.#onSpeaker(false)
+
+            // Icons action
+            this.#$previous.on('click', () => this.#cjs.seek(0))
+            this.#$next.on('click', () => this.#cjs.seek(100, true))
+            this.#$range.on('change', e => this.#cjs.seek($(e.currentTarget).val(), true))
+            this.#$playPause.on('click', () => {
+                if (this.#cjs.paused) this.#cjs.play()
+                else this.#cjs.pause()
+            })
+            this.#$speaker.on('click', () => {
+                if (this.#cjs.muted) this.#cjs.unmute()
+                else this.#cjs.mute()
             })
         })
     }
 
-    cast = (uri, args) => this.#cjs?.cast(uri, args)
+    cast = (host, data) => {
+        if (!data || !host) return
+        const options = {
+            poster: host + data.metadata.imageUrl,
+            title: data.name,
+            subtitles: data.subtitles.map((s, i) => ({
+                active: s.active,
+                label: s.displayLabel,
+                src: `${host}library?handler=mediaSubtitles&guid=${data.id}&idx=${i}`
+            }))
+        }
+        this.#currentMedia = data
+        this.#cjs?.cast(`${host}library?handler=mediaStream&guid=${data.id}`, options)
+    }
+
     subtitles = args => this.#cjs?.subtitle(args)
 
+    #formatTimeSpan = v => {
+        const trimmed = v.substring(1)
+        if (trimmed.includes('.')) return trimmed.split('.')[0]
+        return trimmed
+    }
+
     #updateTitle = title => {
-        if (!title || title === '')
-            title = 'No title'
-        if (title != this.#$castTitle.html())
+        if (!title) title = this.#cjs.title
+        if (title !== this.#$castTitle.html())
             this.#$castTitle.html(title)
+    }
+
+    #updateTotalTime = () => {
+        if (!this.#currentMedia && !this.#cjs.durationPretty)
+            return
+
+        const formattedValue = this.#formatTimeSpan(this.#currentMedia?.length ?? this.#cjs?.durationPretty)
+        if (this.#$totalTime.html() !== formattedValue)
+            this.#$totalTime.html(formattedValue)
+    }
+
+    #updateAll = () => {
+        this.#updateTitle()
+        this.#updateTotalTime()
     }
 
     #onConnected = (active) => {
         if (active) {
+            this.#updateAll()
             this.#$playerBar.show()
-            //this.#$playerBar.addClass('active')
+            console.log('> Connected')
         } else {
+            this.#currentMedia = null
+            this.#updateTitle('Disconnected')
+            this.#$totalTime.html('0:00:00')
             this.#$playerBar.hide()
-            //this.#$playerBar.removeClass('inactive')
+            console.log('> Disconnected')
         }
     }
 
-    #onPlayPause = (pause) => {
-        this.#$playPause.off('click')
+    #onPlay = (pause) => {
         if (pause) {
             this.#$playPause.attr('src', '/media/play.svg')
-            this.#$playPause.click(() => player.play())
+            console.log('> Paused')
         } else {
+            this.#updateAll()
             this.#$playPause.attr('src', '/media/pause.svg')
-            this.#$playPause.click(() => player.pause())
+            console.log('> Playing')
         }
+    }
+
+    #lastChangedAt = null
+    #onSpeaker = muted => {
+        const now = new Date()
+        if (this.#lastChangedAt && (now - this.#lastChangedAt) < 100) // Mini-hack because the event is fired multiple times for a single action
+            return
+        if (muted) {
+            this.#$speaker.attr('src', '/media/muted.svg')
+            console.log('> Muted')
+        } else {
+            this.#$speaker.attr('src', '/media/unmuted.svg')
+            console.log('> Unmuted')
+        }
+        this.#lastChangedAt = now
     }
 
     #onEnded = () => {
         console.log('> Ended')
-    }
-
-    #onSpeaker = (muted) => {
-        this.#$speaker.off('click')
-        if (muted) {
-            this.#$speaker.attr('src', '/media/muted.svg')
-            this.#$speaker.on('click', () => player.unmute())
-        } else {
-            this.#$speaker.attr('src', '/media/unmuted.svg')
-            this.#$speaker.on('click', () => player.mute())
-        }
+        this.#cjs.disconnect()
     }
 
     #onError = (e) => {
+        this.#updateTitle('Error')
         console.log('> Errored')
         console.error(e)
     }

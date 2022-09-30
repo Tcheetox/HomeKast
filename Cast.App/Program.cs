@@ -72,8 +72,10 @@ namespace Cast.App
 
             // Serve wwwroot
             app.UseStaticFiles(new StaticFileOptions() 
-            { 
-                OnPrepareResponse = staticCaching 
+            {
+#if !DEBUG
+                OnPrepareResponse = staticCaching
+#endif
             }); 
             app.UseStaticFiles(new StaticFileOptions()
             {

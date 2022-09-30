@@ -57,19 +57,7 @@ $('main').on('click', '.library .media', (e) => {
                 url: 'library?handler=media',
                 type: 'get',
                 data: { guid: id }
-            }).done(data => {   
-                const host = $('.library').data('host')
-                const options = {
-                    poster: host + data.metadata.imageUrl,
-                    title: data.name,
-                    subtitles: data.subtitles.map((s, i) => ({
-                        active: s.active,
-                        label: s.displayLabel,
-                        src: `${host}library?handler=mediaSubtitles&guid=${id}&idx=${i}`
-                    }))
-                }
-                player.cast(`${host}library?handler=mediaStream&guid=${id}`, options)
-            })
+            }).done(data => player.cast($('.library').data('host'), data))
             break;
         case 'missingsubtitles':
         case 'unplayable':

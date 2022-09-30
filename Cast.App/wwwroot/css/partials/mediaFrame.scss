@@ -1,4 +1,6 @@
-﻿.media {
+﻿// TODO: arrange title too large too high
+
+.media {
     border-radius: var(--border-radius);
     width: 290px;
     height: 435px;
@@ -40,7 +42,14 @@
         height: 100%;
         opacity: 0%;
         cursor: pointer;
-        padding: 0.5rem;
+
+        .title {
+            padding-top: 0.5rem;
+        }
+
+        .duration {
+            margin-left: 1rem;
+        }
 
         img:not(.resolution) {
             position: absolute;

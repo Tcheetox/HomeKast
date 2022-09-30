@@ -130,7 +130,12 @@ header .logo:hover {
   height: 100%;
   opacity: 0%;
   cursor: pointer;
-  padding: 0.5rem;
+}
+.media .overlay .title {
+  padding-top: 0.5rem;
+}
+.media .overlay .duration {
+  margin-left: 1rem;
 }
 .media .overlay img:not(.resolution) {
   position: absolute;
@@ -170,29 +175,6 @@ header .logo:hover {
   transform: translate(-50%, -50%);
   transition: all var(--animation-duration);
   min-width: 300px;
-  display: none;
-  /*    .inactive {
-      pointer-events: none;
-  }
-
-  .inactive img {
-      filter: invert(98%) sepia(2%) saturate(541%) hue-rotate(175deg) brightness(94%) contrast(92%);
-  }*/
-  /*    .active {
-      pointer-events: initial;
-
-      img {
-          filter: invert(78%) sepia(10%) saturate(227%) hue-rotate(169deg) brightness(91%) contrast(91%);
-          cursor: pointer;
-
-          &:hover {
-              filter: invert(46%) sepia(14%) saturate(284%) hue-rotate(167deg) brightness(94%) contrast(91%);
-          }
-      }
-  }*/
-  /*   svg {
-      filter: invert(1);
-  }*/
 }
 .media-player .cast-title {
   font-size: 1rem;
@@ -203,9 +185,13 @@ header .logo:hover {
   justify-content: space-evenly;
   width: 260px;
   margin: auto;
+  transition: all var(--animation-duration);
 }
 .media-player .cast-icons img {
   filter: var(--svg-white-filter);
+}
+.media-player .cast-icons img:hover {
+  cursor: pointer;
 }
 .media-player .cast-progression {
   display: flex;
@@ -225,9 +211,6 @@ header .logo:hover {
 }
 .media-player .cast-progression .form-range::-webkit-slider-runnable-track {
   height: 5px;
-}
-.media-player img {
-  transition: all var(--animation-duration);
 }
 
 html {

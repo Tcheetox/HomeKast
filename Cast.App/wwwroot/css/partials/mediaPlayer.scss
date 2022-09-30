@@ -8,7 +8,7 @@
     transform: translate(-50%, -50%);
     transition: all var(--animation-duration);
     min-width: 300px;
-    display: none;
+    //display: none;
 
     .cast-title {
         font-size: 1rem;
@@ -20,9 +20,13 @@
         justify-content: space-evenly;
         width: 260px;
         margin: auto;
+        transition: all var(--animation-duration);
 
         img {
             filter: var(--svg-white-filter);
+            &:hover {
+                cursor: pointer;
+            }
         }
     }
 
@@ -48,30 +52,4 @@
             }
         }
     }
-
-    img {
-        transition: all var(--animation-duration);
-    }
-    /*    .inactive {
-        pointer-events: none;
-    }
-
-    .inactive img {
-        filter: invert(98%) sepia(2%) saturate(541%) hue-rotate(175deg) brightness(94%) contrast(92%);
-    }*/
-    /*    .active {
-        pointer-events: initial;
-
-        img {
-            filter: invert(78%) sepia(10%) saturate(227%) hue-rotate(169deg) brightness(91%) contrast(91%);
-            cursor: pointer;
-
-            &:hover {
-                filter: invert(46%) sepia(14%) saturate(284%) hue-rotate(167deg) brightness(94%) contrast(91%);
-            }
-        }
-    }*/
-    /*   svg {
-        filter: invert(1);
-    }*/
 }
