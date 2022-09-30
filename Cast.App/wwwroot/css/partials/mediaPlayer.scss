@@ -13,6 +13,7 @@
     .cast-title {
         font-size: 1rem;
         text-align: center;
+        height: 1rem;
     }
 
     .cast-icons {
@@ -33,7 +34,8 @@
     .cast-progression {
         display: flex;
         font-size: 13px;
-        margin-bottom: 2px;
+        padding-top: 8px;
+        padding-bottom: 2px;
 
         .form-range {
             flex-grow: 1;

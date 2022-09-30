@@ -79,6 +79,7 @@ header .logo:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+  min-height: 1rem;
 }
 .conversion-state .progression {
   margin-top: 0.5rem;
@@ -179,6 +180,7 @@ header .logo:hover {
 .media-player .cast-title {
   font-size: 1rem;
   text-align: center;
+  height: 1rem;
 }
 .media-player .cast-icons {
   display: flex;
@@ -196,7 +198,8 @@ header .logo:hover {
 .media-player .cast-progression {
   display: flex;
   font-size: 13px;
-  margin-bottom: 2px;
+  padding-top: 8px;
+  padding-bottom: 2px;
 }
 .media-player .cast-progression .form-range {
   flex-grow: 1;
