@@ -1,8 +1,8 @@
 using System.Text;
 using Cast.Provider;
-using Cast.Provider.Conversions;
 using Cast.SharedModels;
 using Cast.SharedModels.User;
+using SimplifiedSearch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Net.Http.Headers;
@@ -12,7 +12,7 @@ namespace Cast.App.Pages
     public class LibraryModel : PageModel
     {
         public Uri Uri => _userProfile.Application.Uri;
-        public IEnumerable<IMedia> Library { get; private set; }
+        public List<IMedia> Library { get; private set; }
         public string MD5 { get; private set; }
 
         // Hide layout if AJAX request
@@ -29,12 +29,19 @@ namespace Cast.App.Pages
             _userProfile = userProfile;
         }
 
-        public async Task<IActionResult> OnGet(string md5 = "")
+        public async Task<IActionResult> OnGet(string md5 = "", string query = "")
         {
-            Library = (await _mediaProvider.GetAllMedia())
+            var library = (await _mediaProvider.GetAllMedia())
                 .Select(m => m.Value)
+                .ToList();
+
+            if (!string.IsNullOrWhiteSpace(query))
+                library = (await library.SimplifiedSearchAsync(query, x => x.Name)).ToList();
+
+             Library = library
                 .OrderByDescending(m => m.Creation)
-                .ThenByDescending(m => m.Status == MediaStatus.Playable);
+                .ThenByDescending(m => m.Status == MediaStatus.Playable)
+                .ToList();
 
             MD5 = ComputeLibraryMD5(Library);
 

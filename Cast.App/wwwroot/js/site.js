@@ -25,16 +25,29 @@ $('body').on('click', '.conversion-state .stop-icon', (e) => {
     })
 })
 
+// Handle library search
+//const $md5 = $('.md5')
+const $searchInput = $('input.search')
+if ($searchInput.length > 0) $searchInput.on('input', () => loadLibrary())
+let previousQuery = null
+const getSearchInputIfOk = () => {
+    const query = $searchInput.val() ?? null
+    const encodedUri = !query || query.length <= 3 ? null : encodeURIComponent(query)
+    if (previousQuery && previousQuery !== encodedUri) $('.md5').val(null)
+    previousQuery = encodedUri
+    return encodedUri
+}
+
 // Load/Refresh library
 const $main = $('main')
 const loadLibrary = callback => {
-    const md5 = $('.md5').val()
-    $.get(md5 ? `library?md5=${md5}` : 'library')
+    $.get(`library?md5=${$('.md5').val() ?? ''}&query=${getSearchInputIfOk() ?? ''}`)
         .done((data) => {
             if (data) $main.html(data)
             if (callback) callback()
         })
 }
+
 
 (function selfReloadLibrary() {
     const every = 1000

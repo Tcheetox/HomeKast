@@ -46,6 +46,11 @@ header .logo {
 header .logo:hover {
   filter: invert(19%) sepia(32%) saturate(6935%) hue-rotate(200deg) brightness(98%) contrast(102%) !important;
 }
+header .search {
+  margin-left: 0.5rem;
+  outline: none;
+  border: none;
+}
 
 .popover-btn {
   background-color: transparent;

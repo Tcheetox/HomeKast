@@ -12,7 +12,6 @@ namespace Cast.App
 {
     public static class Program
     {
-        // TODO: add minimal search https://github.com/tommysor/SimplifiedSearch
         // TODO: add popup to setup settings
         public static void Main(string[] args)
         {
