@@ -1,7 +1,7 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
 using Cast.Provider.Conversions;
 using Cast.SharedModels.User;
-using Microsoft.Extensions.Logging;
 
 namespace Cast.Provider
 {
@@ -35,7 +35,7 @@ namespace Cast.Provider
             _watchers.Clear();
         }
 
-        public void Start()
+        public void Warmup()
         {
             // Dispose and clear existing
             SupressWatchers();
@@ -59,7 +59,7 @@ namespace Cast.Provider
             }
         }
 
-        private void OnProfileChanged(object? sender, EventArgs e) => Start();
+        private void OnProfileChanged(object? sender, EventArgs e) => Warmup();
 
         private void Watcher_Changed(object sender, FileSystemEventArgs e)
         {

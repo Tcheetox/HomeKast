@@ -45,6 +45,16 @@ namespace Cast.Provider
 
         public override async Task<IMedia> GetMedia(Guid guid) => (await GetAllMedia())[guid];
 
-        public override bool IsCached => _lazyCache.TryGetValue(CacheKey, out object _);
+        // Note: it's a little ugly but the below combination allows to achieve the display of spinning logo while the library is getting loaded in cache
+        // It prevents the side effect of LazyCache lock when querying for cache entry while maintaing the advantage of not computing values twice
+        public override bool IsCached => !_warmingUp && _lazyCache.TryGetValue(CacheKey, out object _);
+
+        private bool _warmingUp; 
+        public override async Task Warmup() 
+        {
+            _warmingUp = true;
+            _ = await GetAllMedia();
+            _warmingUp = false;
+        }
     }
 }

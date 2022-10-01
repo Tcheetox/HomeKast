@@ -1,7 +1,7 @@
-﻿using Xabe.FFmpeg;
-using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
+using Xabe.FFmpeg;
+using Microsoft.Extensions.Logging;
 using Cast.Provider.Conversions;
 using Cast.Provider.Meta;
 using Cast.SharedModels.User;
@@ -37,6 +37,8 @@ namespace Cast.Provider
         }
 
         #region Public Members
+        public abstract Task Warmup();
+
         public abstract bool IsCached { get; }
 
         public virtual async Task<IMedia> GetMedia(Guid guid) => (await GetAllMedia())[guid];

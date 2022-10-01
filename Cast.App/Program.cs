@@ -45,6 +45,7 @@ namespace Cast.App
             builder.Services.AddSingleton<IMetadataProvider, CachedMetadataProvider>();
             builder.Services.AddSingleton<IMediaProvider, CachedMediaProvider>();
             builder.Services.AddSingleton<FileWatcher>();
+            builder.Services.AddSingleton<WarmupService>();
 
             builder.Host.UseWindowsService();
 
@@ -54,8 +55,8 @@ namespace Cast.App
                 app.UseExceptionHandler("/Error");
 
             app.Services
-                .GetRequiredService<FileWatcher>()
-                .Start();
+                .GetRequiredService<WarmupService>()
+                .Warmup();
 
             // Serve specific local directory
             var staticFilesDirectory = app
