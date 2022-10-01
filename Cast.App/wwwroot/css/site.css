@@ -41,10 +41,10 @@ header .header-title {
 }
 header .logo {
   transition: all var(--animation-duration);
-  filter: invert(35%) sepia(46%) saturate(5750%) hue-rotate(200deg) brightness(102%) contrast(107%);
+  filter: var(--svg-regular-filter);
 }
 header .logo:hover {
-  filter: invert(19%) sepia(32%) saturate(6935%) hue-rotate(200deg) brightness(98%) contrast(102%) !important;
+  filter: var(--svg-hover-filter);
 }
 header .search {
   margin-left: 0.5rem;
@@ -200,6 +200,7 @@ header .search {
 }
 .media-player .cast-icons img:hover {
   cursor: pointer;
+  filter: var(--svg-regular-filter);
 }
 .media-player .cast-progression {
   display: flex;
@@ -234,6 +235,8 @@ html {
   --animation-duration: 150ms;
   --main-color: #007bff;
   --svg-white-filter: invert(96%) sepia(4%) saturate(14%) hue-rotate(98deg) brightness(105%) contrast(103%);
+  --svg-regular-filter: invert(35%) sepia(46%) saturate(5750%) hue-rotate(200deg) brightness(102%) contrast(107%);
+  --svg-hover-filter: invert(19%) sepia(32%) saturate(6935%) hue-rotate(200deg) brightness(98%) contrast(102%);
   --main-hover-color: #0056b3;
   --border-radius: 5px;
   --success: #198754;
