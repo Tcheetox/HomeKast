@@ -46,6 +46,8 @@ namespace Cast.App
             builder.Services.AddSingleton<IMediaProvider, CachedMediaProvider>();
             builder.Services.AddSingleton<FileWatcher>();
 
+            builder.Host.UseWindowsService();
+
             var app = builder.Build();
 
             if (!app.Environment.IsDevelopment())
@@ -63,7 +65,7 @@ namespace Cast.App
                 .StaticFilesDirectory;
             Directory.CreateDirectory(staticFilesDirectory);
 
-            void staticCaching(StaticFileResponseContext ctx) =>
+            static void staticCaching(StaticFileResponseContext ctx) =>
                 ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
                 {
                     Public = true,

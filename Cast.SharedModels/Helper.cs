@@ -10,7 +10,7 @@ namespace Cast.SharedModels
 {
     public static class Helper
     {
-        public const string STATIC_FILES_DIRECTORY = "HomeCast";
+        public const string STATIC_FILES_DIRECTORY = "HomeKast";
 
         public static IPAddress GetLocalIPAddress()
             => Dns.GetHostEntry(Dns.GetHostName()).AddressList.First(ip => ip.AddressFamily == AddressFamily.InterNetwork);
