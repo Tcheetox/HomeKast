@@ -1,11 +1,6 @@
 ﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
 // for details on configuring this project to bundle and minify static web assets.
 
-// TODO: bind properly title name JS
-// TODO: bind seek +- buttons
-// TODO: make this shit pretty
-// TODO: all the bindings
-
 import Player from './player.js'
 const player = new Player()
 

@@ -176,6 +176,7 @@ header .logo:hover {
   transform: translate(-50%, -50%);
   transition: all var(--animation-duration);
   min-width: 300px;
+  display: none;
 }
 .media-player .cast-title {
   font-size: 1rem;

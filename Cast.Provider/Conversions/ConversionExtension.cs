@@ -8,8 +8,8 @@ namespace Cast.Provider.Conversions
     {
         public static IConversion AddSubtitles(this IConversion conversion, IEnumerable<ISubtitleStream> subtitleStreams)
         {
-            foreach (var subtitles in subtitleStreams)
-                conversion.AddStream(subtitles.SetCodec(Xabe.FFmpeg.Streams.SubtitleStream.SubtitleCodec.webvtt));
+            if (subtitleStreams.Any())
+                conversion.AddStream(subtitleStreams);
             return conversion;
         }
 

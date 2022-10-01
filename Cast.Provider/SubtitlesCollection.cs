@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using Xabe.FFmpeg;
-using Cast.SharedModels;
 using Cast.SharedModels.User;
 
 namespace Cast.Provider
@@ -55,12 +54,12 @@ namespace Cast.Provider
         private static string PrettyName(ISubtitleStream subtitle)
         {
             string suffix = subtitle.Forced.HasValue && subtitle.Forced == 1 ? " (forced)" : string.Empty;
-            string label = subtitle.Language.ToLower() switch
+            string label = subtitle.Language?.ToLower() switch
             {
                 "fre" => "French",
                 "eng" => "English",
                 "ger" => "German",
-                _ => subtitle.Language.Capitalize(),
+                _ => subtitle.Language?.ToLower() ?? "Unknown",
             };
             return label + suffix;
         }
