@@ -48,8 +48,13 @@ header .logo:hover {
 }
 header .search {
   margin-left: 0.5rem;
+  margin-right: 0.5rem;
   outline: none;
   border: none;
+}
+header .modal-toggler-icon {
+  filter: var(--svg-white-filter);
+  cursor: pointer;
 }
 
 .popover-btn {
@@ -181,6 +186,7 @@ header .search {
   transform: translate(-50%, -50%);
   transition: all var(--animation-duration);
   min-width: 300px;
+  display: none;
 }
 .media-player .cast-title {
   font-size: 1rem;
@@ -230,6 +236,10 @@ header .search {
 }
 .media-player .cast-progression .form-range::-webkit-slider-runnable-track {
   height: 5px;
+}
+
+.settings.modal .text-danger {
+  font-size: 0.875em;
 }
 
 html {

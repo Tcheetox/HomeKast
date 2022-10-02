@@ -1,23 +1,37 @@
-using System.Net;
-using System.Security.Claims;
-using System.Text;
-using Cast.SharedModels.User;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Cast.SharedModels.User;
 
 namespace Cast.App.Pages
 {
-    public class Settings
+    public class Settings : IValidatableObject
     {
         public string? StaticFilesDirectory { get; set; }
         public string? LibraryDirectories { get; set; }
+        private IEnumerable<string> Directories
+            => !string.IsNullOrWhiteSpace(LibraryDirectories)
+            ? LibraryDirectories.Split(';')
+            : Enumerable.Empty<string>();
+
         public string? SubtitlesPreferences { get; set; }
         public string? LanguagePreferences { get; set; }
-    }
 
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Directories.Any(d => !Directory.Exists(d)))
+                yield return new ValidationResult($"One or more directory is invalid", new[] { nameof(LibraryDirectories) });
+            if (string.IsNullOrEmpty(StaticFilesDirectory))
+                yield return new ValidationResult($"Cache directory is missing", new[] { nameof(StaticFilesDirectory) });
+            else if (!Directory.Exists(StaticFilesDirectory))
+                yield return new ValidationResult($"Cache directory is invalid", new[] { nameof(StaticFilesDirectory) });
+        }
+    }
 
     public class SettingsModel : PageModel
     {
+        public string ApplicationUrl => $"http://localhost:{_userProfile.Application.Port}";
+
         private readonly ILogger<SettingsModel> _logger;
         private readonly UserProfile _userProfile;
 
@@ -41,13 +55,11 @@ namespace Cast.App.Pages
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
-            {
                 return Page();
-            }
 
+            // TODO: update/refresh
 
-
-            return RedirectToPage("./Index");
+            return new CreatedResult(nameof(Settings), null);
         }
     }
 }

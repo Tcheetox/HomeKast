@@ -26,7 +26,6 @@ $('body').on('click', '.conversion-state .stop-icon', (e) => {
 })
 
 // Handle library search
-//const $md5 = $('.md5')
 const $searchInput = $('input.search')
 if ($searchInput.length > 0) $searchInput.on('input', () => loadLibrary())
 if ($('.media').length > 0 && $searchInput.is(':disabled')) $searchInput.prop('disabled', false)
@@ -121,7 +120,7 @@ const checkConverting = () => {
             $popoverButton.popover('hide')
             loadLibrary()
         }
-            
+
         // Store new state and go again...
         previouslyConverting = currentlyConverting
         if (status === "success" || status == "nocontent")
@@ -130,3 +129,31 @@ const checkConverting = () => {
 }
 const $conversionPlaceholder = $('.conversion-placeholder')
 if ($conversionPlaceholder.length > 0) checkConverting()
+
+// Settings
+const $modalBody = $('.settings .modal-body')
+const settingsModal = new bootstrap.Modal(document.querySelector('#settingsModal'))
+$('.navbar .modal-toggler-icon').click(() => {
+    $.get('/settings').done(data => {
+        if (!data) {
+            console.log('Error retrieving settings')
+            return
+        }
+        $modalBody.html(data)
+        settingsModal.show()
+    })
+})
+$('.settings.modal .btn-submit').click(e => {
+    $.ajax({
+        type: 'POST',
+        url: 'settings',
+        data: $('.settings-form').serialize()
+    }).done(data => {
+        if (!data) {
+            console.log('Settings updated')
+            settingsModal.hide()
+            return
+        }
+        $modalBody.html(data)
+    })
+})

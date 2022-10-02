@@ -47,7 +47,7 @@ namespace Cast.Provider.Conversions
             {
                 _logger.LogError(ex, "Extracting media info timed-out for {path}", path);
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Extracting media info unexpectedly failed for {path}", path);
             }

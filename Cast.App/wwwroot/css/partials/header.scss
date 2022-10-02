@@ -37,8 +37,14 @@ header {
 
     .search {
         margin-left: 0.5rem;
+        margin-right: 0.5rem;
         outline: none;
         border: none;
+    }
+
+    .modal-toggler-icon {
+        filter: var(--svg-white-filter);
+        cursor: pointer;
     }
 }
 

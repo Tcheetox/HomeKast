@@ -10,12 +10,14 @@
 <body>
     
     <partial name="_Header" />
+    <partial name="_SettingsModal" />
 
     <main role="main" class="container-fluid fast-transition">
         @RenderBody()
     </main>
 
     <partial name="_Footer" />
+
     <script src="~/lib/jquery/jquery.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="~/js/site.js" asp-append-version="true"></script>

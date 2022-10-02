@@ -5,11 +5,32 @@
     Layout = null;
 }
 
-<div class="settings">
-    <div class="header-title">Settings</div>
-    <form method="post">
-        Name:
-        <input asp-for="Settings!.LibraryDirectories" />
-        <input type="submit" />
-    </form>
+<div class="mb-3">
+    <label for="ApplicationUrl" class="form-label">Application</label>
+    <input id="ApplicationUrl" class=" form-control form-control-sm" type="text" value="@Model.ApplicationUrl" aria-label="application url" disabled readonly>
+</div>
+
+<label for="SubtitlesPreferences" class="form-label">Conversion preferences</label>
+<div class="input-group input-group-sm mb-3">
+    <span class="input-group-text" id="inputGroup-sizing-sm">Subtitles</span>
+    <input asp-for="Settings!.SubtitlesPreferences" class="form-control" />
+</div>
+
+<div class="input-group input-group-sm mb-3">
+    <span class="input-group-text" id="inputGroup-sizing-sm">Language</span>
+    <input asp-for="Settings!.LanguagePreferences" class="form-control" />
+</div>
+
+<div class="mb-3">
+    <label for="StaticFilesDirectory" class="form-label">Cache directory</label>
+    <small class="text-muted">(e.g. subtitles, posters)</small>
+    <input asp-for="Settings!.StaticFilesDirectory" class="form-control form-control-sm" />
+    <span asp-validation-for="Settings!.StaticFilesDirectory" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label for="LibraryDirectories" class="form-label">Media directories</label>
+    <small class="text-muted">(separate entries with a semi-colon)</small>
+    <textarea asp-for="Settings!.LibraryDirectories" class="form-control form-control-sm" rows="4"></textarea>
+    <span asp-validation-for="Settings!.LibraryDirectories" class="text-danger"></span>
 </div>
