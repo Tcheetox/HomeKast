@@ -31,6 +31,19 @@
                 filter: var(--svg-regular-filter);
             }
         }
+
+        .dropdown {
+            display: flex;
+
+            .dropdown-menu {
+                min-width: unset;
+            }
+
+            img.subtitles.disabled {
+                pointer-events: none;
+                filter: var(--svg-disabled-filter);
+            }
+        }
     }
 
     .cast-progression {

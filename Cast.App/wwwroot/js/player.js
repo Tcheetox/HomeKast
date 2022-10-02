@@ -10,6 +10,8 @@ export default class Player {
     #$playerBar = $('.media-player')
     #$currentTime = this.#$playerBar.find('.current')
     #$totalTime = this.#$playerBar.find('.total')
+    #$subtitlesIcon = this.#$playerBar.find('img.subtitles')
+    #$subtitlesMenu = this.#$playerBar.find('.subtitles.dropdown-menu')
     #$speaker = this.#$playerBar.find('img.speaker')
     #$castTitle = this.#$playerBar.find('.cast-title')
     #$playPause = this.#$playerBar.find('img.playPause')
@@ -63,7 +65,7 @@ export default class Player {
                 }
             })
 
-            // Icons action
+            // Icons and buttons action
             this.#$previous.on('click', () => this.#cjs.seek(0))
             this.#$next.on('click', () => this.#cjs.seek(100, true))
             this.#$range.on('change', e => this.#cjs.seek($(e.currentTarget).val(), true))
@@ -74,6 +76,12 @@ export default class Player {
             this.#$speaker.on('click', () => {
                 if (this.#cjs.muted) this.#cjs.unmute()
                 else this.#cjs.mute()
+            })
+            this.#$playerBar.find('.dropdown-menu').on('click', '.dropdown-item', (e) => {
+                const idx = parseInt($(e.currentTarget).attr('data-id'))
+                this.#cjs.subtitle(idx)
+                this.#updateSubtitles(idx)
+                console.log(`> Subtitles (${idx})`)
             })
         })
     }
@@ -116,9 +124,27 @@ export default class Player {
             this.#$totalTime.html(formattedValue)
     }
 
+    #updateSubtitles = idx => {
+        if (!this.#cjs.subtitles) return
+        const content = this.#cjs.subtitles.map(s => {
+            const sIdx = parseInt(s.src.slice(-1))
+            const active = (!Number.isInteger(idx) && s.active) || (Number.isInteger(idx) && sIdx === idx)
+                ? '&emsp;&#10003;'
+                : ''
+            return `<li><button class="dropdown-item" type="button" data-id="${sIdx}">${s.label}${active}</button></li>`
+        })
+        if (!content || content === '') {
+            if (!this.#$subtitlesIcon.hasClass('disabled')) this.#$subtitlesIcon.addClass('disabled')
+        } else {
+            if (this.#$subtitlesIcon.hasClass('disabled')) this.#$subtitlesIcon.removeClass('disabled')
+        }
+        this.#$subtitlesMenu.html(content)
+    }
+
     #updateAll = () => {
         this.#updateTitle()
         this.#updateTotalTime()
+        this.#updateSubtitles()
     }
 
     #onConnected = (active) => {

@@ -13,6 +13,8 @@ namespace Cast.App
     public static class Program
     {
         // TODO: add popup to setup settings
+        // TODO: smoother transition in lib usin JSON instead
+        // TODO: check intranet usage
         public static void Main(string[] args)
         {
             var options = new WebApplicationOptions

@@ -29,6 +29,7 @@ $('body').on('click', '.conversion-state .stop-icon', (e) => {
 //const $md5 = $('.md5')
 const $searchInput = $('input.search')
 if ($searchInput.length > 0) $searchInput.on('input', () => loadLibrary())
+if ($('.media').length > 0 && $searchInput.is(':disabled')) $searchInput.prop('disabled', false)
 let previousQuery = null
 const getSearchInputIfOk = () => {
     const query = $searchInput.val() ?? null
@@ -43,6 +44,7 @@ const $main = $('main')
 const loadLibrary = callback => {
     $.get(`library?md5=${$('.md5').val() ?? ''}&query=${getSearchInputIfOk() ?? ''}`)
         .done((data) => {
+            if ($searchInput.is(':disabled')) $searchInput.prop('disabled', false)
             if (data) $main.html(data)
             if (callback) callback()
         })

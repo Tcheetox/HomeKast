@@ -11,9 +11,19 @@
     <div class="cast-icons">
         <img class="previous" src="@Url.Content("~/media/previous.svg")" height="@size" width="@size"/>
         @*<img class="stop" src="@Url.Content("~/media/stop.svg")" height="@size" width="@size"/>*@
-        <img class="subtitles" src="@Url.Content("~/media/subtitles.svg")" height="@size" width="@size"/>
+
+        <div class="dropdown">
+            <img class="subtitles disabled" src="@Url.Content("~/media/subtitles.svg")" height="@size" width="@size" id="subtitlesDropdown" data-bs-toggle="dropdown" aria-expanded="false" />
+            <ul class="subtitles dropdown-menu dropdown-menu-dark" aria-labelledby="subtitlesDropdown">
+                <li><button class="dropdown-item" type="button" data-id="0">Action</button></li>
+                <li><button class="dropdown-item" type="button" data-id="1">Another action</button></li>
+                <li><button class="dropdown-item" type="button" data-id="2">Something else here</button></li>
+            </ul>
+        </div>
+
         <img class="playPause" src="@Url.Content("~/media/play.svg")" height="@size" width="@size"/>
         <img class="speaker" src="@Url.Content("~/media/unmuted.svg")" height="@size" width="@size" />
         <img class="next" src="@Url.Content("~/media/next.svg")" height="@size" width="@size"/>
     </div>
+
 </div>
