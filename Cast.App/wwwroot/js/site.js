@@ -143,17 +143,29 @@ $('.navbar .modal-toggler-icon').click(() => {
         settingsModal.show()
     })
 })
-$('.settings.modal .btn-submit').click(e => {
+$('.settings.modal .btn-submit').click(() => {
     $.ajax({
         type: 'POST',
         url: 'settings',
         data: $('.settings-form').serialize()
-    }).done(data => {
-        if (!data) {
-            console.log('Settings updated')
-            settingsModal.hide()
-            return
+    }).done((data, _, code) => {
+        switch (code.status) {
+            case 201:
+                console.log('> Settings updated')
+                settingsModal.hide()
+                window.location = 'http://localhost:8081' //window.location.origin
+                break;
+            case 200:
+                if (data) {
+                    console.warn('> Invalid settings')
+                    $modalBody.html(data)
+                } else {
+                    console.log('> Settings unchanged')
+                    settingsModal.hide()
+                }
+                break;
+            default:
+                console.log(`> Settings update unhandled status code: ${code.status}`)
         }
-        $modalBody.html(data)
     })
 })

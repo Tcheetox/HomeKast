@@ -2,20 +2,31 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Cast.SharedModels.User;
+using System.Net;
 
 namespace Cast.App.Pages
 {
     public class Settings : IValidatableObject
     {
         public string? StaticFilesDirectory { get; set; }
+
         public string? LibraryDirectories { get; set; }
-        private IEnumerable<string> Directories
+        public IEnumerable<string> Directories
             => !string.IsNullOrWhiteSpace(LibraryDirectories)
-            ? LibraryDirectories.Split(';')
+            ? LibraryDirectories.Split(';', StringSplitOptions.RemoveEmptyEntries)
             : Enumerable.Empty<string>();
 
         public string? SubtitlesPreferences { get; set; }
+        public IEnumerable<string> Subtitles
+            => !string.IsNullOrWhiteSpace(SubtitlesPreferences)
+            ? SubtitlesPreferences.Split(';', StringSplitOptions.RemoveEmptyEntries)
+            : Enumerable.Empty<string>();
+
         public string? LanguagePreferences { get; set; }
+        public IEnumerable<string> Languages
+            => !string.IsNullOrWhiteSpace(LanguagePreferences)
+            ? LanguagePreferences.Split(';', StringSplitOptions.RemoveEmptyEntries)
+            : Enumerable.Empty<string>();
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
@@ -52,14 +63,19 @@ namespace Cast.App.Pages
             };
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public IActionResult OnPostAsync()
         {
             if (!ModelState.IsValid)
                 return Page();
 
-            // TODO: update/refresh
+            if (_userProfile.TryUpdate(
+                Settings!.StaticFilesDirectory!,
+                Settings!.Subtitles.ToList(),
+                Settings!.Languages.ToList(),
+                Settings!.Directories.ToList()))
+                    return new CreatedResult(nameof(Settings), null);
 
-            return new CreatedResult(nameof(Settings), null);
+            return new OkResult();
         }
     }
 }

@@ -30,23 +30,28 @@ namespace Cast.SharedModels.User
 
         public event EventHandler ProfileChanged;
 
-        public void Update(List<string> newExtensions, List<string> newDirectories)
+        public bool TryUpdate(string staticFileDirectory,
+            List<string> subtitles, 
+            List<string> languages, 
+            List<string> directories)
         {
-            if (_settings.Library.Directories.SequenceEqual(newDirectories)
-                && _settings.Library.Extensions.SequenceEqual(newExtensions))
-                return;
-            
-            _settings.Library = new LibrarySettings
-            {
-                Directories = newDirectories ?? Library.Directories,
-                Extensions = newExtensions ?? Library.Extensions
-            };
+            if (staticFileDirectory == Application.StaticFilesDirectory
+                && Library.Directories.SequenceEqual(directories)
+                && Preferences.Subtitles.SequenceEqual(subtitles)
+                && Preferences.Language.SequenceEqual(languages))
+                return false;
+
+            Application.StaticFilesDirectory = staticFileDirectory;
+            Library.Directories = directories;
+            Preferences.Subtitles = subtitles;
+            Preferences.Language = languages;
 
             try
             {
                 string content = JsonConvert.SerializeObject(_settings, Formatting.Indented);
                 File.WriteAllText(_path, content);
                 ProfileChanged?.Invoke(this, EventArgs.Empty);
+                return true;
             }
             catch (JsonSerializationException ex)
             {
@@ -56,6 +61,8 @@ namespace Cast.SharedModels.User
             {
                 _logger.LogError(ex, "Could not write updated {settings} of {profile} to {path}", nameof(Settings), nameof(UserProfile), _path);
             }
+
+            return false;
         }
     }
 }

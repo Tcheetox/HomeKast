@@ -31,7 +31,7 @@ namespace Cast.Provider
         private void UserProfileChanged(object? sender, EventArgs e)
         {
             _lazyCache.Remove(CacheKey);
-            _ = GetAllMedia();
+            _ = Warmup();
             _logger.LogInformation("The cached media library has been refreshed following change in {settings}", nameof(UserProfile));
         }
 
@@ -49,12 +49,16 @@ namespace Cast.Provider
         // It prevents the side effect of LazyCache lock when querying for cache entry while maintaing the advantage of not computing values twice
         public override bool IsCached => !_warmingUp && _lazyCache.TryGetValue(CacheKey, out object _);
 
-        private bool _warmingUp; 
+        private bool _warmingUp;
+        private readonly object _warmupLock = new object();
         public override async Task Warmup() 
         {
-            _warmingUp = true;
-            _ = await GetAllMedia();
-            _warmingUp = false;
+            lock (_warmupLock)
+            {
+                _warmingUp = true;
+                _ = await GetAllMedia();
+                _warmingUp = false;
+            }
         }
     }
 }
