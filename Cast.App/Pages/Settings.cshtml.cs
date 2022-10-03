@@ -13,7 +13,7 @@ namespace Cast.App.Pages
         public string? LibraryDirectories { get; set; }
         public IEnumerable<string> Directories
             => !string.IsNullOrWhiteSpace(LibraryDirectories)
-            ? LibraryDirectories.Split(';', StringSplitOptions.RemoveEmptyEntries)
+            ? LibraryDirectories.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
             : Enumerable.Empty<string>();
 
         public string? SubtitlesPreferences { get; set; }
@@ -59,7 +59,7 @@ namespace Cast.App.Pages
                 StaticFilesDirectory = _userProfile.Application.StaticFilesDirectory,
                 LanguagePreferences = string.Join(';', _userProfile.Preferences?.Language ?? Enumerable.Empty<string>()),
                 SubtitlesPreferences = string.Join(';', _userProfile.Preferences?.Subtitles ?? Enumerable.Empty<string>()),
-                LibraryDirectories = string.Join(';', _userProfile.Library?.Directories ?? Enumerable.Empty<string>()),
+                LibraryDirectories = string.Join(Environment.NewLine, _userProfile.Library?.Directories ?? Enumerable.Empty<string>()),
             };
         }
 

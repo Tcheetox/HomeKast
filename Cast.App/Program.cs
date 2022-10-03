@@ -18,6 +18,9 @@ namespace Cast.App
 
         // TODO: smoother transition in lib usin JSON instead
         // TODO: check intranet usage
+        // TODO:show file path instead without extension in frame?!
+        // TODO:Cache didn't work when first started and created after! => review this code you fucking moron!
+
         public static void Main(string[] args)
         {
             var options = new WebApplicationOptions

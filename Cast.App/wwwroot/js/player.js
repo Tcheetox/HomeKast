@@ -110,7 +110,7 @@ export default class Player {
     }
 
     #updateTitle = title => {
-        if (!title) title = this.#cjs.title
+        if (!title || title === '') title = this.#cjs.title
         if (title !== this.#$castTitle.html())
             this.#$castTitle.html(title)
     }
@@ -133,7 +133,7 @@ export default class Player {
                 : ''
             return `<li><button class="dropdown-item" type="button" data-id="${sIdx}">${s.label}${active}</button></li>`
         })
-        if (!content || content === '') {
+        if (!content || content.length === 0) {
             if (!this.#$subtitlesIcon.hasClass('disabled')) this.#$subtitlesIcon.addClass('disabled')
         } else {
             if (this.#$subtitlesIcon.hasClass('disabled')) this.#$subtitlesIcon.removeClass('disabled')

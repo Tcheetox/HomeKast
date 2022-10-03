@@ -11,6 +11,7 @@
 </div>
 
 <label for="SubtitlesPreferences" class="form-label">Conversion preferences</label>
+<small class="text-muted">(separate entries with a semi-colon)</small>
 <div class="input-group input-group-sm mb-3">
     <span class="input-group-text" id="inputGroup-sizing-sm">Subtitles</span>
     <input asp-for="Settings!.SubtitlesPreferences" class="form-control" />
@@ -30,7 +31,7 @@
 
 <div class="mb-3">
     <label for="LibraryDirectories" class="form-label">Media directories</label>
-    <small class="text-muted">(separate entries with a semi-colon)</small>
+    <small class="text-muted">(one entry per line)</small>
     <textarea asp-for="Settings!.LibraryDirectories" class="form-control form-control-sm" rows="4"></textarea>
     <span asp-validation-for="Settings!.LibraryDirectories" class="text-danger"></span>
 </div>
