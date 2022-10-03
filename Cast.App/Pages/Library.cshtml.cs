@@ -21,9 +21,11 @@ namespace Cast.App.Pages
         private readonly ILogger<LibraryModel> _logger;
         private readonly IMediaProvider _mediaProvider;
         private readonly UserProfile _userProfile;
+        private readonly IWebHostEnvironment _appEnvironment;
 
-        public LibraryModel(ILogger<LibraryModel> logger, IMediaProvider mediaProvider, UserProfile userProfile)
+        public LibraryModel(ILogger<LibraryModel> logger, IMediaProvider mediaProvider, UserProfile userProfile, IWebHostEnvironment appEnvironment)
         {
+            _appEnvironment = appEnvironment;
             _logger = logger;
             _mediaProvider = mediaProvider;
             _userProfile = userProfile;
@@ -85,6 +87,15 @@ namespace Cast.App.Pages
             {
                 EnableRangeProcessing = true
             };
+        }
+
+        public async Task<IActionResult> OnGetMediaPoster(Guid guid)
+        {
+            var media = await _mediaProvider.GetMedia(guid);
+            if (media == null || string.IsNullOrWhiteSpace(media.Metadata?.ImagePath) || !System.IO.File.Exists(media.Metadata.ImagePath))
+                return new PhysicalFileResult(Path.Combine(_appEnvironment.WebRootPath, "media", "notfound.png"), "image/png");
+
+            return new PhysicalFileResult(media.Metadata.ImagePath, "image/jpeg");
         }
 
         #region Private Helper

@@ -19,7 +19,7 @@ namespace Cast.Provider.Meta
             string path = Path.Combine(UserProfile.Application.StaticFilesDirectory, metadata.Image!.Trim('/'));
             if (File.Exists(path))
             {
-                metadata.ImageUrl = Helper.STATIC_FILES_DIRECTORY + metadata.Image!;
+                metadata.ImagePath = path;
                 return metadata;
             }
 
@@ -32,7 +32,7 @@ namespace Cast.Provider.Meta
                 await using var fs = File.Create(path);
                 ms.Seek(0, SeekOrigin.Begin);
                 ms.CopyTo(fs);
-                metadata.ImageUrl = Helper.STATIC_FILES_DIRECTORY + metadata.Image!;
+                metadata.ImagePath = path;
             }
             catch (Exception ex)
             {

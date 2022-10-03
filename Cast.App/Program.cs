@@ -1,25 +1,20 @@
 using Cast.Provider;
 using Cast.Provider.Conversions;
 using Cast.Provider.Meta;
-using Cast.SharedModels;
 using Cast.SharedModels.User;
-using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting.WindowsServices;
 using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Hosting.WindowsServices;
 
 namespace Cast.App
 {
     public static class Program
     {
-        // TODO: background settings + conversion
         // TODO: review each page
         // TODO: baby readme?
-
         // TODO: smoother transition in lib usin JSON instead
+
         // TODO: check intranet usage
-        // TODO:show file path instead without extension in frame?!
-        // TODO:Cache didn't work when first started and created after! => review this code you fucking moron!
+        // TODO: show file path instead without extension in frame?!
 
         public static void Main(string[] args)
         {
@@ -65,34 +60,18 @@ namespace Cast.App
                 .GetRequiredService<WarmupService>()
                 .Warmup();
 
-            // Serve specific local directory
-            var staticFilesDirectory = app
-                .Services
-                .GetRequiredService<UserProfile>()
-                .Application
-                .StaticFilesDirectory;
-            Directory.CreateDirectory(staticFilesDirectory);
-
-            static void staticCaching(StaticFileResponseContext ctx) =>
-                ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
-                {
-                    Public = true,
-                    MaxAge = TimeSpan.FromDays(30),
-                };
-
             // Serve wwwroot
             app.UseStaticFiles(new StaticFileOptions() 
             {
 #if !DEBUG
-                OnPrepareResponse = staticCaching
+                OnPrepareResponse = ctx =>
+                    ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue
+                    {
+                        Public = true,
+                        MaxAge = TimeSpan.FromDays(30),
+                    }
 #endif
             }); 
-            app.UseStaticFiles(new StaticFileOptions()
-            {
-                FileProvider = new PhysicalFileProvider(staticFilesDirectory),
-                RequestPath = new PathString('/' + Helper.STATIC_FILES_DIRECTORY),
-                OnPrepareResponse = staticCaching
-            });
 
             app.MapRazorPages();
 

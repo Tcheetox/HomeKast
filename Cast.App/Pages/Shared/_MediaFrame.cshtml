@@ -2,9 +2,12 @@
 @model IMedia
 @{
     string state = Model.Status.ToString().ToLower();
+    string poster = string.IsNullOrWhiteSpace(Model.Metadata.ImagePath) 
+    ? Model.Metadata.ImageUrl 
+    : $"/library?handler=mediaPoster&guid={Model.Id}";
 }
 
-<div class="media" data-status="@state" data-id="@Model.Id" style="background-image: url('@Model.Metadata.ImageUrl')">
+<div class="media" data-status="@state" data-id="@Model.Id" style="background-image: url('@poster')">
     <div class="overlay">
         <div class="title">@Model.Name</div>
         @if (Model.Status == MediaStatus.Converting || Model.Status == MediaStatus.Unplayable || Model.Status == MediaStatus.MissingSubtitles)

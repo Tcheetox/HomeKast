@@ -9,6 +9,8 @@ namespace Cast.Provider.Meta
         [JsonIgnore]
         public string ImageUrl { get; set; }
         [JsonIgnore]
+        public string ImagePath { get; set; }
+        [JsonIgnore]
         public string? Image => Poster ?? Backdrop;
 
         public bool? Adult { get; set; }
