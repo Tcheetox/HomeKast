@@ -1,0 +1,19 @@
+﻿.settings.modal {
+
+    .text-danger {
+        font-size: .875em
+    }
+
+    .modal-content{
+        background-color: var(--lighter-background-color);
+        color: white;
+
+        .text-muted {
+           // color: lightgray !important;
+        }
+
+        .modal-title{
+            font-weight: 400;
+        }
+    }
+}

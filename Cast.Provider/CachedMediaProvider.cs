@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using Cast.Provider.Conversions;
 using Cast.Provider.Meta;
 using Cast.SharedModels.User;
@@ -50,14 +51,19 @@ namespace Cast.Provider
         public override bool IsCached => !_warmingUp && _lazyCache.TryGetValue(CacheKey, out object _);
 
         private bool _warmingUp;
-        private readonly object _warmupLock = new object();
+        private readonly SemaphoreSlim _warmupSemaphore = new(1, 1);
         public override async Task Warmup() 
         {
-            lock (_warmupLock)
+            await _warmupSemaphore.WaitAsync();
+            try
             {
                 _warmingUp = true;
                 _ = await GetAllMedia();
                 _warmingUp = false;
+            }
+            finally
+            {
+                _warmupSemaphore.Release();
             }
         }
     }

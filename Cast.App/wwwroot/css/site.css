@@ -69,7 +69,6 @@ header .modal-toggler-icon {
 }
 
 .conversion button {
-  display: none;
   border: none;
 }
 .conversion button .toggler-icon {
@@ -241,6 +240,13 @@ header .modal-toggler-icon {
 .settings.modal .text-danger {
   font-size: 0.875em;
 }
+.settings.modal .modal-content {
+  background-color: var(--lighter-background-color);
+  color: white;
+}
+.settings.modal .modal-content .modal-title {
+  font-weight: 400;
+}
 
 html {
   font-size: 24px;
@@ -262,6 +268,7 @@ html {
   --success: #198754;
   --danger: #dc3545;
   --background-color: #141414;
+  --lighter-background-color: #242526;
 }
 
 body {
