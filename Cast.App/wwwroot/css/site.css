@@ -69,6 +69,7 @@ header .modal-toggler-icon {
 }
 
 .conversion button {
+  display: none;
   border: none;
 }
 .conversion button .toggler-icon {

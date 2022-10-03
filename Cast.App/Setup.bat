@@ -8,7 +8,7 @@ ECHO Administrative permissions required
 ECHO:
 
 cd /d %~dp0
-SET binPath=%cd%\bin\Release\net6.0\Cast.App.exe
+SET binPath=%cd%\Cast.App.exe
 
 net session >nul 2>&1
 if %errorLevel% == 0 (
@@ -16,7 +16,7 @@ if %errorLevel% == 0 (
     ECHO Binary path: %binPath% 
     ECHO:
 
-    sc create HomeKast binpath= %binPath% type= own start= delayed-auto displayname= HomeKast
+    sc create HomeKast binpath= "%binPath%" type= own start= delayed-auto displayname= HomeKast
     sc.exe description HomeKast "Locally hosted website to support Chromecast media conversion and streaming"
 
     ECHO Attempting auto-start in 3 seconds...
