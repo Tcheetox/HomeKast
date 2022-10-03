@@ -44,7 +44,7 @@ namespace Cast.Provider
                 return;
 
             foreach (var pref in _userProfile.Preferences.Subtitles)
-                if (_subtitles.FirstOrDefault(s => s.Label.ToLower() == pref.ToLower()) is Subtitles sub)
+                if (_subtitles.FirstOrDefault(s => s.Label?.ToLower() == pref?.ToLower()) is Subtitles sub)
                 {
                     sub.Active = true;
                     break;
