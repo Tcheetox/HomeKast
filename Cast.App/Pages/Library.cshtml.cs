@@ -95,6 +95,7 @@ namespace Cast.App.Pages
             if (media == null || string.IsNullOrWhiteSpace(media.Metadata?.ImagePath) || !System.IO.File.Exists(media.Metadata.ImagePath))
                 return new PhysicalFileResult(Path.Combine(_appEnvironment.WebRootPath, "media", "notfound.png"), "image/png");
 
+            Response.Headers.Add(HeaderNames.AccessControlMaxAge, TimeSpan.FromDays(30).TotalSeconds.ToString());
             return new PhysicalFileResult(media.Metadata.ImagePath, "image/jpeg");
         }
 

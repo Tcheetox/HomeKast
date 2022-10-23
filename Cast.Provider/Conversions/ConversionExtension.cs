@@ -1,39 +1,53 @@
 ﻿using System;
 using Xabe.FFmpeg;
-using static Cast.SharedModels.User.Settings;
 
 namespace Cast.Provider.Conversions
 {
     public static class ConversionExtension
     {
-        public static IConversion AddSubtitles(this IConversion conversion, IEnumerable<ISubtitleStream> subtitleStreams)
+        public static IConversion SetInput(this IConversion conversion, string filePath)
+            => conversion.AddParameter($"-i \"{filePath}\"", ParameterPosition.PreInput);
+
+        public static IConversion SetVideoCodec(this IConversion conversion, VideoCodec codec)
+            => conversion.AddParameter($"-c:v {codec}");
+        public static IConversion SetAudioCodec(this IConversion conversion, AudioCodec codec)
+            => conversion.AddParameter($"-c:a {codec}");
+
+        public static IConversion SetAudioStream(this IConversion conversion, ConversionOptions options)
+            => conversion.AddParameter($"-map 0:a:{options.AudioStreamIndex}");
+
+        public static IConversion SetVideoStream(this IConversion conversion, ConversionOptions options)
         {
-            if (subtitleStreams.Any())
-                conversion.AddStream(subtitleStreams);
-            return conversion;
+            if (options.BurnSubtitles && options.SubtitlesStreamIndex.HasValue)
+                return conversion;
+            return conversion.AddParameter("-map 0:v:0");
         }
 
-        public static IVideoStream SetOptimalSize(this IVideoStream videoStream)
+        public static IConversion SetVideoSize(this IConversion conversion, ConversionOptions options)
         {
+            var videoStream = options.Media.Info.VideoStreams.First();
             var optimalSize = (videoStream.Width >= 1920 || videoStream.Height >= 1080)
-                ? VideoSize.Hd1080
-                : VideoSize.Hd720;
-            return videoStream.SetSize(optimalSize);
+                ? "1920x1080"
+                : "1280x720";
+            return conversion.AddParameter($"-s {optimalSize}");
         }
 
-        public static IAudioStream SetPreferredStream(this IEnumerable<IAudioStream> audioStreams, PreferencesSettings preferences)
+        public static IConversion SetSubtitles(this IConversion conversion, ConversionOptions options)
         {
-            if (preferences?.Language == null)
-                return audioStreams.First();
+            if (!options.Media.Info.SubtitleStreams.Any())
+                return conversion;
 
-            foreach (var language in preferences.Language)
+            if (options.BurnSubtitles)
             {
-                var audioStream = audioStreams.FirstOrDefault(audio => audio.Language.ToLower() == language.ToLower());
-                if (audioStream != null)
-                    return audioStream;
+                if (options.SubtitlesStreamIndex.HasValue)
+                    conversion.AddParameter($"-filter_complex \"[0:v][0:s:{options.SubtitlesStreamIndex}]overlay[v]\" -map \"[v]\"");
+                return conversion;
             }
 
-            return audioStreams.First();
+            for (int i = 0; i < options.Media.Info.SubtitleStreams.Count(); i++)
+                conversion.AddParameter($"-map 0:s:{i}");
+
+            return conversion;
         }
     }
 }

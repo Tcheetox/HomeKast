@@ -7,7 +7,7 @@
     : $"/library?handler=mediaPoster&guid={Model.Id}";
 }
 
-<div class="media" data-status="@state" data-id="@Model.Id" style="background-image: url('@poster')">
+<div class="media" data-status="@state" data-id="@Model.Id" style="background-image: url('@poster')" title="@Model.FileName">
     <div class="overlay">
         <div class="title">@Model.Name</div>
         @if (Model.Status == MediaStatus.Converting || Model.Status == MediaStatus.Unplayable || Model.Status == MediaStatus.MissingSubtitles)

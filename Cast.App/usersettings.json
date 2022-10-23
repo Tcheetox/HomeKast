@@ -2,21 +2,30 @@
   "ConnectionStrings": {
     "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB;Database=_CHANGE_ME;Trusted_Connection=True;MultipleActiveResultSets=true"
   },
-  "Preferences": {
-    "Subtitles": [ "fre", "eng" ],
-    "Language": [ "eng", "fre" ]
-  },
+  "Preferences": [
+    {
+      "Subtitles": "fre",
+      "Language": "eng"
+    },
+    {
+      "Subtitles": null,
+      "Language": "fre"
+    }
+  ],
   "Application": {
     "Port": 8081,
     "ApiToken": "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiMDY1MTAwOTk3MzA1MjhlMDZjNzIwMmViZDA2ZWRkZCIsInN1YiI6IjYyZDVjNDMzODlkOTdmMDA0YzkyNmJkNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.2bqhLtLHyU-Cr-O8A9cKRVcrYNnj-SVcHEkPcETt9-Q",
     "BaseUrl": "https://api.themoviedb.org/3/search/multi",
-    "StaticFilesDirectory": "D:\\TORRENTS\\HomeKast"
+    "StaticFilesDirectory": "D:\\TORRENTS\\HomeKast",
+    "MaxDegreeOfParallelism": 5,
+    "MediaInfoTimeout": 2000,
+    "MetadataTimeout": 2000,
+    "FileAccessTimeout": 2000
   },
   "Library": {
     "Extensions": [ ".mkv", ".mp4", ".webm" ],
-    "Directories": [ "D:\\TORRENTS" ]
-  },
-  "Ngrok": {
-    "Token": "1kPZSjTBOHN3K7xj4VGmU826etK_67DY8ADU1mqHLv9RNPLFb"
+    "Directories": [ "D:\\TORRENTS" ],
+    "SlidingExpirationInMinutes": 60,
+    "AbsoluteExpirationInHours": 24
   }
 }

@@ -1,4 +1,5 @@
 ﻿
+using Cast.SharedModels.User;
 using System.IO;
 
 namespace Cast.Provider.Conversions
@@ -11,32 +12,27 @@ namespace Cast.Provider.Conversions
 
     public class ConversionOptions
     {
+        public bool BurnSubtitles { get; set; }
         public ConversionType ConversionType { get; init; }
         public IMedia Media { get; init; }
 
-        private string? _temporaryPath;
-        public string TemporaryPath
-            => _temporaryPath ??= Path.Combine(Path.GetTempPath(), $"{Media.Id}.mkv");
+        public string Extension => BurnSubtitles ? ".mp4" : ".mkv";
+        public string TemporaryPath => Path.Combine(Path.GetTempPath(), Media.Id + Extension);
 
-        private string? _targetPath;
         public string TargetPath
         {
             get
             {
-                if (string.IsNullOrEmpty(_targetPath))
+                if (ConversionType == ConversionType.SubtitlesOnly)
+                    return Media.LocalPath;
+                else
                 {
-                    if (ConversionType == ConversionType.SubtitlesOnly)
-                        _targetPath = Media.LocalPath;
-                    else
-                    {
-                        string targetDirectory = Path.GetDirectoryName(Media.LocalPath)!;
-                        string fileName = "_"
-                            + Path.GetFileNameWithoutExtension(Media.LocalPath)
-                            + Path.GetExtension(TemporaryPath);
-                        _targetPath = Path.Combine(targetDirectory, fileName);
-                    }
+                    string targetDirectory = Path.GetDirectoryName(Media.LocalPath)!;
+                    string fileName = "_"
+                        + Path.GetFileNameWithoutExtension(Media.LocalPath)
+                        + Extension;
+                    return Path.Combine(targetDirectory, fileName);
                 }
-                return _targetPath;
             }
         }
 
@@ -52,6 +48,25 @@ namespace Cast.Provider.Conversions
             catch (Exception)
             {
                 // No need to add trace
+            }
+        }
+
+        public int AudioStreamIndex { get; private set; }
+        public int? SubtitlesStreamIndex { get; private set; }
+        public void SetPreferences(List<Settings.PreferencesSettings> preferences)
+        {
+            var audioStreams = Media.Info.AudioStreams.ToList();
+            var subtitlesStreams = Media.Info.SubtitleStreams.ToList();
+            foreach (var setting in preferences)
+            {
+                var audioStream = audioStreams.FirstOrDefault(s => s.Language.ToLower() == setting.Language?.ToLower());
+                var subtitlesStream = subtitlesStreams.FirstOrDefault(s => s.Language.ToLower() == setting.Subtitles?.ToLower());
+                if (audioStream != null && (subtitlesStream != null || string.IsNullOrWhiteSpace(setting.Subtitles)))
+                {
+                    AudioStreamIndex = audioStreams.IndexOf(audioStream);
+                    SubtitlesStreamIndex = subtitlesStreams?.IndexOf(subtitlesStream);
+                    return;
+                }
             }
         }
     }

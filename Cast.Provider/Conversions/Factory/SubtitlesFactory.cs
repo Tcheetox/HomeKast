@@ -24,12 +24,12 @@ namespace Cast.Provider.Conversions.Factory
                 var clock = new Stopwatch();
                 clock.Restart();
 
-                StringBuilder command = new($"-i {options.Media.LocalPath}");
+                StringBuilder command = new($"-i \"{options.Media.LocalPath}\"");
                 foreach (var subtitle in options.Media.Subtitles)
                 {
                     if (File.Exists(subtitle.TemporaryPath))
                         File.Delete(subtitle.TemporaryPath);
-                    command.AppendFormat(" -map 0:s:{0} -f webvtt {1}", subtitle.Index, subtitle.TemporaryPath);
+                    command.AppendFormat(" -map 0:s:{0} -f webvtt \"{1}\"", subtitle.Index, subtitle.TemporaryPath);
                 }
 
                 try
@@ -41,14 +41,15 @@ namespace Cast.Provider.Conversions.Factory
                     conversion.OnProgress += (object sender, ConversionProgressEventArgs args)
                         => state.UpdateProgress(args, Target);
 
-                    _logger.LogInformation("Beginning subtitles ({count}) extraction for {media.Name} ({media.Id})",
+                    _logger.LogInformation("Beginning subtitles ({count}) extraction for {Name} ({Id})",
                        options.Media.Subtitles.Count,
                        options.Media.Name,
                        options.Media.Id);
+                    _logger.LogInformation("Arguments: {args}", conversion.Build());
 
                     await conversion.Start(state.Canceller.Token);
 
-                    // Put converted caption files under user preferred folder
+                    // Put converted subtitles files under user preferred folder
                     foreach (var subtitles in from subtitles in options.Media.Subtitles
                                               where File.Exists(subtitles.TemporaryPath)
                                               select subtitles)
@@ -57,7 +58,7 @@ namespace Cast.Provider.Conversions.Factory
                     }
 
                     clock.Stop();
-                    _logger.LogInformation("Extracted {subtitles.count} subtitles stream(s) for {media.Name} ({media.Id}) in {time} ms",
+                    _logger.LogInformation("Extracted {count} subtitles stream(s) for {Name} ({Id}) in {time} ms",
                         options.Media.Subtitles.Count,
                         options.Media.Name,
                         options.Media.Id,
@@ -65,7 +66,8 @@ namespace Cast.Provider.Conversions.Factory
                 }
                 catch (ConversionException ex)
                 {
-                    _logger.LogError(ex, "Subtitles conversion error for {media.Name} ({media.Id})", options.Media.Name, options.Media.Id);
+                    _logger.LogError(ex, "Subtitles conversion error for {Name} ({Id})", options.Media.Name, options.Media.Id);
+                    options.BurnSubtitles = true;
                 }
             }, state.Canceller.Token);
     }

@@ -27,9 +27,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="LazyCache" Version="2.4.0" />
-		<PackageReference Include="LazyCache.AspNetCore" Version="2.4.0" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.1" />
 		<PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
 		<PackageReference Include="SimplifiedSearch" Version="1.1.5" />
 	</ItemGroup>

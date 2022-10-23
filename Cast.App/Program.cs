@@ -9,12 +9,10 @@ namespace Cast.App
 {
     public static class Program
     {
-        // TODO: review each page
+        // TODO: l'empafure de Bulbi veut changer les images.. omagod kek....
         // TODO: baby readme?
-        // TODO: smoother transition in lib usin JSON instead
-
-        // TODO: check intranet usage
-        // TODO: show file path instead without extension in frame?!
+        // TODO: smoother transition in lib using JSON instead
+        // TODO: smaller device CSS
 
         public static void Main(string[] args)
         {
@@ -29,12 +27,12 @@ namespace Cast.App
             {
                 var path = Path.Combine(builder.Environment.ContentRootPath, "logs");
                 var template = "{Timestamp:g} [{Level}]   {Message} {NewLine}{Exception}";
-                logBuilder.AddFile(Path.Combine(path, "Info.log"), LogLevel.Information, outputTemplate: template, retainedFileCountLimit: 10);
-                logBuilder.AddFile(Path.Combine(path, "Warning.log"), LogLevel.Warning, outputTemplate: template);
+                logBuilder.AddFile(Path.Combine(path, "Info.log"), LogLevel.Information, outputTemplate: template, retainedFileCountLimit: 3);
+                logBuilder.AddFile(Path.Combine(path, "Warning.log"), LogLevel.Warning, outputTemplate: template, retainedFileCountLimit: 3);
             });
 
             builder.Services.AddRazorPages();
-            builder.Services.AddLazyCache();
+            builder.Services.AddMemoryCache();
             builder.Services.AddSingleton<UserProfile>();
             builder.WebHost.ConfigureKestrel(options =>
             {
@@ -47,7 +45,6 @@ namespace Cast.App
             builder.Services.AddSingleton<IMetadataProvider, CachedMetadataProvider>();
             builder.Services.AddSingleton<IMediaProvider, CachedMediaProvider>();
             builder.Services.AddSingleton<FileWatcher>();
-            builder.Services.AddSingleton<WarmupService>();
 
             builder.Host.UseWindowsService();
 
@@ -57,11 +54,11 @@ namespace Cast.App
                 app.UseExceptionHandler("/Error");
 
             app.Services
-                .GetRequiredService<WarmupService>()
-                .Warmup();
+                .GetRequiredService<FileWatcher>()
+                .Start();
 
             // Serve wwwroot
-            app.UseStaticFiles(new StaticFileOptions() 
+            app.UseStaticFiles(new StaticFileOptions()
             {
 #if !DEBUG
                 OnPrepareResponse = ctx =>
@@ -71,7 +68,7 @@ namespace Cast.App
                         MaxAge = TimeSpan.FromDays(30),
                     }
 #endif
-            }); 
+            });
 
             app.MapRazorPages();
 

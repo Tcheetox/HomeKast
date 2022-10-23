@@ -29,28 +29,26 @@ namespace Cast.Provider.Conversions.Factory
 
                 var clock = new Stopwatch();
                 clock.Restart();
+
                 // Convert file
-                IVideoStream videoStream = options.Media.Info.VideoStreams
-                    .First()
-                    .SetCodec(VideoCodec.h264)
-                    .SetOptimalSize();
-
-                IStream audioStream = options.Media.Info.AudioStreams
-                    .SetPreferredStream(_userProfile.Preferences)
-                    .SetCodec(AudioCodec.mp3);
-
                 IConversion conversion = FFmpeg.Conversions
                     .New()
-                    .AddStream(audioStream, videoStream)
-                    .AddSubtitles(options.Media.Info.SubtitleStreams)
+                    .SetInput(options.Media.LocalPath)
+                    .SetVideoCodec(VideoCodec.h264)
+                    .SetAudioCodec(AudioCodec.mp3)
+                    .SetAudioStream(options)
+                    .SetVideoStream(options)
+                    .SetVideoSize(options)
+                    .SetSubtitles(options)
                     .SetOutput(options.TemporaryPath);
 
                 conversion.OnProgress += (object sender, ConversionProgressEventArgs args)
                     => state.UpdateProgress(args, Target);
 
-                _logger.LogInformation("Beginning conversion for {media.Name} ({media.Id})",
+                _logger.LogInformation("Beginning conversion for {Name} ({Id})",
                    options.Media.Name,
                    options.Media.Id);
+                _logger.LogInformation("Arguments: {args}", conversion.Build());
 
                 await conversion.Start(state.Canceller.Token);
 
@@ -58,7 +56,7 @@ namespace Cast.Provider.Conversions.Factory
                 ConversionHelper.MoveAndRename(options.TemporaryPath, options.TargetPath);
 
                 clock.Stop();
-                _logger.LogInformation("Conversion successful for {media.Name} ({media.Id}) after {time} minutes",
+                _logger.LogInformation("Conversion successful for {Name} ({Id}) after {time} minutes",
                     options.Media.Name,
                     options.Media.Id,
                     clock.Elapsed.Minutes);

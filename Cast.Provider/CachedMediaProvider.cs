@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Threading;
 using Cast.Provider.Conversions;
 using Cast.Provider.Meta;
 using Cast.SharedModels.User;
@@ -13,17 +12,17 @@ namespace Cast.Provider
     public class CachedMediaProvider : MediaProviderBase
     {
         private readonly ILogger<CachedMediaProvider> _logger;
-        private readonly IAppCache _lazyCache;
+        private readonly IMemoryCache _cache;
 
         public CachedMediaProvider(ILogger<CachedMediaProvider> logger,
             IMetadataProvider metadataProvider,
             IMediaConverter mediaConverter,
-            IAppCache lazyCache,
+            IMemoryCache cache,
             UserProfile userProfile)
             : base(logger, metadataProvider, mediaConverter, userProfile)
         {
             _logger = logger;
-            _lazyCache = lazyCache;
+            _cache = cache;
             _userProfile.ProfileChanged += UserProfileChanged;
         }
 
@@ -31,40 +30,22 @@ namespace Cast.Provider
 
         private void UserProfileChanged(object? sender, EventArgs e)
         {
-            _lazyCache.Remove(CacheKey);
-            _ = Warmup();
+            _cache.Remove(CacheKey);
+            _ = GetAllMedia();
             _logger.LogInformation("The cached media library has been refreshed following change in {settings}", nameof(UserProfile));
         }
 
         public override async Task<ConcurrentDictionary<Guid, IMedia>> GetAllMedia()
-            => await _lazyCache.GetOrAddAsync(CacheKey,
+            => await _cache.GetOrCreateAsync(CacheKey,
                 async (cacheEntry) =>
                 {
-                    cacheEntry.SetSlidingExpiration(TimeSpan.FromMinutes(30));
+                    cacheEntry.SetSlidingExpiration(TimeSpan.FromMinutes(_userProfile.Library.SlidingExpirationInMinutes));
+                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromHours(_userProfile.Library.AbsoluteExpirationInHours));
                     return await base.GetAllMedia();
                 });
 
         public override async Task<IMedia> GetMedia(Guid guid) => (await GetAllMedia())[guid];
 
-        // Note: it's a little ugly but the below combination allows to achieve the display of spinning logo while the library is getting loaded in cache
-        // It prevents the side effect of LazyCache lock when querying for cache entry while maintaing the advantage of not computing values twice
-        public override bool IsCached => !_warmingUp && _lazyCache.TryGetValue(CacheKey, out object _);
-
-        private bool _warmingUp;
-        private readonly SemaphoreSlim _warmupSemaphore = new(1, 1);
-        public override async Task Warmup() 
-        {
-            await _warmupSemaphore.WaitAsync();
-            try
-            {
-                _warmingUp = true;
-                _ = await GetAllMedia();
-                _warmingUp = false;
-            }
-            finally
-            {
-                _warmupSemaphore.Release();
-            }
-        }
+        public override bool IsCached => _cache.TryGetValue(CacheKey, out object _);
     }
 }

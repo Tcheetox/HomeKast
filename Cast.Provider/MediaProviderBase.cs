@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Cast.Provider.Conversions;
 using Cast.Provider.Meta;
 using Cast.SharedModels.User;
+using Cast.SharedModels;
 
 namespace Cast.Provider
 {
@@ -18,9 +19,10 @@ namespace Cast.Provider
 
         static MediaProviderBase()
         {
-            _specific.AddRange(Enum.GetNames(typeof(VideoSize)));
-            _specific.AddRange(Enum.GetNames(typeof(VideoCodec)));
-            _specific.AddRange(Enum.GetNames(typeof(AudioCodec)));
+            _specificExclusions.AddRange(Enum.GetNames(typeof(VideoSize)));
+            _specificExclusions.AddRange(Enum.GetNames(typeof(VideoCodec)));
+            _specificExclusions.AddRange(Enum.GetNames(typeof(AudioCodec)));
+            _specificExclusions.RemoveAll(e => _specificInclusions.Contains(e));
         }
 
         protected MediaProviderBase(
@@ -37,8 +39,6 @@ namespace Cast.Provider
         }
 
         #region Public Members
-        public abstract Task Warmup();
-
         public abstract bool IsCached { get; }
 
         public virtual async Task<IMedia> GetMedia(Guid guid) => (await GetAllMedia())[guid];
@@ -47,16 +47,21 @@ namespace Cast.Provider
         {
             ConcurrentDictionary<Guid, IMedia> library = new();
 
-            foreach (var file in _userProfile
+            await Parallel.ForEachAsync(_userProfile
                 .Library
                 .Directories
                 .SelectMany(directory => Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories))
-                .Where(f => _userProfile.Library.IsMonitoredExtensions(Path.GetExtension(f))))
-            {
-                var media = await CreateMedia(file);
-                if (media != null)
-                    AddMediaAndUpdateCompanions(library, media);
-            }
+                .Where(f => _userProfile.Library.IsMonitoredExtensions(Path.GetExtension(f))), 
+                new ParallelOptions() { MaxDegreeOfParallelism = _userProfile.Application.MaxDegreeOfParallelism },
+                async (file, _) => 
+                {
+                    var media = await CreateMedia(file);
+                    if (media != null)
+                        library.TryAdd(media.Id, media);
+                });
+
+            foreach (var media in library.Values)
+                AddMediaAndUpdateCompanions(library, media);
 
             _logger.LogInformation("MediaProvider retrieved {media} media from {directories} directories", library.Count, _userProfile.Library.Directories.Count);
 
@@ -121,7 +126,7 @@ namespace Cast.Provider
                                       let companion = companionEntry.Value
                                       select companion)
             {
-                if (companion.Status != MediaStatus.Playable 
+                if (companion.Status != MediaStatus.Playable
                     && (media.Status == MediaStatus.Playable || media.Status == MediaStatus.MissingSubtitles))
                     companion.UpdateStatus(MediaStatus.Hidden);
                 else if (companion.Status == MediaStatus.Playable && media.Status != MediaStatus.Playable)
@@ -146,7 +151,7 @@ namespace Cast.Provider
 
         private async Task<IMedia?> CreateMedia(string file)
         {
-            var info = await _mediaConverter.GetMediaInfo(file);
+            var info = await _mediaConverter.GetMediaInfo(file, _userProfile.Application.MediaInfoTimeout);
             if (info == null) return null;
 
             var (normalized, displayed) = CreateNames(file);
@@ -163,9 +168,34 @@ namespace Cast.Provider
         #endregion
 
         #region Private Normalization
-        private static readonly List<string> _specific = new()
+        private static readonly List<string> _specificExclusions = new()
         {
             "webrip",
+            "jiheff",
+            "x264-pophd",
+            "4KLight",
+            "hdlight",
+            "2160p",
+            "webdl",
+            "web_dl",
+            "web-dl",
+            "FR EN",
+            "en fr",
+            "ac3",
+            "mhdgz",
+            "subfrench",
+            "10bit",
+            "hdr",
+            "amzn",
+            "ddp5",
+            "dvdrip",
+            "HDLight",
+            "k-lity",
+            "vf2",
+            "dsnp",
+            "HDR10",
+            "dolby vision",
+            "dolby",
             "uncut",
             "1080p",
             "1080 p",
@@ -205,30 +235,40 @@ namespace Cast.Provider
             "partie",
             "true",
             "_",
-            "final"
+            "final",
+            "7.1",
+            "7 1",
+            "5.1",
+            "5 1",
+            " NF ",
+            "fansub",
+            "264-fraternity"
         };
-        private static (string Normalized, string Displayed) CreateNames(string path)
+
+        private static readonly List<string> _specificInclusions = new()
+        {
+            "anm"
+        };
+
+        public static (string Normalized, string Displayed) CreateNames(string path)
         {
             var original = Path.GetFileNameWithoutExtension(path);
             var cleaned = Regex.Replace(original, @"[\.]", " ");
             cleaned = Regex.Replace(cleaned, @"\[.*?\]", " ");
             cleaned = Regex.Replace(cleaned, @"\(.*?\)", " ");
+            cleaned = cleaned.Replace('_', ' ');
 
             for (int i = 0; i < 2; i++)
             {
                 var cleanedArray = cleaned
                     .Split(" ", StringSplitOptions.RemoveEmptyEntries)
-                    .Where(e => e.Length > 2);
+                    .Where(e => e.Length > 1 || e.ToLower() == "i".ToLower());
                 cleaned = string.Join(' ', cleanedArray);
-
-                foreach (var word in _specific)
-                    cleaned = cleaned.Replace(word, "", StringComparison.InvariantCultureIgnoreCase);
+                foreach (var word in _specificExclusions)
+                    cleaned = cleaned.Replace(word, string.Empty, StringComparison.InvariantCultureIgnoreCase);
             }
 
-            cleaned = cleaned.Trim();
-            if (cleaned.Length > 0)
-                cleaned = cleaned[0].ToString().ToUpper() + cleaned[1..];
-
+            cleaned = cleaned.Trim().Capitalize();
             var splittedName = cleaned.Split(' ');
             int idx = -1;
             for (int i = 0; i < splittedName.Length; i++)

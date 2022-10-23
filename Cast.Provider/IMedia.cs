@@ -14,6 +14,7 @@ namespace Cast.Provider
 
         MediaStatus Status { get; }
         Guid Id { get; }
+        string FileName { get; }
         string LocalPath { get; }
         long Size { get; }
         TimeSpan Length { get; }

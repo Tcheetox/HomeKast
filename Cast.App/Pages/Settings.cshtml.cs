@@ -2,30 +2,20 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Cast.SharedModels.User;
-using System.Net;
+using static Cast.SharedModels.User.Settings;
 
 namespace Cast.App.Pages
 {
     public class Settings : IValidatableObject
     {
         public string? StaticFilesDirectory { get; set; }
-
         public string? LibraryDirectories { get; set; }
-        public IEnumerable<string> Directories
+        public string? SubtitlesPreferences { get; set; }
+        public string? LanguagePreferences { get; set; }
+
+        public IEnumerable<string> Directories 
             => !string.IsNullOrWhiteSpace(LibraryDirectories)
             ? LibraryDirectories.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
-            : Enumerable.Empty<string>();
-
-        public string? SubtitlesPreferences { get; set; }
-        public IEnumerable<string> Subtitles
-            => !string.IsNullOrWhiteSpace(SubtitlesPreferences)
-            ? SubtitlesPreferences.Split(';', StringSplitOptions.RemoveEmptyEntries)
-            : Enumerable.Empty<string>();
-
-        public string? LanguagePreferences { get; set; }
-        public IEnumerable<string> Languages
-            => !string.IsNullOrWhiteSpace(LanguagePreferences)
-            ? LanguagePreferences.Split(';', StringSplitOptions.RemoveEmptyEntries)
             : Enumerable.Empty<string>();
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -57,8 +47,8 @@ namespace Cast.App.Pages
             Settings = new Settings()
             {
                 StaticFilesDirectory = _userProfile.Application.StaticFilesDirectory,
-                LanguagePreferences = string.Join(';', _userProfile.Preferences?.Language ?? Enumerable.Empty<string>()),
-                SubtitlesPreferences = string.Join(';', _userProfile.Preferences?.Subtitles ?? Enumerable.Empty<string>()),
+                LanguagePreferences = string.Join(';', _userProfile.Preferences.Select(p => p.Language) ?? Enumerable.Empty<string>()),
+                SubtitlesPreferences = string.Join(';', _userProfile.Preferences.Select(p => p.Subtitles) ?? Enumerable.Empty<string>()),
                 LibraryDirectories = string.Join(Environment.NewLine, _userProfile.Library?.Directories ?? Enumerable.Empty<string>()),
             };
         }
@@ -69,11 +59,11 @@ namespace Cast.App.Pages
                 return Page();
 
             if (_userProfile.TryUpdate(
-                Settings!.StaticFilesDirectory!,
-                Settings!.Subtitles.ToList(),
-                Settings!.Languages.ToList(),
+                Settings!.StaticFilesDirectory,
+                Settings!.SubtitlesPreferences,
+                Settings!.LanguagePreferences,
                 Settings!.Directories.ToList()))
-                    return new CreatedResult(nameof(Settings), null);
+                return new CreatedResult(nameof(Settings), null);
 
             return new OkResult();
         }

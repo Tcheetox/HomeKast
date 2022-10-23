@@ -15,9 +15,11 @@ namespace Cast.Provider.Conversions
         private readonly ILogger<ConversionQueue> _logger;
         private readonly SubtitlesFactory _subtitlesFactory;
         private readonly StreamFactory _streamFactory;
+        private readonly UserProfile _profile;
 
         public ConversionQueue(UserProfile userProfile, ILoggerFactory loggerFactory)
         {
+            _profile = userProfile;
             _logger = loggerFactory.CreateLogger<ConversionQueue>();
             _streamFactory = new StreamFactory(loggerFactory.CreateLogger<StreamFactory>(), userProfile);
             _subtitlesFactory = new SubtitlesFactory(loggerFactory.CreateLogger<SubtitlesFactory>());
@@ -35,7 +37,9 @@ namespace Cast.Provider.Conversions
                     {
                         try
                         {
+                            _logger.LogWarning("Conversion starting for media: {line} {json}", Environment.NewLine, options.Media);
                             Current = options.Media;
+                            options.SetPreferences(userProfile.Preferences);
 
                             // Extract and assign subtitles
                             await _subtitlesFactory.CreateTask(options, state);
@@ -50,12 +54,12 @@ namespace Cast.Provider.Conversions
                         catch (OperationCanceledException ex)
                         {
                             options.DeleteTemporaryFiles();
-                            _logger.LogError(ex, "Conversion cancelled by user for {media.Name} ({media.Id})", options.Media.Name, options.Media.Id);
+                            _logger.LogError(ex, "Conversion cancelled by user for {Name} ({Id})", options.Media.Name, options.Media.Id);
                         }
                         catch (ConversionException ex)
                         {
                             options.DeleteTemporaryFiles();
-                            _logger.LogError(ex, "Conversion error for {media.Name} ({media.Id})", options.Media.Name, options.Media.Id);
+                            _logger.LogError(ex, "Conversion error for {Name} ({Id})", options.Media.Name, options.Media.Id);
                         }
                         finally
                         {

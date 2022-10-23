@@ -9,7 +9,6 @@ namespace Cast.Provider
         Task<bool> TryAddOrUpdateMedia(string path);
         Task<bool> TryAddMedia(string path);
         Task<bool> TryRemoveMedia(string path);
-        Task Warmup();
         void UpdateMediaSubtitles(string path);
 
         bool IsCached { get; }

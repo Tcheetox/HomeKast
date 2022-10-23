@@ -1,5 +1,4 @@
 ﻿using System;
-using Cast.SharedModels;
 using Cast.SharedModels.User;
 using Microsoft.Extensions.Logging;
 

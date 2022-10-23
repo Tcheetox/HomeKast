@@ -9,7 +9,7 @@ namespace Cast.SharedModels.User
         public ConnectionSettings ConnectionStrings => _settings.ConnectionStrings;
         public LibrarySettings Library => _settings.Library;
         public ApplicationSettings Application => _settings.Application;
-        public PreferencesSettings Preferences => _settings.Preferences;
+        public List<PreferencesSettings> Preferences => _settings.Preferences;
 
         private readonly Settings _settings;
         private readonly ILogger<UserProfile> _logger;
@@ -30,21 +30,30 @@ namespace Cast.SharedModels.User
 
         public event EventHandler ProfileChanged;
 
-        public bool TryUpdate(string staticFileDirectory,
-            List<string> subtitles, 
-            List<string> languages, 
+        public bool TryUpdate(string? staticFileDirectory,
+            string? subtitles,
+            string? languages,
             List<string> directories)
         {
-            if (staticFileDirectory == Application.StaticFilesDirectory
+            if (staticFileDirectory?.ToLower() == Application.StaticFilesDirectory.ToLower()
                 && Library.Directories.SequenceEqual(directories)
-                && Preferences.Subtitles.SequenceEqual(subtitles)
-                && Preferences.Language.SequenceEqual(languages))
+                && string.Join(';', Preferences.Select(p => p.Language)).ToLower() == languages?.ToLower()
+                && string.Join(';', Preferences.Select(p => p.Subtitles)).ToLower() == subtitles?.ToLower())
                 return false;
 
-            Application.StaticFilesDirectory = staticFileDirectory;
+            var preferences = new List<PreferencesSettings>();
+            var splittedLanguages = languages?.Split(';') ?? Array.Empty<string>();
+            var splittedSubtitles = subtitles?.Split(';') ?? Array.Empty<string>();
+            for (int i = 0; i < Math.Max(splittedLanguages.Length, splittedSubtitles.Length); i++)
+                preferences.Add(new PreferencesSettings()
+                {
+                    Language = splittedLanguages.Length > i ? splittedLanguages[i] : string.Empty,
+                    Subtitles = splittedSubtitles.Length > i ? splittedSubtitles[i] : string.Empty
+                });
+
+            Application.StaticFilesDirectory = staticFileDirectory!;
             Library.Directories = directories;
-            Preferences.Subtitles = subtitles;
-            Preferences.Language = languages;
+            _settings.Preferences = preferences;
 
             try
             {

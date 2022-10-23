@@ -29,17 +29,16 @@ namespace Cast.Provider.Meta
         {
             Metadata metadata = null!;
             var cancellation = new CancellationTokenSource();
-            var timeout = 1000;
             try
             {
-                cancellation.CancelAfter(timeout);
+                cancellation.CancelAfter(UserProfile.Application.MetadataTimeout);
                 var content = await _client.GetStringAsync($"{_baseUrl}?query={HttpUtility.UrlEncode(lookup)}", cancellation.Token);
                 var requests = JsonConvert.DeserializeObject<MediaMetadataResults>(content);
                 metadata = requests?.Results.FirstOrDefault()!;
             }
             catch (OperationCanceledException ex)
             {
-                Logger.LogError(ex, "Failed to retrieve metadata for {lookup} within {timeout} ms", lookup, timeout);
+                Logger.LogError(ex, "Failed to retrieve metadata for {lookup} within {timeout} ms", lookup, UserProfile.Application.MetadataTimeout);
             }
             catch (JsonSerializationException ex)
             {

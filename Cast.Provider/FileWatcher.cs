@@ -35,7 +35,7 @@ namespace Cast.Provider
             _watchers.Clear();
         }
 
-        public void Warmup()
+        public void Start()
         {
             // Dispose and clear existing
             SupressWatchers();
@@ -59,7 +59,7 @@ namespace Cast.Provider
             }
         }
 
-        private void OnProfileChanged(object? sender, EventArgs e) => Warmup();
+        private void OnProfileChanged(object? sender, EventArgs e) => Start();
 
         private void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
@@ -96,9 +96,9 @@ namespace Cast.Provider
 
         private bool IsFileAvailable(string path, FileSystemEventArgs e)
         {
-            if (!ConversionHelper.IsFileAvailableWithRetry(path, 1000))
+            if (!ConversionHelper.IsFileAvailableWithRetry(path, _userProfile.Application.FileAccessTimeout))
             {
-                _logger.LogWarning("File watcher triggered by a '{event}' event did not get access to {file}",
+                _logger.LogWarning("File watcher triggered by a {event} event did not get access to {file}",
                     e.ChangeType.ToString().ToLower(),
                     e.FullPath);
                 return false;

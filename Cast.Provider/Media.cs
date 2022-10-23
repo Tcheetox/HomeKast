@@ -3,6 +3,9 @@ using System.Diagnostics;
 using Xabe.FFmpeg;
 using Cast.Provider.Conversions;
 using Cast.Provider.Meta;
+using Cast.SharedModels;
+using System.Text.Json.Nodes;
+using System.Text.Json;
 
 namespace Cast.Provider
 {
@@ -19,10 +22,12 @@ namespace Cast.Provider
     [DebuggerDisplay("{Name} - {LocalPath}")]
     internal class Media : IMedia
     {
-        private FileInfo? m_FileInfo;
-        private FileInfo FileInfo => m_FileInfo ??= new(Info.Path);
-        
+        private FileInfo? _fileInfo;
+        private FileInfo FileInfo => _fileInfo ??= new(Info.Path);
+
         public string LocalPath => Info.Path;
+        public string FileName => _fileInfo!.Name.Capitalize();
+
         public long Size => FileInfo.Length;
         public TimeSpan Length => Info.Duration;
         public DateTime Creation => FileInfo.CreationTime;
@@ -90,5 +95,8 @@ namespace Cast.Provider
             Subtitles.Refresh();
             UpdateStatus(state);
         }
+
+        public override string ToString()
+            => JsonSerializer.Serialize(this, new JsonSerializerOptions() { WriteIndented = true, });
     }
 }
