@@ -48,7 +48,7 @@ namespace Cast.Provider.Conversions
                             if (options.ConversionType != ConversionType.SubtitlesOnly)
                                 await _streamFactory.CreateTask(options, state);
 
-                            // Raise event
+                            // Raise event if any
                             OnMediaConverted?.Invoke(this, new ConversionEventArgs(options));
                         }
                         catch (OperationCanceledException ex)

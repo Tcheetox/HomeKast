@@ -33,7 +33,7 @@ namespace Cast.Provider
         {
             _logger = logger;
             _mediaConverter = mediaConverter;
-            _mediaConverter.OnMediaConverted += async (sender, e) => await TryAddOrUpdateMedia(e.Options.TargetPath);
+            //_mediaConverter.OnMediaConverted += async (sender, e) => await TryAddOrUpdateMedia(e.Options.TargetPath);
             _metadataProvider = metadataProvider;
             _userProfile = profile;
         }
