@@ -73,7 +73,7 @@ namespace Cast.Provider
             {
                 case WatcherChangeTypes.Created:
                     if (IsFileAvailable(e.FullPath, e))
-                        _mediaProvider.TryAddMedia(e.FullPath);
+                        _mediaProvider.TryAddOrUpdateMedia(e.FullPath);
                     break;
 
                 case WatcherChangeTypes.Deleted:
