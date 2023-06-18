@@ -14,5 +14,6 @@ namespace Kast.Provider.Media
     public interface IMediaProvider : IProvider<IMedia>, IRefreshable
     {
         Task<IMediaInfo?> GetInfoAsync(IMedia media);
+        Task<IEnumerable<IGrouping<string, T>>> GetGroupAsync<T>(Func<IMedia, T> creator);
     }
 }

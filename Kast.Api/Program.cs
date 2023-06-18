@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Serilog.Events;
 using Serilog;
 using Kast.Provider.Conversions;
@@ -7,8 +8,6 @@ using Kast.Provider;
 using Kast.Provider.Media;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
 
 // TODO: use application port from settings
 

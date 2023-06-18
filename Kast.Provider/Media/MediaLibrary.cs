@@ -6,11 +6,12 @@ using Kast.Provider.Supports;
 
 namespace Kast.Provider.Media
 {
-    public class MediaLibrary : IEnumerable<IMedia>
+    public class MediaLibrary : IEnumerable<IMedia>, IDisposable
     {
         private readonly MultiConcurrentDictionary<Guid, string, IMedia> _store;
         private readonly CompanionComparer _companionComparer = new();
-        private readonly EventHandler? _onChangeEventHandler;
+
+        private EventHandler? _onChangeEventHandler;
 
         public MediaLibrary(EventHandler? onChangeEventHandler = null) 
         {
@@ -171,6 +172,26 @@ namespace Kast.Provider.Media
 
             public override void Write(Utf8JsonWriter writer, MediaLibrary value, JsonSerializerOptions options)
                 => _multiDictionaryConverter.Write(writer, value._store, Extra(options));
+        }
+        #endregion
+
+        #region IDisposable
+        private bool _disposedValue;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                    _onChangeEventHandler = null;
+
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
         #endregion
     }

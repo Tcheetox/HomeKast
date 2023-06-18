@@ -20,12 +20,7 @@ namespace Kast.Api.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<IGrouping<string, IMedia>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllAsync()
-            => Ok((await _mediaProvider.GetAllAsync())
-                .Where(m => m.Status != MediaStatus.Hidden)
-                .Select(Media.From)
-                .OrderByDescending(m => m.Creation)
-                .ThenByDescending(m => m.Status == MediaStatus.Playable)
-                .GroupBy(m => m.Name));
+            => Ok(await _mediaProvider.GetGroupAsync(Media.From));
 
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(IMedia), StatusCodes.Status200OK)]

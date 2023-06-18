@@ -5,9 +5,9 @@ using Kast.Provider.Supports;
 
 namespace Kast.Provider.Media
 {
-    public class MediaProvider : IMediaProvider
+    public class MediaProvider : IMediaProvider, IDisposable
     {
-        protected EventHandler? OnLibraryChangeEventHandler;
+        protected EventHandler OnLibraryChangeEventHandler;
         protected readonly ILogger<MediaProvider> Logger;
         protected readonly IMetadataProvider MetadataProvider;
         protected readonly SettingsProvider SettingsProvider;
@@ -19,13 +19,17 @@ namespace Kast.Provider.Media
             Logger = logger;
             SettingsProvider = settingsProvider;
             MetadataProvider = metadataProvider;
+            OnLibraryChangeEventHandler += (_, __) => _groupedLibrary = null;
         }
 
-        #region IMediaProvider
         private MediaLibrary? _library;
         public virtual async Task RefreshAsync()
         {
-            _library = null;
+            if (_library != null)
+            {
+                _library.Dispose();
+                _library = null;
+            }
             _ = await GetLibraryAsync();
         }
 
@@ -71,7 +75,22 @@ namespace Kast.Provider.Media
 
             return state;
         }
-        #endregion
+
+        private object? _groupedLibrary;
+        public async Task<IEnumerable<IGrouping<string, T>>> GetGroupAsync<T>(Func<IMedia, T> creator)
+        {
+            if (_groupedLibrary is IEnumerable<IGrouping<string, T>> group)
+                return group;
+            
+            _groupedLibrary = (await GetAllAsync())
+                .Where(m => m.Status != MediaStatus.Hidden)
+                .OrderByDescending(m => m.Creation)
+                .ThenByDescending(m => m.Status == MediaStatus.Playable)
+                .GroupBy(m => m.Name, m => creator(m))
+                .ToList();
+            
+            return (IEnumerable<IGrouping<string, T>>)_groupedLibrary;
+        }
 
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         private async Task<MediaLibrary> GetLibraryAsync()
@@ -160,5 +179,24 @@ namespace Kast.Provider.Media
                 return null;
             }
         }
+
+        #region IDisposable
+        private bool _disposedValue;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing && _library != null)
+                    _library.Dispose();
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }
