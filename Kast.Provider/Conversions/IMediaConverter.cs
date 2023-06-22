@@ -6,8 +6,8 @@ namespace Kast.Provider.Conversions
     {
         Task<bool> StartAsync(T media);
         bool Stop(T media);
-        bool TryGetValue(T media, out ConversionState? state);
-        IEnumerable<ConversionState> GetAll();
+        bool TryGetValue(T media, out ConversionContext? state);
+        IEnumerable<ConversionContext> GetAll();
     }
 
     public interface IMediaConverter : IConverter<IMedia>

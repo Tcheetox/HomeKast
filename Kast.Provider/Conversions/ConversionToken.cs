@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Threading;
 
 namespace Kast.Provider.Conversions
 {
@@ -6,6 +7,7 @@ namespace Kast.Provider.Conversions
     internal readonly struct ConversionToken : IDisposable
     {
         public readonly IReadOnlyCollection<Func<CancellationToken, Task>> Conversions;
+        public readonly EventHandler? OnStart;
         public readonly EventHandler? OnError;
         public readonly EventHandler? OnSuccess;
         public readonly EventHandler? OnFinally;
@@ -13,12 +15,14 @@ namespace Kast.Provider.Conversions
         public ConversionToken(
             string description,
             IReadOnlyCollection<Func<CancellationToken, Task>> conversions,
+            EventHandler? onStart = null,
             EventHandler? onError = null, 
             EventHandler? onSuccess = null, 
             EventHandler? onFinally = null)
         {
             Description = description;
             Conversions = conversions;
+            OnStart = onStart;
             OnError = onError;
             OnSuccess = onSuccess;
             OnFinally = onFinally;

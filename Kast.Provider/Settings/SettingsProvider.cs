@@ -5,6 +5,7 @@ namespace Kast.Provider
 {
     public class SettingsProvider
     {
+        // TODO: port for both HTTP and HTTPS please...
         public Library Library => Settings.Library;
         public Application Application => Settings.Application;
         public List<Preferences> Preferences => Settings.Preferences;

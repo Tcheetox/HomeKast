@@ -18,16 +18,16 @@ namespace Kast.Provider.Conversions.Factories
             _logger = logger;
         }
 
-        public override Func<CancellationToken, Task> ConvertAsync(ConversionState state)
+        public override Func<CancellationToken, Task> ConvertAsync(ConversionContext context)
             => async _token =>
             {
-                if (_token.IsCancellationRequested || !state.Media.Subtitles.Any())
+                if (_token.IsCancellationRequested || !context.Media.Subtitles.Any())
                     return;
 
                 var clock = Stopwatch.StartNew();
-                StringBuilder command = new($"-i \"{state.Media.FilePath}\"");
+                StringBuilder command = new($"-i \"{context.Media.FilePath}\"");
                 List<KeyValuePair<string, Subtitles>> store = new();
-                foreach (var subtitle in state.Media.Subtitles)
+                foreach (var subtitle in context.Media.Subtitles)
                 {
                     var temp = IOSupport.GetTempPath(".vtt");
                     command.AppendFormat(" -map 0:s:{0} -f webvtt \"{1}\"", subtitle.Index, temp);
@@ -40,9 +40,9 @@ namespace Kast.Provider.Conversions.Factories
                         .New()
                         .AddParameter(command.ToString());
 
-                    conversion.OnProgress += (object sender, ConversionProgressEventArgs args) => state.Update(args, Target);
+                    conversion.OnProgress += (object sender, ConversionProgressEventArgs args) => context.Update(args, Target);
                    
-                    _logger.LogInformation("Beginning subtitles ({count}) extraction for {media}", state.Media.Subtitles.Count, state.Media);
+                    _logger.LogInformation("Beginning subtitles ({count}) extraction for {media}", context.Media.Subtitles.Count, context.Media);
                     _logger.LogInformation("Arguments: {args}", conversion.Build());
 
                     await conversion.Start(_token);
@@ -53,18 +53,18 @@ namespace Kast.Provider.Conversions.Factories
 
                     clock.Stop();
                     _logger.LogInformation("Extracted {count} subtitles stream(s) for {media} in {time} seconds",
-                        state.Media.Subtitles.Count,
-                        state.Media, 
+                        context.Media.Subtitles.Count,
+                        context.Media, 
                         clock.Elapsed.TotalSeconds);
                 }
                 catch (ConversionException ex)
                 {
-                    _logger.LogError(ex, "Subtitles conversion error for {media}", state.Media);
-                    state.BurnSubtitles = true;
+                    _logger.LogError(ex, "Subtitles conversion error for {media}", context.Media);
+                    context.BurnSubtitles = true;
                 }
                 finally
                 {
-                    state.Media.UpdateStatus();
+                    context.Media.UpdateStatus();
                 }
             };
     }

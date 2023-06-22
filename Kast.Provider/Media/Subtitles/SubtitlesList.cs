@@ -24,23 +24,16 @@ namespace Kast.Provider.Media
             for (int i = 0; i < info.SubtitleStreams.Count(); i++)
             {
                 var stream = info.SubtitleStreams.ElementAt(i);
-                var displayLabel = CreateDisplayLabel(stream);
-                string filePath = Path.Combine(targetDirectory, $"{mediaName.TrimStart('_')}_{stream.Language}_{i}_{displayLabel}.vtt");
-                var subtitle = new Subtitles(
-                    i,
-                    stream.Language,
-                    displayLabel,
-                    filePath,
-                    settingsProvider.Preferences.Any(e => stream.Language?.Equals(e.Subtitles, StringComparison.OrdinalIgnoreCase) ?? false)
-                    );
-                _subtitles.Add(subtitle);
+                var language = GetLanguage(stream);
+                var name = stream.Forced == 1 ? $"{language} (forced)" : language;
+                var filePath = Path.Combine(targetDirectory, $"{mediaName.TrimStart('_')}_{name.Replace(string.Empty, "_")}_{i}.vtt");
+                var preferred = settingsProvider.Preferences.Any(e => stream.Language?.Equals(e.Subtitles, StringComparison.OrdinalIgnoreCase) ?? false);
+                _subtitles.Add(new Subtitles(i, name, language, filePath, preferred));
             }
         }
 
-        private static string CreateDisplayLabel(ISubtitleStream subtitle)
-        {
-            string suffix = subtitle.Forced.HasValue && subtitle.Forced == 1 ? " (forced)" : string.Empty;
-            string label = subtitle.Language?.ToLower() switch
+        private static string GetLanguage(ISubtitleStream subtitle)
+            => subtitle.Language?.ToLower() switch
             {
                 "fre" => "French",
                 "eng" => "English",
@@ -53,8 +46,6 @@ namespace Kast.Provider.Media
                 "por" => "Portuguese",
                 _ => subtitle.Language?.ToLower() ?? "Unknown",
             };
-            return label + suffix;
-        }
 
         #region OnChange
         public delegate void SubtitlesChangeEventHandler(object sender, Subtitles? e);

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Net.Sockets;
 
 namespace Kast.Provider.Supports
@@ -18,5 +19,8 @@ namespace Kast.Provider.Supports
                 "" => throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input)),
                 _ => string.Concat(input[0].ToString().ToUpper(), input.AsSpan(1))
             };
+
+        public static string StackMethodName(int previous = 1)
+             => new StackTrace().GetFrame(previous)?.GetMethod()?.Name ?? "unknown";
     }
 }

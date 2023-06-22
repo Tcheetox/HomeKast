@@ -145,7 +145,28 @@ namespace Kast.Provider
     public sealed class Application : IEquatable<Application>
     {
         public string? ApiToken { get; set; }
-        public int? Port { get; set; }
+
+        private int _port = 7279;
+        public int Port 
+        { 
+            get => _port;
+            set
+            {
+                if (value > 0)
+                    _port = value;
+            }
+        }
+
+        private int _receiverRefreshInterval = 20000;
+        public int ReceiverRefreshInterval
+        {
+            get => _receiverRefreshInterval;
+            set
+            {
+                if (value > 0)
+                    _receiverRefreshInterval = value;
+            }
+        }
 
         private string _cacheDirectory = Path.Combine(Path.GetTempPath(), "HomeKast");
         public string CacheDirectory 
@@ -224,7 +245,7 @@ namespace Kast.Provider
                 hash *= 13 + BaseUrl?.GetHashCode() ?? 0;
                 hash *= 13 + Ip?.ToString()?.GetHashCode() ?? 0;
                 hash *= 13 + Uri?.ToString()?.GetHashCode() ?? 0;
-                hash *= 13 + Port ?? 0;
+                hash *= 13 + Port;
                 hash *= 13 + MaxDegreeOfParallelism.GetHashCode();
                 hash *= 13 + MediaInfoTimeout?.GetHashCode() ?? 0;
                 hash *= 13 + MetadataTimeout?.GetHashCode() ?? 0;

@@ -1,11 +1,12 @@
 ﻿using Kast.Api.Models;
+using Kast.Api.Problems;
 using Kast.Provider;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kast.Api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("settings")]
     public class SettingsController : Controller
     {
         private readonly ILogger<SettingsController> _logger;
@@ -22,7 +23,7 @@ namespace Kast.Api.Controllers
    
         [HttpPut]
         [ProducesResponseType(typeof(Settings), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Error), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(IProblemDetails), StatusCodes.Status400BadRequest)]
         public IActionResult Edit(Settings settings)
         {
             if (_settingsProvider.TryUpdate(settings))
@@ -31,7 +32,7 @@ namespace Kast.Api.Controllers
                 return Ok(_settingsProvider.Settings);
             }
 
-            return BadRequest(Error.Describe("Settings update failed"));
+            return BadRequest();
         }
     }
 }

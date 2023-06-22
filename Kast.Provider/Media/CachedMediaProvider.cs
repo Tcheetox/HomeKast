@@ -31,11 +31,11 @@ namespace Kast.Provider.Media
         private readonly SemaphoreSlim _fileLock = new(1, 1);
         private async Task<MediaLibrary?> RestoreLibraryAsync()
         {
+            if (!File.Exists(LibraryPath))
+                return null;
+
             try
             {
-                if (!File.Exists(LibraryPath))
-                    return null;
-
                 await _fileLock.WaitAsync();
 
                 using var stream = new FileStream(LibraryPath, FileMode.Open);

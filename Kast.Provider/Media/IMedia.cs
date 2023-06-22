@@ -24,6 +24,7 @@ namespace Kast.Provider.Media
         MediaStatus Status { get; }
         Metadata Metadata { get; }
         SubtitlesList Subtitles { get; }
+        string ContentType { get; }
 
         void UpdateStatus(int? progress = null);
         string ToString();

@@ -18,6 +18,6 @@ namespace Kast.Provider.Conversions.Factories
             Target = target;
         }
 
-        public abstract Func<CancellationToken, Task> ConvertAsync(ConversionState state);
+        public abstract Func<CancellationToken, Task> ConvertAsync(ConversionContext context);
     }
 }

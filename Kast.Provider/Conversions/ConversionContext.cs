@@ -5,7 +5,7 @@ using Kast.Provider.Supports;
 
 namespace Kast.Provider.Conversions
 {
-    public class ConversionState
+    public class ConversionContext
     {
         public enum ConversionType
         {
@@ -20,7 +20,7 @@ namespace Kast.Provider.Conversions
         public readonly int AudioStreamIndex;
         public readonly string TargetDirectory;
 
-        public ConversionState(IMedia media, SettingsProvider settingsProvider) 
+        public ConversionContext(IMedia media, SettingsProvider settingsProvider) 
         { 
             Media = media;
             TargetDirectory = IOSupport.CreateTargetDirectory(media.FilePath);

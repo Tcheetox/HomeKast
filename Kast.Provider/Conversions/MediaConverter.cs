@@ -8,11 +8,11 @@ namespace Kast.Provider.Conversions
 {
     public class MediaConverter : IMediaConverter, IDisposable
     {
-        private sealed class ConversionInfo : Tuple<ConversionToken, ConversionState>
+        private sealed class ConversionInfo : Tuple<ConversionToken, ConversionContext>
         {
-            public readonly ConversionState Container;
+            public readonly ConversionContext Container;
             public readonly ConversionToken Token;
-            public ConversionInfo(ConversionToken token, ConversionState container) 
+            public ConversionInfo(ConversionToken token, ConversionContext container) 
                 : base (token, container)
             {
                 Token = token;
@@ -58,23 +58,24 @@ namespace Kast.Provider.Conversions
                 media.Info = info;
             }
 
-            var state = new ConversionState(media, _settingsProvider);
+            var context = new ConversionContext(media, _settingsProvider);
             var token = new ConversionToken(
                 media.ToString(),
                 new List<Func<CancellationToken, Task>>() 
                 { 
-                    _subtitlesFactory.ConvertAsync(state),
-                    _streamFactory.ConvertAsync(state)
+                    _subtitlesFactory.ConvertAsync(context),
+                    _streamFactory.ConvertAsync(context)
                 },
-                onSuccess: (_o, _e) => _mediaProvider.AddOrRefreshAsync(state.MediaTargetPath),
+                onStart: (_o, _e) => media.UpdateStatus(0),
+                onSuccess: (_o, _e) => _mediaProvider.AddOrRefreshAsync(context.MediaTargetPath),
                 onFinally: (_o, _e) =>
                 {
                     _conversionTracking.TryRemove(media, out _);
                     media.UpdateStatus();
-                    _ = IOSupport.DeleteAsync(state.MediaTemporaryPath, _settingsProvider.Application.FileAccessTimeout);
+                    _ = IOSupport.DeleteAsync(context.MediaTemporaryPath, _settingsProvider.Application.FileAccessTimeout);
                 });
 
-            return _conversionTracking.TryAdd(media, new ConversionInfo(token, state)) 
+            return _conversionTracking.TryAdd(media, new ConversionInfo(token, context)) 
                 && _conversionQueue.TryAdd(token);
         }
 
@@ -90,7 +91,7 @@ namespace Kast.Provider.Conversions
             return true;
         }
 
-        public bool TryGetValue(IMedia media, out ConversionState? state)
+        public bool TryGetValue(IMedia media, out ConversionContext? state)
         {
             state = null;
             if (!_conversionTracking.TryGetValue(media, out ConversionInfo? info))
@@ -101,7 +102,7 @@ namespace Kast.Provider.Conversions
             return true;
         }
 
-        public IEnumerable<ConversionState> GetAll()
+        public IEnumerable<ConversionContext> GetAll()
         {
             var currentCount = _conversionTracking.Count;
             return _conversionTracking.Values.Select(e =>

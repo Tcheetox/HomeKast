@@ -15,42 +15,43 @@ namespace Kast.Provider.Conversions.Factories
             _logger = logger;
         }
 
-        public override Func<CancellationToken, Task> ConvertAsync(ConversionState state)
+        public override Func<CancellationToken, Task> ConvertAsync(ConversionContext context)
             => async _token =>
             {
-                if (_token.IsCancellationRequested || state.Media.Status != Media.MediaStatus.Unplayable)
+                if (_token.IsCancellationRequested || context.Media.Status != Media.MediaStatus.Unplayable)
                     return;
 
-                await IOSupport.DeleteAsync(state.MediaTargetPath, SettingsProvider.Application.FileAccessTimeout);
+                await IOSupport.DeleteAsync(context.MediaTargetPath, SettingsProvider.Application.FileAccessTimeout);
                 var clock = new Stopwatch();
                 clock.Restart();
 
                 // Convert file
                 IConversion conversion = FFmpeg.Conversions
                     .New()
-                    .SetInput(state.Media.FilePath)
+                    .SetInput(context.Media.FilePath)
                     .SetVideoCodec(VideoCodec.h264)
                     .SetAudioCodec(AudioCodec.mp3)
-                    .SetAudioStream(state.AudioStreamIndex)
-                    .SetVideoStream(state)
-                    .SetVideoSize(state.Media.Resolution)
-                    .SetSubtitles(state)
-                    .SetOutput(state.MediaTemporaryPath);
+                    .SetAudioStream(context.AudioStreamIndex)
+                    .SetVideoStream(context)
+                    .SetVideoSize(context.Media.Resolution)
+                    .SetSubtitles(context)
+                    //.UseMultiThread(16)
+                    .SetOutput(context.MediaTemporaryPath);
 
-                conversion.OnProgress += (object sender, ConversionProgressEventArgs args) => state.Update(args, Target);
+                conversion.OnProgress += (object sender, ConversionProgressEventArgs args) => context.Update(args, Target);
 
                 _logger.LogInformation("Beginning conversion for {media}",
-                   state.Media);
+                   context.Media);
                 _logger.LogInformation("Arguments: {args}", conversion.Build());
 
                 await conversion.Start(_token);
 
                 // Put converted file under user library directory
-                await IOSupport.MoveAsync(state.MediaTemporaryPath, state.MediaTargetPath, timeoutMs: SettingsProvider.Application.FileAccessTimeout);
+                await IOSupport.MoveAsync(context.MediaTemporaryPath, context.MediaTargetPath, timeoutMs: SettingsProvider.Application.FileAccessTimeout);
 
                 clock.Stop();
                 _logger.LogInformation("Conversion successful for {media} after {time} minutes",
-                    state.Media,
+                    context.Media,
                     clock.Elapsed.TotalMinutes);
             };
     }

@@ -16,14 +16,14 @@ namespace Kast.Provider.Extensions
         public static IConversion SetAudioStream(this IConversion conversion, int audioStreamIndex)
             => conversion.AddParameter($"-map 0:a:{audioStreamIndex}");
 
-        public static IConversion SetVideoStream(this IConversion conversion, ConversionState state)
+        public static IConversion SetVideoStream(this IConversion conversion, ConversionContext state)
         {
             if (state.BurnSubtitles && state.SubtitlesStreamIndex.HasValue)
                 return conversion;
             return conversion.AddParameter("-map 0:v:0");
         }
 
-        public static IConversion SetSubtitles(this IConversion conversion, ConversionState state)
+        public static IConversion SetSubtitles(this IConversion conversion, ConversionContext state)
         {
             if (!state.Media.Info!.SubtitleStreams.Any())
                 return conversion;

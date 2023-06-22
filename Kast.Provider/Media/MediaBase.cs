@@ -77,6 +77,8 @@ namespace Kast.Provider.Media
         [JsonIgnore]
         public string Extension => FileInfo.Extension;
         [JsonIgnore]
+        public string ContentType => Extension.Equals(".mkv", StringComparison.OrdinalIgnoreCase) ? "video/x-matroska" : "video/mp4";
+        [JsonIgnore]
         public DateTime Creation => FileInfo.CreationTime;
         public TimeSpan Length { get; private set; }
         [JsonIgnore]

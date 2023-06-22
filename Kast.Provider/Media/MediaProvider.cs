@@ -109,7 +109,8 @@ namespace Kast.Provider.Media
             }
             finally
             {
-                _semaphore.Release();
+                if (_semaphore.CurrentCount == 0)
+                    _semaphore.Release();
                 MassTimer.Print();
             }
 

@@ -6,7 +6,7 @@ namespace Kast.Api.Models
 {
     public class Conversion
     {
-        public static Conversion From(ConversionState state) => new(state);
+        public static Conversion From(ConversionContext state) => new(state);
 
         public string Name { get; private set; }
         public Guid Id { get; private set; }
@@ -15,7 +15,7 @@ namespace Kast.Api.Models
         public int Progress { get; private set; }   
         public MediaStatus Status { get; private set; }
 
-        private Conversion(ConversionState state) 
+        private Conversion(ConversionContext state) 
         { 
             Name = state.Name;
             Id = state.Id;

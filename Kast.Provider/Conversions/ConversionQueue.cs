@@ -30,10 +30,10 @@ namespace Kast.Provider.Conversions
                     try
                     {
                         _logger.LogWarning("Conversion starting for {item}", item);
+                        item.OnStart?.Invoke(this, EventArgs.Empty);
                         foreach (var conversion in item.Conversions)
                         {
-                            if (item.IsCancellationRequested)
-                                break;
+                            item.CancellationToken.ThrowIfCancellationRequested();
                             await conversion(item.CancellationToken);
                         }
                         item.OnSuccess?.Invoke(this, EventArgs.Empty);

@@ -48,7 +48,7 @@ namespace Kast.Api.Models
 
             public Caption(Subtitles subtitles)
             {
-                Label = subtitles.Label;
+                Label = subtitles.Language;
                 Index = subtitles.Index;
                 Preferred = subtitles.Preferred;
             }

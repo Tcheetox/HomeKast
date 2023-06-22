@@ -2,11 +2,12 @@
 using Kast.Provider.Conversions;
 using Kast.Provider.Media;
 using Kast.Api.Models;
+using Kast.Api.Problems;
 
 namespace Kast.Api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("conversion")]
     public class ConversionController : Controller
     {
         private readonly ILogger<ConversionController> _logger;
@@ -20,17 +21,17 @@ namespace Kast.Api.Controllers
             _mediaConverter = mediaConverter;
         }
 
-        [HttpGet("{id:guid}/state")]
+        [HttpGet("{mediaId:guid}/state")]
         [ProducesResponseType(typeof(Conversion), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(Error), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetStateAsync([FromRoute] Guid id)
+        [ProducesResponseType(typeof(IProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetStateAsync([FromRoute] Guid mediaId)
         {
-            var media = await _mediaProvider.GetAsync(id);
+            var media = await _mediaProvider.GetAsync(mediaId);
             if (media == null)
-                return NotFound(Error.NotFound);
+                return NotFound();
 
-            if (_mediaConverter.TryGetValue(media, out ConversionState? state))
+            if (_mediaConverter.TryGetValue(media, out ConversionContext? state))
                 return Ok(Conversion.From(state!));
 
             _logger.LogDebug("No conversion pending");
@@ -42,35 +43,37 @@ namespace Kast.Api.Controllers
         public IEnumerable<Conversion> Get() 
             => _mediaConverter.GetAll().Select(Conversion.From);
 
-        [HttpPost("{id:guid}/start")]
+        [HttpPost("{mediaId:guid}/start")]
         [ProducesResponseType(typeof(Conversion), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(Error), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> StartConversionAsync([FromRoute] Guid id)
+        [ProducesResponseType(typeof(IProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> StartConversionAsync([FromRoute] Guid mediaId)
         {
-            var media = await _mediaProvider.GetAsync(id);
+            var media = await _mediaProvider.GetAsync(mediaId);
             if (media == null)
-                return BadRequest(Error.NotFound);
+                return BadRequest();
 
             if (await _mediaConverter.StartAsync(media))
                 return StatusCode(StatusCodes.Status201Created);
 
-            if (_mediaConverter.TryGetValue(media, out ConversionState? state))
+            if (_mediaConverter.TryGetValue(media, out ConversionContext? state))
                 return Ok(Conversion.From(state!));
 
-            return BadRequest(Error.Describe($"{media} does not meet conversion criteria"));
+            return BadRequest();
         }
 
-        [HttpPost("{id:guid}/stop")]
+        [HttpPost("{mediaId:guid}/stop")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(Error), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> StopConversionAsync([FromRoute] Guid id)
+        [ProducesResponseType(typeof(IProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(IProblemDetails), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> StopConversionAsync([FromRoute] Guid mediaId)
         {
-            var media = await _mediaProvider.GetAsync(id);
+            var media = await _mediaProvider.GetAsync(mediaId);
             if (media == null)
-                return BadRequest(Error.NotFound);
+                return NotFound();
+
             if (!_mediaConverter.Stop(media))
-                return BadRequest(Error.Describe($"{media} has no pending conversion"));
+                return BadRequest();
 
             return Ok();
         }

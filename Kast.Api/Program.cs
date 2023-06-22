@@ -1,15 +1,16 @@
 using System.Text.Json;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Mvc;
 using Serilog.Events;
 using Serilog;
 using Kast.Provider.Conversions;
 using Kast.Provider;
 using Kast.Provider.Media;
-using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Mvc;
-
-// TODO: use application port from settings
+using Kast.Provider.Cast;
+using Kast.Api.Problems;
+using Kast.Api.Extensions;
 
 var version = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 var match = Regex.Match(version ?? string.Empty, @"\d");
@@ -38,6 +39,23 @@ builder.Services.AddLogging(logging =>
     logging.AddSerilog(Log.Logger, true);
 });
 
+// JSON
+var sharedSerializationOptions = new JsonSerializerOptions() 
+{ 
+    PropertyNameCaseInsensitive = true 
+};
+builder.Services.AddSingleton(sharedSerializationOptions);
+
+builder.Services.AddSingleton<SettingsProvider>();
+builder.WebHost.ConfigureKestrel(options =>
+{
+    var settingsProvider = options.ApplicationServices.GetRequiredService<SettingsProvider>();
+    options.ListenLocalhost(settingsProvider.Application.Port, o => o.UseHttps());
+    options.Listen(settingsProvider.Application.Ip, settingsProvider.Application.Port);
+});
+
+builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = ProblemDetailsContextExtension.Extend);
+
 builder.Services
     .AddControllers(options => options.Filters.Add(new ProducesAttribute("application/json")))
     .AddJsonOptions(options =>
@@ -48,6 +66,8 @@ builder.Services
 #endif
     });
 
+//builder.Services.AddSingleton<ProblemDetailsFactory, EmptyDetailsFactory>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc($"v{match.Value[0]}", new OpenApiInfo
@@ -57,11 +77,10 @@ builder.Services.AddSwaggerGen(options =>
     })
 );
 
-builder.Services.AddSingleton(new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-builder.Services.AddSingleton<SettingsProvider>();
 builder.Services.AddSingleton<IMetadataProvider, CachedMetadataProvider>();
 builder.Services.AddSingleton<IMediaProvider, CachedMediaProvider>();
 builder.Services.AddSingleton<IMediaConverter, MediaConverter>();
+builder.Services.AddSingleton<ICastProvider, CastProvider>();
 builder.Services.AddSingleton<FileWatcher, FileWatcher>();
 
 var app = builder.Build();
@@ -75,8 +94,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
