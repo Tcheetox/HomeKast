@@ -32,7 +32,7 @@ namespace Kast.Api.Controllers
             var media = await _mediaProvider.GetAsync(mediaId);
             if (media == null)
             {
-                _logger.LogDebug("Media not found for Id: {id}", mediaId);
+                _logger.LogDebug("Media not found for Id {id}", mediaId);
                 return NotFound();
             }
 
@@ -47,7 +47,6 @@ namespace Kast.Api.Controllers
         public async Task<IActionResult> GetImageAsync([FromRoute] Guid mediaId)
         {
             var media = await _mediaProvider.GetAsync(mediaId);
-
             if (media == null || string.IsNullOrWhiteSpace(media.Metadata.Image)) 
                 return NoContent();
 
@@ -56,6 +55,21 @@ namespace Kast.Api.Controllers
             if (media.Metadata.Image.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                 return Redirect(media.Metadata.Image);
             return new PhysicalFileResult(media.Metadata.Image, "image/jpeg");
+        }
+
+        [HttpGet("{mediaId:guid}/thumbnail")]
+        [Produces("image/jpeg")]
+        [ProducesResponseType(typeof(PhysicalFileResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> GetThumbnailAsync([FromRoute] Guid mediaId)
+        {
+            var media = await _mediaProvider.GetAsync(mediaId);
+            if (media == null || string.IsNullOrWhiteSpace(media.Metadata.Thumbnail))
+                return NoContent();
+
+            Response.Headers.Add(HeaderNames.AccessControlAllowOrigin, "*");
+            Response.Headers.Add(HeaderNames.AccessControlMaxAge, TimeSpan.FromDays(30).TotalSeconds.ToString());
+            return new PhysicalFileResult(media.Metadata.Thumbnail, "image/jpeg");
         }
 
         [HttpGet("{mediaId:guid}/stream")]

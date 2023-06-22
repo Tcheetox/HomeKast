@@ -146,14 +146,14 @@ namespace Kast.Provider
     {
         public string? ApiToken { get; set; }
 
-        private int _port = 7279;
-        public int Port 
+        private int _httpPort = 7279;
+        public int HttpPort 
         { 
-            get => _port;
+            get => _httpPort;
             set
             {
                 if (value > 0)
-                    _port = value;
+                    _httpPort = value;
             }
         }
 
@@ -203,7 +203,7 @@ namespace Kast.Provider
             get
             {
                 if (_uri == null)
-                    _uri = new Uri($"http://{Ip}:{Port}");
+                    _uri = new Uri($"http://{Ip}:{HttpPort}");
                 return _uri;
             }
         }
@@ -222,7 +222,7 @@ namespace Kast.Provider
                 || !Utilities.InsensitiveCompare(BaseUrl, other.BaseUrl)
                 || !Utilities.InsensitiveCompare(Ip.ToString(), other.Ip.ToString())
                 || !Utilities.InsensitiveCompare(Uri.ToString(), other.Uri.ToString())
-                || Port != other.Port
+                || HttpPort != other.HttpPort
                 || MaxDegreeOfParallelism != other.MaxDegreeOfParallelism
                 || MediaInfoTimeout != other.MediaInfoTimeout
                 || MetadataTimeout != other.MetadataTimeout
@@ -245,7 +245,7 @@ namespace Kast.Provider
                 hash *= 13 + BaseUrl?.GetHashCode() ?? 0;
                 hash *= 13 + Ip?.ToString()?.GetHashCode() ?? 0;
                 hash *= 13 + Uri?.ToString()?.GetHashCode() ?? 0;
-                hash *= 13 + Port;
+                hash *= 13 + HttpPort;
                 hash *= 13 + MaxDegreeOfParallelism.GetHashCode();
                 hash *= 13 + MediaInfoTimeout?.GetHashCode() ?? 0;
                 hash *= 13 + MetadataTimeout?.GetHashCode() ?? 0;

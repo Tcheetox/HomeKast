@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Kast.Api.Models;
+using Kast.Api.Problems;
 using Kast.Provider.Media;
 using Kast.Provider.Cast;
-using Kast.Api.Problems;
-using Kast.Api.Extensions;
 
 namespace Kast.Api.Controllers
 {
-    // TODO: model renders
-
     [ApiController]
     [Route("cast")]
     public class CastController : Controller
@@ -28,6 +25,19 @@ namespace Kast.Api.Controllers
         [ProducesResponseType(typeof(IEnumerable<Caster>), StatusCodes.Status200OK)]
         public async Task<IEnumerable<Caster>> GetAllAsync() 
             => (await _castProvider.GetAllAsync()).Select(Caster.From);
+
+        [HttpGet("{receiverId:guid}")]
+        [ProducesResponseType(typeof(Caster), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IProblemDetails), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAsync([FromRoute] Guid receiverId)
+        {
+            var receiver = (await _castProvider.GetAllAsync())
+                .FirstOrDefault(c => c.Id == receiverId);
+            if (receiver != null)
+                return Ok(Caster.From(receiver));
+
+            return NotFound();
+        }
 
         [HttpPost("{receiverId:guid}/start/{mediaId:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]

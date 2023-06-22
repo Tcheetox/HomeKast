@@ -177,20 +177,23 @@ namespace Kast.Provider.Cast
 
         private MediaInformation Convert(IMedia media)
         {
-            // TODO: implement image width and height
-            var metadata = new GenericMediaMetadata()
+            var metadata = new GenericMediaMetadata() { Title = media.Name };
+            if (!string.IsNullOrWhiteSpace(media.Metadata.Image))
             {
-                Title = media.Name,
-                //Images = string.IsNullOrWhiteSpace(media.Metadata.Image) 
-                //? Array.Empty<Image>() 
-                //: new Image[] { new Image() { Url = media.Metadata.Image } }
-            };
+                if (media.Metadata.ImageWidth.HasValue && media.Metadata.ImageHeight.HasValue)
+                    metadata.Images = new GoogleCast.Models.Image[] { new GoogleCast.Models.Image() 
+                    { Url = $"{_settingsProvider.Application.Uri}media/{media.Id}/image", Width = media.Metadata.ImageWidth, Height = media.Metadata.ImageHeight } };
+                else if (media.Metadata.Image.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    metadata.Images = new GoogleCast.Models.Image[] { new GoogleCast.Models.Image() { Url = media.Metadata.Image } };
+            }
+
             var subtitles = new List<Track>(media.Subtitles.Select(s => new Track() { 
                 TrackId = s.Index, 
                 Name = s.Language,
                 Language = s.Name, 
                 TrackContentId = $"{_settingsProvider.Application.Uri}media/{media.Id}/subtitles/{s.Index}" 
             }));
+            
             return new MediaInformation()
             {
                 ContentId = $"{_settingsProvider.Application.Uri}media/{media.Id}/stream",
@@ -198,7 +201,7 @@ namespace Kast.Provider.Cast
                 Metadata = metadata,
                 Duration = media.Length.TotalSeconds,
                 ContentType = media.ContentType,
-                StreamType = GoogleCast.Models.Media.StreamType.Buffered,
+                StreamType = StreamType.Buffered,
                 CustomData = new Dictionary<string, string> { { media.Id.ToString(), media.Name } }
             };
         }

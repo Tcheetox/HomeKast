@@ -4,6 +4,8 @@ namespace Kast.Provider.Media
 {
     public class Metadata
     {
+        public int? ImageWidth { get; set; }
+        public int? ImageHeight { get; set; }
         public string? Image { get; set; }
         [JsonPropertyName("backdrop_path")]
         public string? Backdrop { get; set; }
@@ -21,6 +23,7 @@ namespace Kast.Provider.Media
         public double? Vote { get; set; }
         [JsonPropertyName("overview")]
         public string? Description { get; set; }
+        public string? Thumbnail { get; set; }
     }
 
     internal class MetadataResults

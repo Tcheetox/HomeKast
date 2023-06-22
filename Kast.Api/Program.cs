@@ -11,6 +11,9 @@ using Kast.Provider.Media;
 using Kast.Provider.Cast;
 using Kast.Api.Problems;
 using Kast.Api.Extensions;
+using Microsoft.AspNetCore.Hosting;
+
+// TODO: slow refresh of lib is mandatory!
 
 var version = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 var match = Regex.Match(version ?? string.Empty, @"\d");
@@ -50,8 +53,8 @@ builder.Services.AddSingleton<SettingsProvider>();
 builder.WebHost.ConfigureKestrel(options =>
 {
     var settingsProvider = options.ApplicationServices.GetRequiredService<SettingsProvider>();
-    options.ListenLocalhost(settingsProvider.Application.Port, o => o.UseHttps());
-    options.Listen(settingsProvider.Application.Ip, settingsProvider.Application.Port);
+    options.ListenLocalhost(settingsProvider.Application.HttpPort, o => o.UseHttps());
+    options.Listen(settingsProvider.Application.Ip, settingsProvider.Application.HttpPort);
 });
 
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = ProblemDetailsContextExtension.Extend);

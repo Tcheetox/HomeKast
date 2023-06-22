@@ -26,7 +26,7 @@ namespace Kast.Provider.Media
                 var stream = info.SubtitleStreams.ElementAt(i);
                 var language = GetLanguage(stream);
                 var name = stream.Forced == 1 ? $"{language} (forced)" : language;
-                var filePath = Path.Combine(targetDirectory, $"{mediaName.TrimStart('_')}_{name.Replace(string.Empty, "_")}_{i}.vtt");
+                var filePath = Path.Combine(targetDirectory, $"{mediaName.TrimStart('_')}_{name.Replace(" ", "_")}_{i}.vtt");
                 var preferred = settingsProvider.Preferences.Any(e => stream.Language?.Equals(e.Subtitles, StringComparison.OrdinalIgnoreCase) ?? false);
                 _subtitles.Add(new Subtitles(i, name, language, filePath, preferred));
             }

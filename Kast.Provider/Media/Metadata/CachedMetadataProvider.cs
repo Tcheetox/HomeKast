@@ -1,8 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Text.Json;
-using Kast.Provider.Supports;
+using System.Drawing;
 using Microsoft.Extensions.Logging;
 using Xabe.FFmpeg;
+using Kast.Provider.Supports;
 
 namespace Kast.Provider.Media
 {
@@ -40,10 +41,16 @@ namespace Kast.Provider.Media
                 var response = await client.GetAsync(metadata.Image);
                 response.EnsureSuccessStatusCode();
                 await using var ms = await response.Content.ReadAsStreamAsync();
-                await using var fs = File.Create(path);
+                using var fs = File.Create(path);
                 ms.Seek(0, SeekOrigin.Begin);
                 ms.CopyTo(fs);
                 metadata.Image = path;
+
+                using var image = Image.FromStream(ms);
+                metadata.ImageWidth = image.Width;
+                metadata.ImageHeight = image.Height;
+                if (ImageGenerator.TryCreateThumbnail(Logger, image, path, 640, 480, out string? thumbnailPath))
+                    metadata.Thumbnail = thumbnailPath;
             }
             catch (Exception ex)
             {
