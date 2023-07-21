@@ -1,11 +1,22 @@
-﻿using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
+using System.Diagnostics;
+using System.Globalization;
 
 namespace Kast.Provider.Supports
 {
     public static class Utilities
     {
+        public static DateTime? ToDateTime(int? year)
+        {
+            if (!year.HasValue)
+                return null;
+
+            if (DateTime.TryParseExact(year.Value.ToString(), "yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime))
+                return dateTime;
+            return null;
+        } 
+
         public static bool InsensitiveCompare(string? a, string? b)
             => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
 

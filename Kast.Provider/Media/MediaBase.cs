@@ -29,7 +29,8 @@ namespace Kast.Provider.Media
             string videoCodec,
             double frameRate,
             string audioCodec,
-            VideoSize resolution
+            VideoSize resolution,
+            int? year = null
             )
         {
             Id = id;
@@ -42,6 +43,7 @@ namespace Kast.Provider.Media
             VideoFrameRate = frameRate;
             AudioCodec = audioCodec;
             Resolution = resolution;
+            Year = year;
 
             UpdateStatus();
         }
@@ -93,6 +95,7 @@ namespace Kast.Provider.Media
         public double VideoFrameRate { get; private set; }
         public string VideoCodec { get; private set; }
         public string AudioCodec { get; private set; }
+        public int? Year { get; protected set; }
 
         public void UpdateStatus(int? progress = null)
         {

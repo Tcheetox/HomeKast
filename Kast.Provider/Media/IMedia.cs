@@ -21,6 +21,7 @@ namespace Kast.Provider.Media
         VideoSize Resolution { get; }
         MediaStatus Status { get; }
         Metadata? Metadata { get; }
+        public int? Year { get; }
         SubtitlesList Subtitles { get; }
         [JsonIgnore]
         string ContentType { get; }

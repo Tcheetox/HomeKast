@@ -1,5 +1,6 @@
 ﻿using Xabe.FFmpeg;
 using Kast.Provider.Media;
+using Kast.Provider.Supports;
 using static Kast.Provider.Media.Serie;
 
 namespace Kast.Api.Models
@@ -19,7 +20,7 @@ namespace Kast.Api.Models
                 Description = media.Metadata?.Description,
                 Popularity = media.Metadata?.Vote,
                 Episode = media is Serie serie ? serie.Episode : null,
-                Released = media.Metadata?.Released,
+                Released = media.Metadata?.Released ?? Utilities.ToDateTime(media.Year),
                 HasImage = media.Metadata?.HasImage,
                 HasThumbnail = media.Metadata?.HasThumbnail
             };

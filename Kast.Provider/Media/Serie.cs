@@ -8,11 +8,13 @@ namespace Kast.Provider.Media
     public class Serie : MediaBase
     {
         private readonly static Regex _infoRegex = new(@"\d+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         public Serie(IMediaInfo info, SubtitlesList subtitles) 
             : base(info, subtitles)
         {
-            var (name, episode, episodeName, _) = Normalization.NameFromPath(info.Path);
+            var (name, episode, episodeName, year) = Normalization.NameFromPath(info.Path);
             Name = name;
+            Year = year;
 
             if (!string.IsNullOrWhiteSpace(episode))
             {
@@ -40,8 +42,9 @@ namespace Kast.Provider.Media
             double videoFrameRate,
             string audioCodec,
             VideoSize resolution,
-            EpisodeInfo? episode = null)
-            : base(id, name, metadata, subtitles, filePath, length, videoCodec, videoFrameRate, audioCodec, resolution)
+            EpisodeInfo? episode = null,
+            int? year = null)
+            : base(id, name, metadata, subtitles, filePath, length, videoCodec, videoFrameRate, audioCodec, resolution, year)
         {
             Episode = episode;
         }
