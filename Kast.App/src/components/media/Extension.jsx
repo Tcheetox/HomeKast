@@ -15,19 +15,19 @@ export default function Extension({ media }) {
         <span className='title'>{media.name}</span>
       </Row>
       <Row className='metadata'>
-        <Col>
+        <Col className='timeAndRate'>
           <Row>{duration}</Row>
           <Row>{media.popularity ? `${media.popularity.toFixed(1)}/10` : null}</Row>
         </Col>
-        <Col>
+        <Col className='resolutionAndEpisode'>
           <Row>
             <Conditional test={media.resolution} values={[35, 36]}>
               <div className='resolution'>{media.resolution === 35 ? '720p' : '1080p'}</div>
             </Conditional>
           </Row>
-          <Row />
+          <Row>4 Episodes</Row>
         </Col>
-        <Col>
+        <Col className='more'>
           <Details />
         </Col>
       </Row>

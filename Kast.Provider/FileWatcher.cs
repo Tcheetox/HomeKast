@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Kast.Provider.Media;
 using Kast.Provider.Supports;
+using System.Linq;
 
 namespace Kast.Provider
 {
@@ -23,7 +24,8 @@ namespace Kast.Provider
             _settingsProvider.SettingsChanged += OnSettingsChanged;
             _actors = new Dictionary<string, Func<FileSystemEventArgs, Task>>(StringComparer.OrdinalIgnoreCase)
             {
-                { _default, DefaultHandler }
+                { _default, DefaultHandler },
+                { Constants.SubtitlesExtension, SubtitlesHandler }
             }; 
         }
 
@@ -105,6 +107,17 @@ namespace Kast.Provider
         }
 
         #region Handlers
+        private Func<FileSystemEventArgs, Task> SubtitlesHandler
+            => async e =>
+            {
+                foreach (var media in from media in await _mediaProvider.GetAllAsync()
+                                      where media.Subtitles.Any(m => m.FilePath == e.FullPath)
+                                      select media)
+                {
+                    media.UpdateStatus();
+                }
+            };
+
         private Func<FileSystemEventArgs, Task> DefaultHandler
             => async e =>
             {
