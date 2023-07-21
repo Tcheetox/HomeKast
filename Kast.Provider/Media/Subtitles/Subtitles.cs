@@ -19,7 +19,5 @@ namespace Kast.Provider.Media
             FilePath = filePath;
             Preferred = preferred;
         }
-
-        public bool Exists() => !string.IsNullOrWhiteSpace(FilePath) && File.Exists(FilePath);
     }
 }

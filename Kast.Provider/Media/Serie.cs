@@ -1,20 +1,30 @@
 ﻿using System.Text.RegularExpressions;
 using System.Text.Json.Serialization;
 using Xabe.FFmpeg;
+using Kast.Provider.Supports;
 
 namespace Kast.Provider.Media
 {
     public class Serie : MediaBase
     {
-        private readonly static Regex _episodeRegex = new(@"\b(S\d{2}E\d{2})\s*(.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        public Serie(string name, IMediaInfo info, Metadata metadata, SubtitlesList subtitles) 
-            : base(name, info, metadata, subtitles)
+        private readonly static Regex _infoRegex = new(@"\d+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        public Serie(IMediaInfo info, SubtitlesList subtitles) 
+            : base(info, subtitles)
         {
-            var match = _episodeRegex.Match(name);
-            if (match.Success)
+            var (name, episode, episodeName, _) = Normalization.NameFromPath(info.Path);
+            Name = name;
+
+            if (!string.IsNullOrWhiteSpace(episode))
             {
-                Episode = match.Value.Trim();
-                Name = name.Replace(Episode, string.Empty).Trim();
+                var indexes = _infoRegex.Matches(episode);
+                Episode = new EpisodeInfo()
+                {
+                    Indicator = episode,
+                    Name = episodeName,
+                    Season = indexes.Count > 1 && int.TryParse(indexes[0].Value, out int season) ? season : null,
+                    Episode = indexes.Count > 1 && int.TryParse(indexes[1].Value, out int _episode) 
+                        || indexes.Count == 1 && int.TryParse(indexes[0].Value, out _episode) ? _episode : null,
+                };
             }
         }
 
@@ -22,7 +32,7 @@ namespace Kast.Provider.Media
         public Serie(
             Guid id,
             string name,
-            Metadata metadata,
+            Metadata? metadata,
             SubtitlesList subtitles,
             string filePath,
             TimeSpan length,
@@ -30,13 +40,21 @@ namespace Kast.Provider.Media
             double videoFrameRate,
             string audioCodec,
             VideoSize resolution,
-            string? episode = null)
+            EpisodeInfo? episode = null)
             : base(id, name, metadata, subtitles, filePath, length, videoCodec, videoFrameRate, audioCodec, resolution)
         {
             Episode = episode;
         }
 
-        public override string Type => typeof(Serie).Name;
-        public string? Episode { get; }
+        public override string Type => "Serie";
+        public EpisodeInfo? Episode { get; }
+
+        public class EpisodeInfo
+        {
+            public string? Indicator { get; init; }
+            public string? Name { get; init; }
+            public int? Episode { get; init; }
+            public int? Season { get; init; }
+        }
     }
 }

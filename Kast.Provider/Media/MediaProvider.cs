@@ -58,10 +58,11 @@ namespace Kast.Provider.Media
                 return false;
 
             var library = await GetLibraryAsync();
-            var state = await library.AddOrRefreshAsync(path, CreateMediaAsync);
-            Logger.LogInformation("MediaProvider {state} media from {path}", state ? "added" : "refreshed", path);
+            if (library.TryGetValue(path, out IMedia? _))
+                return false;
 
-            return state;
+            var media = await CreateMediaAsync(path);
+            return media != null && library.AddOrRefreshAsync(media);
         }
 
         public async Task<bool> TryRemoveAsync(string path)
@@ -76,21 +77,14 @@ namespace Kast.Provider.Media
             return state;
         }
 
-        private object? _groupedLibrary;
-        public async Task<IEnumerable<IGrouping<string, T>>> GetGroupAsync<T>(Func<IMedia, T> creator)
-        {
-            if (_groupedLibrary is IEnumerable<IGrouping<string, T>> group)
-                return group;
-            
-            _groupedLibrary = (await GetAllAsync())
-                .Where(m => m.Status != MediaStatus.Hidden)
-                .OrderByDescending(m => m.Creation)
-                .ThenByDescending(m => m.Status == MediaStatus.Playable)
-                .GroupBy(m => m.Name, m => creator(m))
-                .ToList();
-            
-            return (IEnumerable<IGrouping<string, T>>)_groupedLibrary;
-        }
+        private IReadOnlyList<IGrouping<string, IMedia>>? _groupedLibrary;
+        public async Task<IEnumerable<IGrouping<string, IMedia>>> GetGroupAsync()
+            => _groupedLibrary ??= (await GetAllAsync())
+            .Where(m => m.Status != MediaStatus.Hidden)
+            .OrderByDescending(m => m.Creation)
+            .ThenByDescending(m => m.Status == MediaStatus.Playable)
+            .GroupBy(m => m.Name)
+            .ToList();
 
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         private async Task<MediaLibrary> GetLibraryAsync()
@@ -107,6 +101,10 @@ namespace Kast.Provider.Media
                 _library = await CreateLibraryAsync();
                 Logger.LogInformation("MediaProvider retrieved {media} media from {directories} directories", _library.Count(), SettingsProvider.Library.Directories.Count);
             }
+            catch (Exception ex)
+            {
+                Logger.LogCritical(ex, "Critical error retrieving {me}", nameof(MediaLibrary));
+            }
             finally
             {
                 if (_semaphore.CurrentCount == 0)
@@ -114,7 +112,7 @@ namespace Kast.Provider.Media
                 MassTimer.Print();
             }
 
-            return _library;
+            return _library ?? new MediaLibrary(OnLibraryChangeEventHandler);
         }
 
         protected virtual async Task<MediaLibrary> CreateLibraryAsync()
@@ -126,25 +124,30 @@ namespace Kast.Provider.Media
                 .SelectMany(directory => Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories))
                 .Where(f => SettingsProvider.Library.Extensions.Contains(Path.GetExtension(f))),
                 new ParallelOptions() { MaxDegreeOfParallelism = SettingsProvider.Application.MaxDegreeOfParallelism },
-                async (file, _) => await library.AddOrRefreshAsync(file, CreateMediaAsync));
+                async (file, _) =>
+                {
+                    var media = await CreateMediaAsync(file);
+                    if (media != null)
+                        library.AddOrRefreshAsync(media);
+                });
             return library;
         }
 
-        private static readonly Regex _isSerieRegex = new(@"\bS\d{2}E\d{2}\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex _isSerieRegex = new(@"\bS\d{2}E\d{2,3}\b|\bep\s?(\.|)\s?\d{1,3}\b|(?<!\S)\d{2,3}(?!\S)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private async Task<IMedia?> CreateMediaAsync(string file)
         {
             var info = await GetInfoAsync(file);
             if (info == null)
                 return null;
 
-            var (normalized, displayed) = Normalization.Names(file);
-            var metadata = await MetadataProvider.GetAsync(info, normalized);
             var subtitles = new SubtitlesList(info, SettingsProvider);
+            IMedia media = _isSerieRegex.IsMatch(file)
+                ? new Serie(info, subtitles)
+                : new Movie(info, subtitles);
+            var metadata = await MetadataProvider.GetAsync(media);
+            media.UpdateMetadata(metadata);
 
-            if (Utilities.InsensitiveCompare(metadata.MediaType, "tv") || _isSerieRegex.IsMatch(displayed))
-                return new Serie(displayed, info, metadata, subtitles);
-
-            return new Movie(displayed, info, metadata, subtitles);
+            return media;
         }
 
         public async Task<IMediaInfo?> GetInfoAsync(IMedia media) => await GetInfoAsync(media.FilePath);
@@ -159,7 +162,7 @@ namespace Kast.Provider.Media
                 var canceller = new CancellationTokenSource();
                 try
                 {
-                    canceller.CancelAfter(SettingsProvider.Application.MediaInfoTimeout ?? 3000);
+                    canceller.CancelAfter(SettingsProvider.Application.MediaInfoTimeout ?? Constants.FileAccessTimeout);
                     var info = await FFmpeg.GetMediaInfo(path, canceller.Token);
                     if (info != null && info.VideoStreams.Any() && info.AudioStreams.Any())
                         return info;

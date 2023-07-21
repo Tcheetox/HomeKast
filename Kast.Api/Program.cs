@@ -13,8 +13,6 @@ using Kast.Api.Problems;
 using Kast.Api.Extensions;
 using Microsoft.AspNetCore.Hosting;
 
-// TODO: slow refresh of lib is mandatory!
-
 var version = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 var match = Regex.Match(version ?? string.Empty, @"\d");
 if (string.IsNullOrWhiteSpace(version) || !match.Success)
@@ -57,8 +55,14 @@ builder.WebHost.ConfigureKestrel(options =>
     options.Listen(settingsProvider.Application.Ip, settingsProvider.Application.HttpPort);
 });
 
+builder.Services.AddHttpClient<IMetadataProvider, MetadataProvider>();
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = ProblemDetailsContextExtension.Extend);
-
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy
+    => policy
+    .AllowAnyOrigin()
+    .AllowAnyHeader()
+    )
+);
 builder.Services
     .AddControllers(options => options.Filters.Add(new ProducesAttribute("application/json")))
     .AddJsonOptions(options =>
@@ -80,7 +84,7 @@ builder.Services.AddSwaggerGen(options =>
     })
 );
 
-builder.Services.AddSingleton<IMetadataProvider, CachedMetadataProvider>();
+builder.Services.AddSingleton<IMetadataProvider, LocalMetadataProvider>();
 builder.Services.AddSingleton<IMediaProvider, CachedMediaProvider>();
 builder.Services.AddSingleton<IMediaConverter, MediaConverter>();
 builder.Services.AddSingleton<ICastProvider, CastProvider>();
@@ -90,6 +94,8 @@ var app = builder.Build();
 
 foreach (var service in GetAllServices<IRefreshable>(app.Services))
     _ = service.RefreshAsync();
+
+app.UseCors();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -107,11 +113,13 @@ app.Run();
 static IEnumerable<T> GetAllServices<T>(IServiceProvider provider)
 {
     var type = typeof(T);
+#pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
     var site = typeof(ServiceProvider).GetProperty("CallSiteFactory", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(provider);
     if (site == null)
         yield break;
     if (site.GetType().GetField("_descriptors", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(site) is not ServiceDescriptor[] descriptor)
         yield break;
+#pragma warning restore S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
     foreach (var entry in descriptor.Where(s => s.ServiceType.IsAssignableTo(type)).Select(s => provider.GetRequiredService(s.ServiceType)))
         yield return (T)entry;
 }

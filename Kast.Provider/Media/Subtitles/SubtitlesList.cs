@@ -5,7 +5,7 @@ using Kast.Provider.Supports;
 
 namespace Kast.Provider.Media
 {
-    public class SubtitlesList : IList<Subtitles>
+    public class SubtitlesList : IReadOnlyList<Subtitles>
     {
         private readonly List<Subtitles> _subtitles = new();
 
@@ -32,6 +32,8 @@ namespace Kast.Provider.Media
             }
         }
 
+        public bool IsExtractionRequired() => Count > 0 && !this.All(s => !string.IsNullOrWhiteSpace(s.FilePath) && File.Exists(s.FilePath));
+
         private static string GetLanguage(ISubtitleStream subtitle)
             => subtitle.Language?.ToLower() switch
             {
@@ -47,65 +49,11 @@ namespace Kast.Provider.Media
                 _ => subtitle.Language?.ToLower() ?? "Unknown",
             };
 
-        #region OnChange
-        public delegate void SubtitlesChangeEventHandler(object sender, Subtitles? e);
-        public event SubtitlesChangeEventHandler? OnSubtitlesChange;
-        #endregion
-
-        #region IList<Subtitles>
-        public Subtitles this[int index]
-        {
-            get => _subtitles[index];
-            set
-            {
-                _subtitles[index] = value;
-                OnSubtitlesChange?.Invoke(this, value);
-            }
-        }
-        public int Count => _subtitles.Count;
-        public bool IsReadOnly => ((ICollection<Subtitles>)_subtitles).IsReadOnly;
-
-        public void Add(Subtitles item)
-        {
-            _subtitles.Add(item);
-            OnSubtitlesChange?.Invoke(this, item);
-        }
-
-        public void Clear()
-        {
-            _subtitles.Clear();
-            OnSubtitlesChange?.Invoke(this, null);
-        }
-
-        public bool Contains(Subtitles item) => _subtitles.Contains(item);
-        public void CopyTo(Subtitles[] array, int arrayIndex) => _subtitles.CopyTo(array, arrayIndex);
+        #region IReadOnlyList<Subtitles>
+        public int Count => ((IReadOnlyCollection<Subtitles>)_subtitles).Count;
+        public Subtitles this[int index] => _subtitles[index];
         public IEnumerator<Subtitles> GetEnumerator() => _subtitles.GetEnumerator();
-        public int IndexOf(Subtitles item) => _subtitles.IndexOf(item);
-
-        public void Insert(int index, Subtitles item)
-        {
-            _subtitles.Insert(index, item);
-            OnSubtitlesChange?.Invoke(this, item);
-        }
-
-        public bool Remove(Subtitles item)
-        {
-            if (_subtitles.Remove(item))
-            {
-                OnSubtitlesChange?.Invoke(this, item);
-                return true;
-            }
-            return false;
-        }
-
-        public void RemoveAt(int index)
-        {
-            var item = _subtitles[index];
-            _subtitles.RemoveAt(index);
-            OnSubtitlesChange?.Invoke(this, item);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => _subtitles.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         #endregion
     }
 }

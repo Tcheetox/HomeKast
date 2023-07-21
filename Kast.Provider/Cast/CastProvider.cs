@@ -178,13 +178,12 @@ namespace Kast.Provider.Cast
         private MediaInformation Convert(IMedia media)
         {
             var metadata = new GenericMediaMetadata() { Title = media.Name };
-            if (!string.IsNullOrWhiteSpace(media.Metadata.Image))
+            if (media.Metadata != null && (media.Metadata.HasImage || !string.IsNullOrWhiteSpace(media.Metadata.ImageUrl)))
             {
-                if (media.Metadata.ImageWidth.HasValue && media.Metadata.ImageHeight.HasValue)
-                    metadata.Images = new GoogleCast.Models.Image[] { new GoogleCast.Models.Image() 
-                    { Url = $"{_settingsProvider.Application.Uri}media/{media.Id}/image", Width = media.Metadata.ImageWidth, Height = media.Metadata.ImageHeight } };
-                else if (media.Metadata.Image.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                    metadata.Images = new GoogleCast.Models.Image[] { new GoogleCast.Models.Image() { Url = media.Metadata.Image } };
+                string url = !media.Metadata.HasImage
+                    ? media.Metadata.ImageUrl!
+                    : $"{_settingsProvider.Application.Uri}media/{media.Id}/image";
+                metadata.Images = new GoogleCast.Models.Image[] { new GoogleCast.Models.Image() { Url = url } };
             }
 
             var subtitles = new List<Track>(media.Subtitles.Select(s => new Track() { 

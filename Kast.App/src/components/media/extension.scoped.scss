@@ -1,0 +1,38 @@
+.extension {
+  background-color: darken(#343a40, 20%);
+  background-color: gray;
+  margin-top: 100%;
+  height: 100px;
+  transform: translate(0, 90%);
+  z-index: 1;
+  position: relative;
+  border-bottom-left-radius: var(--main-radius);
+  border-bottom-right-radius: var(--main-radius);
+  color: white;
+  font-size: 13px;
+}
+
+.row {
+  width: 100%;
+  margin: auto;
+  padding: 0;
+}
+
+.title {
+  color: white;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+svg {
+  fill: white;
+}
+
+.resolution {
+  width: fit-content;
+  border-radius: 5px;
+  border: 1px solid;
+  text-align: center;
+  padding: 0 0.3rem;
+}

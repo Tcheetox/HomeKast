@@ -50,7 +50,7 @@ namespace Kast.Provider.Supports
         {
             var time = Stopwatch.StartNew();
             var write = DateTime.MinValue;
-            timeout ??= 5000;
+            timeout ??= Constants.FileAccessTimeout;
 
             while (time.ElapsedMilliseconds < timeout)
             {

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Kast.Provider.Supports;
+using static Kast.Provider.Media.MediaLibrary;
 
 namespace Kast.Provider.Media
 {
@@ -13,10 +14,15 @@ namespace Kast.Provider.Media
         public CachedMediaProvider(ILogger<MediaProvider> logger, IMetadataProvider metadataProvider, SettingsProvider settingsProvider, JsonSerializerOptions serializerOptions) 
             : base(logger, metadataProvider, settingsProvider)
         {
-            OnLibraryChangeEventHandler += SaveLibraryHandler;
+            OnLibraryChangeEventHandler += (_s, _e) => 
+            {
+                if (_s is MediaLibrary library)
+                    _ = SaveLibraryAsync(library);
+            };
 
             _serializerOptions = new JsonSerializerOptions(serializerOptions);
-            _serializerOptions.Converters.Add(new MediaLibrary.Converter(OnLibraryChangeEventHandler));
+            _serializerOptions.Converters.Add(new MediaLibraryConverter(OnLibraryChangeEventHandler));
+            _serializerOptions.Converters.Add(new MediaConverter());
         }
 
         protected override async Task<MediaLibrary> CreateLibraryAsync()
@@ -37,9 +43,18 @@ namespace Kast.Provider.Media
             try
             {
                 await _fileLock.WaitAsync();
-
                 using var stream = new FileStream(LibraryPath, FileMode.Open);
-                return await JsonSerializer.DeserializeAsync<MediaLibrary>(stream, _serializerOptions);
+                var library = await JsonSerializer.DeserializeAsync<MediaLibrary>(stream, _serializerOptions);
+                if (library == null)
+                    return library;
+
+                foreach (var media in library.Where(m => !string.IsNullOrWhiteSpace(m.Metadata?.ImageUrl) && (!m.Metadata.HasImage || !m.Metadata.HasThumbnail)))
+                {
+                    var metadata = await MetadataProvider.GetAsync(media);
+                    media.UpdateMetadata(metadata);
+                }
+
+                return library;
             }
             catch (Exception ex)
             {
@@ -50,12 +65,6 @@ namespace Kast.Provider.Media
             {
                 _fileLock.Release();
             }
-        }
-
-        private void SaveLibraryHandler(object? sender, EventArgs e)
-        {
-            if (sender is MediaLibrary library)
-                _ = SaveLibraryAsync(library);
         }
 
         private async Task SaveLibraryAsync(MediaLibrary? library)

@@ -1,5 +1,4 @@
-﻿using Kast.Api.Models;
-using Kast.Api.Problems;
+﻿using Kast.Api.Problems;
 using Kast.Provider;
 using Microsoft.AspNetCore.Mvc;
 

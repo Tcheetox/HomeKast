@@ -1,20 +1,117 @@
 ﻿using System.Text.RegularExpressions;
-using Xabe.FFmpeg;
 
 namespace Kast.Provider.Supports
 {
-    public static class Normalization
+    internal static class Normalization
     {
-        static Normalization()
+        private readonly static Regex _lonelyCharacter = new(@"[^a-zA-Z\d]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private readonly static Regex _number = new(@"\d", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private readonly static Regex _year = new(@"\d{4}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private readonly static Regex _serie1 = new(@"\bS\d{2}E\d{2,3}\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private readonly static Regex _serie2 = new(@"\bep\s?(\.|)\s?\d{1,3}\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private readonly static Regex _serie3 = new(@"(?<!\S)\d{2,3}(?!\S)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private readonly static Regex _noise = new(@"\[[^\]]*\]|\([^)]*\)|\{[^}]*\}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        public static (string name, string? episode, string? episodeName, int? year) NameFromPath(string filePath)
         {
-            _specificExclusions.AddRange(Enum.GetNames(typeof(VideoSize)));
-            _specificExclusions.AddRange(Enum.GetNames(typeof(VideoCodec)));
-            _specificExclusions.AddRange(Enum.GetNames(typeof(AudioCodec)));
-            _specificExclusions.RemoveAll(e => _specificInclusions.Contains(e));
+            var fileName = Path.GetFileNameWithoutExtension(filePath);
+            var name = string.Join(" ", fileName
+                .Replace("_", " ")
+                .Replace(".", " ")
+                .Split(" ", StringSplitOptions.RemoveEmptyEntries)
+                .Where(e => !_termExclusions.Contains(e)))
+                .Trim();
+
+            string? episode = null;
+            string? remainder = null;
+
+            // Look for episode
+            if (TryFindEpisode(name, out var refinedName, out var episodeIndex, out var remain))
+            {
+                name = refinedName;
+                episode = episodeIndex;
+                remainder = remain;
+            }
+
+            int? year = null;
+            // Look for year in name
+            if (TryFindYear(name, out int parsedYear))
+            {
+                year = parsedYear;
+                var splitted = name.Split(parsedYear.ToString(), StringSplitOptions.RemoveEmptyEntries);
+                if (splitted.Length > 0)
+                    name = splitted[0].Trim();
+            }  // Look for year in remainder if any
+            else if (TryFindYear(remainder, out parsedYear))
+                year = parsedYear;
+
+            // Remove noise
+            name = _noise.Replace(name, string.Empty);
+            if (!string.IsNullOrWhiteSpace(remainder))
+            {
+                remainder = _noise.Replace(remainder, string.Empty).Trim();
+                var splittedRemainder = remainder.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                remainder = string.Join(" ", splittedRemainder.Where(e => e.Length > 1 || !_lonelyCharacter.IsMatch(e))).Trim();
+                remainder = _number.Match(remainder).Success ? null : remainder;
+            }
+
+            // Remove lonely chars (single non digit-character must go away)
+            var splittedName = name.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+            name = string.Join(" ", splittedName.Where(c => c.Length > 1 || !_lonelyCharacter.IsMatch(c))).Trim();
+            if (string.IsNullOrWhiteSpace(name))
+                name = fileName;
+
+            return (name, episode, remainder, year);
         }
 
-        private static readonly List<string> _specificExclusions = new()
+        private static bool TryFindEpisode(string name, out string refinedName, out string episodeIndex, out string remain)
         {
+            refinedName = string.Empty; episodeIndex = string.Empty; remain = string.Empty;
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
+
+            var episodeMatch = _serie1.Match(name);
+            episodeMatch = episodeMatch.Success ? episodeMatch : _serie2.Match(name);
+            episodeMatch = episodeMatch.Success ? episodeMatch : _serie3.Match(name);
+            if (episodeMatch.Success)
+            {
+                episodeIndex = episodeMatch.Value;
+                var splitted = name.Split(episodeMatch.Value);
+                if (splitted.Length == 1)
+                    refinedName = name.Replace(episodeMatch.Value, string.Empty).Trim();
+                else
+                {
+                    refinedName = splitted[0].Trim();
+                    remain = string.Join(" ", splitted[1..]).Replace(".", string.Empty).Trim();
+                }
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryFindYear(string? entry, out int year)
+        {
+            year = -1;
+            if (string.IsNullOrWhiteSpace(entry))
+                return false;
+
+            var yearMatch = _year.Match(entry);
+            if (yearMatch.Success && int.TryParse(yearMatch.Value, out int parsedYear)
+                && parsedYear > 1900 && parsedYear < DateTime.Now.Year)
+            {
+                year = parsedYear;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static readonly HashSet<string> _termExclusions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "ep",
+            "truefrench",
+            "jpr",
+            "dc",
             "webrip",
             "jiheff",
             "x264-pophd",
@@ -79,7 +176,6 @@ namespace Kast.Provider.Supports
             "-fhd",
             "partie",
             "true",
-            "_",
             "final",
             "7.1",
             "7 1",
@@ -94,47 +190,5 @@ namespace Kast.Provider.Supports
             "IMAX",
             "RERiP"
         };
-
-        private static readonly List<string> _specificInclusions = new()
-        {
-            "anm"
-        };
-
-        private static readonly Regex _cleaningRegex = new(@"[\.\[\]\(\)_]", RegexOptions.Compiled);
-        public static (string normalized, string displayed) Names(string path)
-        {
-            var original = Path.GetFileNameWithoutExtension(path);
-            string cleaned = _cleaningRegex.Replace(original, match => match.Value switch
-            {
-                "." => " ",
-                "[" or "]" or "(" or ")" => " ",
-                "_" => " ",
-                _ => match.Value
-            });
-
-            for (int i = 0; i < 2; i++)
-            {
-                var cleanedArray = cleaned
-                    .Split(" ", StringSplitOptions.RemoveEmptyEntries)
-                    .Where(e => e.Length > 1 || e.ToLower() == "i".ToLower());
-                cleaned = string.Join(' ', cleanedArray);
-                foreach (var word in _specificExclusions)
-                    cleaned = cleaned.Replace(word, string.Empty, StringComparison.InvariantCultureIgnoreCase);
-            }
-
-            cleaned = cleaned.Trim().Capitalize();
-            var splittedName = cleaned.Split(' ');
-            int idx = -1;
-            for (int i = 0; i < splittedName.Length; i++)
-                if (splittedName[i].Any(char.IsDigit))
-                {
-                    idx = i;
-                    break;
-                }
-
-            string displayName = string.Join(' ', splittedName.Where(e => !e.StartsWith('-')));
-            string normalizedName = idx > 0 ? string.Join(' ', splittedName[0..idx]) : displayName;
-            return (normalizedName, displayName);
-        }
     }
 }

@@ -22,7 +22,7 @@ namespace Kast.Provider.Media
         protected MediaBase(
             Guid id,
             string name, 
-            Metadata metadata,
+            Metadata? metadata,
             SubtitlesList subtitles,
             string filePath,
             TimeSpan length,
@@ -36,7 +36,6 @@ namespace Kast.Provider.Media
             Name = name;
             Metadata = metadata;
             Subtitles = subtitles;
-            Subtitles.OnSubtitlesChange += (_, _) => UpdateStatus();
             FilePath = filePath;
             Length = length;
             VideoCodec = videoCodec;
@@ -47,14 +46,12 @@ namespace Kast.Provider.Media
             UpdateStatus();
         }
 
-        protected MediaBase(string name, IMediaInfo info, Metadata metadata, SubtitlesList subtitles)
+        protected MediaBase(IMediaInfo info, SubtitlesList subtitles)
         {
             Id = Guid.NewGuid();
-            Name = name;
-            Metadata = metadata;
             Subtitles = subtitles;
-            Subtitles.OnSubtitlesChange += (_, _) => UpdateStatus();
             FilePath = info.Path;
+            Name = FileName;
             Length = info.Duration;
             var videoStream = info.VideoStreams.First();
             Resolution = ConversionSupport.GetResolution(videoStream.Width, videoStream.Height);
@@ -62,18 +59,20 @@ namespace Kast.Provider.Media
             VideoFrameRate = videoStream.Framerate;
             var audioStream = info.AudioStreams.First();
             AudioCodec = audioStream.Codec;
-            Info = info; // Will trigger a status update
+            Info = info;
+
+            UpdateStatus();
         }
 
-        public abstract string Type { get; }
-
-        private FileInfo? _fileInfo;
-        private FileInfo FileInfo => _fileInfo ??= new(FilePath);
-        public string FilePath {get; private set;}
-        [JsonIgnore]
-        public string Directory => FileInfo.Directory!.FullName;
+        public string Name { get; protected set; }
         [JsonIgnore]
         public string FileName => FileInfo.Name.Capitalize();
+        public abstract string Type { get; }
+        private FileInfo? _fileInfo;
+        private FileInfo FileInfo => _fileInfo ??= new(FilePath);
+        public string FilePath { get; }
+        [JsonIgnore]
+        public string Directory => FileInfo.Directory!.FullName; 
         [JsonIgnore]
         public string Extension => FileInfo.Extension;
         [JsonIgnore]
@@ -83,40 +82,13 @@ namespace Kast.Provider.Media
         public TimeSpan Length { get; private set; }
         [JsonIgnore]
         public MediaStatus Status { get; private set; }
-        public SubtitlesList Subtitles { get; private set; }
-        public string Name { get; protected set; }
-        public Metadata Metadata { get; private set; }
+        public SubtitlesList Subtitles { get; private set; }     
+        public Metadata? Metadata { get; private set; }
         public VideoSize Resolution { get; private set; }
-
-        private IMedia? _companion;
         [JsonIgnore]
-        public IMedia? Companion 
-        { 
-            get => _companion; 
-            set
-            {
-                _companion = value;
-                UpdateStatus();
-            }
-        }
+        public IMedia? Companion { get; private set; }
         [JsonIgnore]
-        public bool HasCompanion => Companion != null;
-
-        private IMediaInfo? _info;
-        [JsonIgnore]
-        public IMediaInfo? Info 
-        { 
-            get => _info;
-            set
-            {
-                _info = value;
-                UpdateStatus();
-            }
-        }
-
-        [JsonIgnore]
-        public bool HasInfo => Info != null;
-
+        public IMediaInfo? Info { get; private set; }
         public Guid Id { get; private set; }
         public double VideoFrameRate { get; private set; }
         public string VideoCodec { get; private set; }
@@ -133,24 +105,38 @@ namespace Kast.Provider.Media
             MediaStatus newStatus;
             if (ConversionSupport.IsConversionRequired(this))
                 newStatus = MediaStatus.Unplayable;
-            else if (Subtitles.Count > 0 && !Subtitles.Any(s => s.Exists()))
+            else if (Subtitles.IsExtractionRequired())
                 newStatus = MediaStatus.MissingSubtitles;
             else
                 newStatus = MediaStatus.Playable;
 
-            if (HasCompanion)
-                switch (newStatus)
-                {
-                    case MediaStatus.Playable when Companion!.Status == MediaStatus.Unplayable:
-                        (Companion as MediaBase)?.UpdateStatus();
-                        break;
-                    case MediaStatus.Unplayable when Companion!.Status == MediaStatus.Playable:
-                    case MediaStatus.Unplayable when Companion!.Status == MediaStatus.Unplayable:
-                        newStatus = MediaStatus.Hidden;
-                        break;
-                }
+            switch (newStatus)
+            {
+                case MediaStatus.Playable when Companion?.Status == MediaStatus.Unplayable:
+                    Companion?.UpdateStatus();
+                    break;
+                case MediaStatus.Unplayable when Companion?.Status == MediaStatus.Playable:
+                case MediaStatus.Unplayable when Companion?.Status == MediaStatus.Unplayable:
+                    newStatus = MediaStatus.Hidden;
+                    break;
+            }
 
             Status = newStatus;
+        }
+
+        public void UpdateCompanion(IMedia? companion = null)
+        { 
+            Companion = companion;
+            UpdateStatus();
+        }
+
+        public void UpdateInfo(IMediaInfo? info = null)
+        { 
+            Info = info;
+        }
+        public void UpdateMetadata(Metadata? metadata = null)
+        {
+            Metadata = metadata;
         }
 
         public override string ToString() => $"{Name} ({Id})";

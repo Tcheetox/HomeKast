@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Kast.Provider.Conversions.Factories;
 using Kast.Provider.Media;
 using Kast.Provider.Supports;
+using Xabe.FFmpeg;
 
 namespace Kast.Provider.Conversions
 {
@@ -47,7 +48,7 @@ namespace Kast.Provider.Conversions
             if (media.Status != MediaStatus.MissingSubtitles && media.Status != MediaStatus.Unplayable)
                 return false;
 
-            if (!media.HasInfo)
+            if (media.Info == null)
             {
                 var info = await _mediaProvider.GetInfoAsync(media);
                 if (info == null)
@@ -55,7 +56,9 @@ namespace Kast.Provider.Conversions
                     _logger.LogInformation("Conversion of {media} cannot be started because of missing information", media);
                     return false;
                 }
-                media.Info = info;
+
+                media.UpdateInfo(info);
+                _logger.LogInformation("{info} added to {media} to prepare conversion", nameof(IMediaInfo), media);
             }
 
             var context = new ConversionContext(media, _settingsProvider);

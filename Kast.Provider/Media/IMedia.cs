@@ -6,27 +6,30 @@ namespace Kast.Provider.Media
     public interface IMedia : IEquatable<IMedia>
     {
         string Name { get; }
-        bool HasCompanion { get; }
         [JsonIgnore]
-        IMedia? Companion { get; set; }
+        IMedia? Companion { get; }
         DateTime Creation { get; }
         string Directory { get; }
         string Extension { get; }
         string FileName { get; }
-        bool HasInfo { get; }
         Guid Id { get; }
         [JsonIgnore]
-        IMediaInfo? Info { get; set; }
+        IMediaInfo? Info { get; }
         string Type { get; }
         TimeSpan Length { get; }
         string FilePath { get; }
         VideoSize Resolution { get; }
         MediaStatus Status { get; }
-        Metadata Metadata { get; }
+        Metadata? Metadata { get; }
         SubtitlesList Subtitles { get; }
+        [JsonIgnore]
         string ContentType { get; }
 
         void UpdateStatus(int? progress = null);
+        void UpdateMetadata(Metadata? metadata = null);
+        void UpdateCompanion(IMedia? companion = null);
+        void UpdateInfo(IMediaInfo? info = null);
+
         string ToString();
     }
 }

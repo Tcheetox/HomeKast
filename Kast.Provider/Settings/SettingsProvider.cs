@@ -18,7 +18,6 @@ namespace Kast.Provider
         {
             _logger = logger;
             _serializerOptions = new JsonSerializerOptions(serializerOptions) { WriteIndented = true };
-
             if (!File.Exists(_path))
                 throw new ArgumentException($"User settings could not be found {_path}");
 

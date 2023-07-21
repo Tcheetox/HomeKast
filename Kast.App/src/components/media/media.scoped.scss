@@ -1,0 +1,32 @@
+.media {
+  width: 280px;
+  height: 420px;
+  border-radius: var(--main-radius);
+  position: relative;
+
+  transition-duration: var(--main-transition-duration);
+  &:hover {
+    transform: scale(1.03);
+    z-index: 1;
+  }
+}
+
+.thumbnail {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--main-radius);
+}
+
+.title {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 500;
+  margin: auto;
+  color: white;
+  top: 88%;
+  left: 50%;
+  transform: translate(-50%, 0%);
+}

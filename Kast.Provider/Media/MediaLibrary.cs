@@ -1,12 +1,10 @@
 ﻿using System.Collections;
-using System.Text.Json.Serialization;
-using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
 using Kast.Provider.Supports;
 
 namespace Kast.Provider.Media
 {
-    public class MediaLibrary : IEnumerable<IMedia>, IDisposable
+    public partial class MediaLibrary : IEnumerable<IMedia>, IDisposable
     {
         private readonly MultiConcurrentDictionary<Guid, string, IMedia> _store;
         private readonly CompanionComparer _companionComparer = new();
@@ -19,20 +17,29 @@ namespace Kast.Provider.Media
             _store = new(key2Comparer: StringComparer.OrdinalIgnoreCase);
         }
         
-        public MediaLibrary(MultiConcurrentDictionary<Guid, string, IMedia> store, EventHandler? onChangeEventHandler = null)
+        private MediaLibrary(IEnumerable<IMedia> store, EventHandler? onChangeEventHandler = null)
         {
             _onChangeEventHandler = onChangeEventHandler;
-            _store = store;
+            _store = new(store.Where(e => File.Exists(e.FilePath))
+                .Select(e => new KeyValuePair<MultiKey<Guid, string>, IMedia>(new MultiKey<Guid, string>(e.Id, e.FilePath), e)), 
+                key2Comparer: StringComparer.OrdinalIgnoreCase);
+
+            // Refresh companionship
+            foreach (var entry in _store.Values)
+            {
+                if (!File.Exists(entry.FilePath))
+                {
+                    TryRemove(entry);
+                    continue;
+                }
+
+                if (entry.Companion == null)
+                    AddCompanionship(entry);
+            }
         }
 
-        public async Task<bool> AddOrRefreshAsync(string path, Func<string, Task<IMedia?>> creator)
+        public bool AddOrRefreshAsync(IMedia media)
         {
-            if (!TryGetValue(path, out IMedia? media))
-                media = await creator(path);
-
-            if (media == null)
-                return false;
-
             _store.GetOrAdd(media.Id, media.FilePath, media, out bool added);
             AddCompanionship(media);
 
@@ -43,24 +50,19 @@ namespace Kast.Provider.Media
 
         public bool TryRemove(IMedia? media)
         {
-            if (media == null) 
+            if (media == null)
                 return false;
 
             if (!_store.TryRemove(media.Id, media.FilePath))
                 return false;
 
-            // Remove companionship
-            if (media.HasCompanion)
-            {
-                media.Companion!.Companion = null;
-                media.Companion = null;
-            }
+            RemoveCompanionship(media);
 
             _onChangeEventHandler?.Invoke(this, EventArgs.Empty);
 
             return true;
         }
-
+        
         public bool TryGetValue(string path, out IMedia? media) => _store.TryGetValue(path, out media);
         public bool TryGetValue(Guid guid, out IMedia? media) => _store.TryGetValue(guid, out media);
 
@@ -70,21 +72,27 @@ namespace Kast.Provider.Media
         #endregion
 
         #region Private support
+        private static void RemoveCompanionship(IMedia media)
+        {
+            media.Companion?.UpdateCompanion(null);
+            media.UpdateCompanion(null);
+        }
+
         private void AddCompanionship(IMedia media)
         {
             foreach (var attempt in ExpectedCompanionPath(media))
                 if (_store.TryGetValue(attempt, out var companion))
                 {
-                    media.Companion = companion;
-                    companion.Companion = media;
+                    media.UpdateCompanion(companion);
+                    companion.UpdateCompanion(media);
                     return;
                 }
 
             // Slow lookup
             foreach (var companion in this.Where(m => _companionComparer.Equals(m, media)))
             {
-                media.Companion = companion;
-                companion.Companion = media;
+                media.UpdateCompanion(companion);
+                companion.UpdateCompanion(media);
             }
         }
 
@@ -106,7 +114,9 @@ namespace Kast.Provider.Media
                 foreach (var extension in ConversionSupport.AcceptedExtensions)
                     yield return Path.Combine(targetDirectory, $"_{mediaWithoutExtension}{extension}");
         }
+        #endregion
 
+        #region IEqualityComparer<IMedia>
         private sealed class CompanionComparer : IEqualityComparer<IMedia>
         {
             public bool Equals(IMedia? x, IMedia? y)
@@ -126,55 +136,6 @@ namespace Kast.Provider.Media
         }
         #endregion
 
-        #region JsonConverter
-        internal class Converter : JsonConverter<MediaLibrary>
-        {
-            private readonly MultiConcurrentDictionaryConverter<Guid, string, IMedia> _multiDictionaryConverter = new(key2Comparer: StringComparer.OrdinalIgnoreCase);
-            private readonly MultiKeyConverter _multiKeyConverter = new();
-            private readonly MediaConverter _mediaConverter = new();
-            private readonly EventHandler? _onLibraryChangeEventHandler;
-
-            public Converter(EventHandler? onLibraryChangeEventHandler = null)
-            {
-                _onLibraryChangeEventHandler = onLibraryChangeEventHandler;
-            }
-
-            private JsonSerializerOptions Extra(JsonSerializerOptions baseOptions)
-            {
-                var updatedOptions = new JsonSerializerOptions(baseOptions);
-                updatedOptions.Converters.Add(_multiKeyConverter);
-                updatedOptions.Converters.Add(_mediaConverter);
-                return updatedOptions;
-            }
-
-            public override MediaLibrary? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            {
-                var store = _multiDictionaryConverter.Read(ref reader, typeToConvert, Extra(options));
-                if (store == null)
-                    return new MediaLibrary(_onLibraryChangeEventHandler);
-
-                // Build library and restore companionship
-                var library = new MediaLibrary(store, _onLibraryChangeEventHandler);
-                foreach (var entry in store.Values)
-                {
-                    if (!File.Exists(entry.FilePath))
-                    {
-                        library.TryRemove(entry);
-                        continue;
-                    }
-
-                    if (!entry.HasCompanion)
-                        library.AddCompanionship(entry);
-                }
-
-                return library;
-            }
-
-            public override void Write(Utf8JsonWriter writer, MediaLibrary value, JsonSerializerOptions options)
-                => _multiDictionaryConverter.Write(writer, value._store, Extra(options));
-        }
-        #endregion
-
         #region IDisposable
         private bool _disposedValue;
         protected virtual void Dispose(bool disposing)
@@ -183,7 +144,6 @@ namespace Kast.Provider.Media
             {
                 if (disposing)
                     _onChangeEventHandler = null;
-
                 _disposedValue = true;
             }
         }

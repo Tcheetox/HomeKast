@@ -4,46 +4,19 @@ namespace Kast.Provider.Media
 {
     public class Metadata
     {
-        public int? ImageWidth { get; set; }
-        public int? ImageHeight { get; set; }
-        public string? Image { get; set; }
-        [JsonPropertyName("backdrop_path")]
-        public string? Backdrop { get; set; }
-        [JsonPropertyName("media_type")]
-        public string? MediaType { get; set; }
-        [JsonPropertyName("original_title")]
-        public string? OriginalTitle { get; set; }
-        public double? Popularity { get; set; }
-        [JsonPropertyName("poster_path")]
-        public string? Poster { get; set; }
-        [JsonPropertyName("release_date")]
-        public string? Released { get; set; }
-        public string? Title { get; set; }
-        [JsonPropertyName("vote_average")]
-        public double? Vote { get; set; }
-        [JsonPropertyName("overview")]
-        public string? Description { get; set; }
-        public string? Thumbnail { get; set; }
-    }
+        public string? Backdrop { get; init; }
+        public string? MediaType { get; init; }
+        public string? OriginalTitle { get; init; }
+        public DateTime? Released { get; init; }
+        public double? Vote { get; init; }
+        public string? Description { get; init; }
+        public string? ImageUrl { get; init; }
 
-    internal class MetadataResults
-    {
-        public int Page { get; set; }
-        [JsonPropertyName("total_pages")]
-        public int TotalPages { get; set; }
-        [JsonPropertyName("total_results")]
-        public int TotalResults { get; set; }
-
-        private List<Metadata>? _results;
-        public List<Metadata> Results
-        {
-            get => _results ??= new List<Metadata>();
-            set
-            {
-                if (value == null || !value.Any())
-                    return;
-                _results = new List<Metadata>() { value.First() };
-            }
-        }
+        [JsonIgnore]
+        public bool HasImage => !string.IsNullOrWhiteSpace(ImagePath) && File.Exists(ImagePath);
+        public string? ImagePath { get; set; }
+        [JsonIgnore]
+        public bool HasThumbnail => !string.IsNullOrWhiteSpace(ThumbnailPath) && File.Exists(ThumbnailPath);
+        public string? ThumbnailPath { get; set; }
     }
 }

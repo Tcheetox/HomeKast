@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using Kast.Provider.Supports;
+using System.Text.Json.Serialization;
 using Xabe.FFmpeg;
 
 namespace Kast.Provider.Media
@@ -9,7 +10,7 @@ namespace Kast.Provider.Media
         public Movie(
             Guid id,
             string name,
-            Metadata metadata,
+            Metadata? metadata,
             SubtitlesList subtitles,
             string filePath,
             TimeSpan length,
@@ -17,13 +18,16 @@ namespace Kast.Provider.Media
             double videoFrameRate,
             string audioCodec,
             VideoSize resolution)
-            : base(id, name, metadata, subtitles, filePath, TimeSpan.MaxValue, videoCodec, videoFrameRate, audioCodec, resolution)
+            : base(id, name, metadata, subtitles, filePath, length, videoCodec, videoFrameRate, audioCodec, resolution)
         { }
 
-        public Movie(string name, IMediaInfo info, Metadata metadata, SubtitlesList subtitles) 
-            : base(name, info, metadata, subtitles)
-        { }
+        public Movie(IMediaInfo info, SubtitlesList subtitles) 
+            : base(info, subtitles)
+        {
+            var (name, _, _, _) = Normalization.NameFromPath(info.Path);
+            Name = name;
+        }
 
-        public override string Type => typeof(Movie).Name;
+        public override string Type => "Movie";
     }
 }

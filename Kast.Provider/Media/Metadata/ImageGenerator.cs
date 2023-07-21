@@ -6,22 +6,24 @@ namespace Kast.Provider.Media
 {
     internal static class ImageGenerator
     {
-        public static bool TryCreateThumbnail(ILogger logger, Image original, string originalImagePath, int desiredWidth, int desiredHeight, out string? thumbnailPath)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "WindowsOnly")]
+        public static bool TryCreateThumbnail(ILogger logger, Stream stream, string path, int width, int height)
         {
             try
             {
+                using var original = Image.FromStream(stream);
                 int newWidth, newHeight;
                 float aspectRatio = (float)original.Width / original.Height;
 
                 if (original.Width > original.Height)
                 {
-                    newWidth = desiredWidth;
-                    newHeight = (int)Math.Round(desiredWidth / aspectRatio);
+                    newWidth = width;
+                    newHeight = (int)Math.Round(width / aspectRatio);
                 }
                 else
                 {
-                    newWidth = (int)Math.Round(desiredHeight * aspectRatio);
-                    newHeight = desiredHeight;
+                    newWidth = (int)Math.Round(height * aspectRatio);
+                    newHeight = height;
                 }
 
                 // Create a new bitmap with the desired dimensions
@@ -36,20 +38,14 @@ namespace Kast.Provider.Media
                 // Resize the original image to the new dimensions
                 graphics.DrawImage(original, 0, 0, newWidth, newHeight);
 
-                // Get the directory and file name of the original image
-                string originalDirectory = Path.GetDirectoryName(originalImagePath);
-                string originalFileName = Path.GetFileNameWithoutExtension(originalImagePath);
-                string originalExtension = Path.GetExtension(originalImagePath);
-
-                thumbnailPath = Path.Combine(originalDirectory, $"{originalFileName}_thumbnail{originalExtension}");
-                thumbnailBitmap.Save(thumbnailPath);
+                // Save
+                thumbnailBitmap.Save(path);
 
                 return true;
             }
             catch (Exception ex)
             {
-                thumbnailPath = null;
-                logger.LogError(ex, "Unable to create thumbnail of {originalPath}", originalImagePath);
+                logger.LogError(ex, "Unable to create thumbnail of {originalPath}", path);
                 return false;
             }
         }
