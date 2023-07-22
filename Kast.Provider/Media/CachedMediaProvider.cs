@@ -34,6 +34,16 @@ namespace Kast.Provider.Media
             return await base.CreateLibraryAsync();
         }
 
+        protected override void OnSettingsChanged(object? sender, Settings e)
+        {
+            if (e.Library.Equals(SettingsProvider.Settings.Library))
+                return;
+
+            _ = IOSupport
+                .DeleteAsync(LibraryPath, SettingsProvider.Application.FileAccessTimeout)
+                .ContinueWith(_ => RefreshAsync());
+        }
+
         private readonly SemaphoreSlim _fileLock = new(1, 1);
         private async Task<MediaLibrary?> RestoreLibraryAsync()
         {

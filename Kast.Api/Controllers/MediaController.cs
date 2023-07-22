@@ -23,7 +23,7 @@ namespace Kast.Api.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<IGrouping<string, Media>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllAsync()
-            => Ok((await _mediaProvider.GetGroupAsync()).Select(e => new Grouping<string, Media>(e.Key, e.Select(Media.From))));
+            => Ok((await _mediaProvider.GetGroupAsync()).Select(MediaGroup.Filtered));
 
         [HttpGet("{mediaId:guid}")]
         [ProducesResponseType(typeof(Media), StatusCodes.Status200OK)]

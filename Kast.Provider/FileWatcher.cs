@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Kast.Provider.Media;
 using Kast.Provider.Supports;
-using System.Linq;
 
 namespace Kast.Provider
 {
@@ -13,7 +12,7 @@ namespace Kast.Provider
         private readonly SettingsProvider _settingsProvider;
         private readonly List<FileSystemWatcher> _watchers = new();
         private readonly IMediaProvider _mediaProvider;
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
         private readonly Dictionary<string, Func<FileSystemEventArgs, Task>> _actors;
 
         public FileWatcher(ILogger<FileWatcher> logger, IMediaProvider mediaProvider, SettingsProvider settingsProvider)
@@ -25,7 +24,8 @@ namespace Kast.Provider
             _actors = new Dictionary<string, Func<FileSystemEventArgs, Task>>(StringComparer.OrdinalIgnoreCase)
             {
                 { _default, DefaultHandler },
-                { Constants.SubtitlesExtension, SubtitlesHandler }
+                { Constants.SubtitlesExtension, SubtitlesHandler },
+                { string.Empty, DirectoryHandler }
             }; 
         }
 
@@ -57,9 +57,9 @@ namespace Kast.Provider
         {
             foreach (var watcher in _watchers)
             {
-                watcher.Renamed -= Watcher_Changed;
-                watcher.Created -= Watcher_Changed;
-                watcher.Deleted -= Watcher_Changed;
+                watcher.Renamed -= OnWatcherChanged;
+                watcher.Created -= OnWatcherChanged;
+                watcher.Deleted -= OnWatcherChanged;
                 watcher.Dispose();
             }
             _watchers.Clear();
@@ -76,15 +76,20 @@ namespace Kast.Provider
                 IncludeSubdirectories = true,
                 EnableRaisingEvents = true,
             };
-            watcher.Renamed += Watcher_Changed;
-            watcher.Created += Watcher_Changed;
-            watcher.Deleted += Watcher_Changed;
+            watcher.Renamed += OnWatcherChanged;
+            watcher.Created += OnWatcherChanged;
+            watcher.Deleted += OnWatcherChanged;
             _watchers.Add(watcher);
         }
 
-        private void OnSettingsChanged(object? sender, Settings settings) => RefreshAsync();
+        private void OnSettingsChanged(object? sender, Settings settings)
+        {
+            if (settings.Library.Equals(_settingsProvider.Settings.Library))
+                return;
+            _ = RefreshAsync();
+        }
 
-        private async void Watcher_Changed(object sender, FileSystemEventArgs e)
+        private async void OnWatcherChanged(object sender, FileSystemEventArgs e)
         {
             var extension = Path.GetExtension(e.FullPath);
             if (_actors.TryGetValue(extension, out var actor))
@@ -95,18 +100,43 @@ namespace Kast.Provider
 
         private async Task<bool> IsFileAvailableAsync(string path, FileSystemEventArgs e)
         {
-            if (!await IOSupport.IsFileAvailableWithRetryAsync(path, _settingsProvider.Application.FileAccessTimeout))
-            {
-                _logger.LogWarning("File watcher triggered by a {event} event did not get access to {file}",
-                    e.ChangeType.ToString().ToLower(),
-                    e.FullPath);
-                return false;
-            }
+            if (await IOSupport.IsFileAvailableWithRetryAsync(path, _settingsProvider.Application.FileAccessTimeout))
+                return true;
 
-            return true;
+            _logger.LogWarning("File watcher triggered by a {event} event did not get access to {file}",
+                   e.ChangeType.ToString().ToLower(),
+                   e.FullPath);
+
+            return false;
         }
 
         #region Handlers
+        private Func<FileSystemEventArgs, Task> DirectoryHandler
+            => async e =>
+            {
+                var library = await _mediaProvider.GetAllAsync();
+                if (e.ChangeType == WatcherChangeTypes.Deleted || e.ChangeType == WatcherChangeTypes.Renamed)
+                {
+                    var oldDirectory = e.ChangeType == WatcherChangeTypes.Renamed
+                        ? ((RenamedEventArgs)e).OldFullPath
+                        : e.FullPath;
+                    foreach (var path in from path in library
+                                         where path.FilePath.StartsWith(oldDirectory)
+                                         select path.FilePath)
+                    {
+                        await _mediaProvider.TryRemoveAsync(path);
+                    }
+
+                    if (e.ChangeType == WatcherChangeTypes.Deleted)
+                        return;
+                }
+
+                await Parallel.ForEachAsync(Directory.EnumerateFiles(e.FullPath, "*.*", SearchOption.AllDirectories)
+                    .Where(f => _settingsProvider.Library.Extensions.Contains(Path.GetExtension(f))),
+                    new ParallelOptions() { MaxDegreeOfParallelism = _settingsProvider.Application.MaxDegreeOfParallelism },
+                    async (file, _) => await _mediaProvider.AddOrUpdateAsync(file));
+            };
+
         private Func<FileSystemEventArgs, Task> SubtitlesHandler
             => async e =>
             {
@@ -125,7 +155,7 @@ namespace Kast.Provider
                 {
                     case WatcherChangeTypes.Created:
                         if (await IsFileAvailableAsync(e.FullPath, e))
-                            await _mediaProvider.AddOrRefreshAsync(e.FullPath);
+                            await _mediaProvider.AddOrUpdateAsync(e.FullPath);
                         break;
 
                     case WatcherChangeTypes.Deleted:
@@ -137,7 +167,7 @@ namespace Kast.Provider
                         if (await IsFileAvailableAsync(re.FullPath, e))
                         {
                             await _mediaProvider.TryRemoveAsync(re.OldFullPath);
-                            await _mediaProvider.AddOrRefreshAsync(re.FullPath);
+                            await _mediaProvider.AddOrUpdateAsync(re.FullPath);
                         }
                         break;
 

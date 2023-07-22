@@ -8,11 +8,11 @@ namespace Kast.Provider.Media
     public enum MediaStatus
     {
         Hidden,
-        Playable,
+        Unplayable,    
         MissingSubtitles,
-        Unplayable,
         Queued,
-        Converting
+        Converting,
+        Playable
     }
 
     [DebuggerDisplay("{Name} ({Id})")]

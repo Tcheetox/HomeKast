@@ -3,6 +3,8 @@
   height: 420px;
   border-radius: var(--main-radius);
   position: relative;
+  background-color: darken(#343a40, 20%);
+  margin-bottom: var(--main-margin-width);
 
   transition-duration: var(--main-transition-duration);
   &:hover {
@@ -26,7 +28,6 @@
   font-weight: 500;
   margin: auto;
   color: white;
-  top: 88%;
   left: 50%;
-  transform: translate(-50%, 0%);
+  transform: translate(-50%, 360px);
 }

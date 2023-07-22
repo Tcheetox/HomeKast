@@ -11,6 +11,8 @@ namespace Kast.Provider.Media
 
         private EventHandler? _onChangeEventHandler;
 
+        public int Count => _store.Count;
+
         public MediaLibrary(EventHandler? onChangeEventHandler = null) 
         {
             _onChangeEventHandler = onChangeEventHandler;
@@ -38,7 +40,7 @@ namespace Kast.Provider.Media
             }
         }
 
-        public bool AddOrRefreshAsync(IMedia media)
+        public bool AddOrUpdateAsync(IMedia media)
         {
             _store.GetOrAdd(media.Id, media.FilePath, media, out bool added);
             AddCompanionship(media);
@@ -98,7 +100,7 @@ namespace Kast.Provider.Media
 
         private static IEnumerable<string> ExpectedCompanionPath(IMedia media)
         {
-            if (media.FileName.StartsWith("_"))
+            if (media.FileName.StartsWith('_'))
             {
                 // Long shot a finding the non-converted original media path
                 var originalName = media.FileName[1..].Replace(media.Extension, ".mkv");
@@ -143,7 +145,10 @@ namespace Kast.Provider.Media
             if (!_disposedValue)
             {
                 if (disposing)
+                {
                     _onChangeEventHandler = null;
+                    _store.Clear();
+                }
                 _disposedValue = true;
             }
         }

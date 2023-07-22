@@ -7,7 +7,7 @@ namespace Kast.Provider.Media
         Task<IEnumerable<T>> GetAllAsync();
         Task<T?> GetAsync(Guid guid);
         Task<T?> GetAsync(string path);
-        Task<bool> AddOrRefreshAsync(string path);
+        Task<bool> AddOrUpdateAsync(string path);
         Task<bool> TryRemoveAsync(string path);
     }
 

@@ -12,14 +12,14 @@ export default function Overlay({ id, status, children }) {
   return (
     <div className={`overlay ${status}`}>
       <Switch test={status}>
-        <Play value={1} onClick={play} />
-        <Case value={2} onClick={startConversion}>
+        <Play value={'Playable'} onClick={play} />
+        <Case value={'MissingSubtitles'} onClick={startConversion}>
           <Convert />
           <Subtitles className='subtitles' />
         </Case>
-        <Convert value={3} onClick={startConversion} />
-        <Queued value={4} />
-        <Convert value={5} />
+        <Convert value={'Unplayable'} onClick={startConversion} />
+        <Queued value={'Queued'} />
+        <Convert value={'Converting'} />
       </Switch>
       {children ?? null}
     </div>

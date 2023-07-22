@@ -8,10 +8,10 @@ export default function Library() {
   const library = useLibrary()
 
   return (
-    <>
+    <div className='library'>
       {library.map(c => (
         <Media key={c[0].name} collection={c} />
       ))}
-    </>
+    </div>
   )
 }

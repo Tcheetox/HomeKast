@@ -35,11 +35,12 @@ namespace Kast.Provider
 
             try
             {
-                string content = JsonSerializer.Serialize(Settings, _serializerOptions);
+                string content = JsonSerializer.Serialize(settings, _serializerOptions);
                 File.WriteAllText(_path, content);
                 Directory.CreateDirectory(settings.Application.CacheDirectory);
-                SettingsChanged?.Invoke(this, settings);
+                var previousSettings = Settings;
                 Settings = settings;
+                SettingsChanged?.Invoke(this, previousSettings);
                 return true;
             }
             catch (JsonException ex)

@@ -11,11 +11,12 @@ namespace Kast.Api.Models
             => new()
             {
                 Name = media.Name,
+                Type = media.Type,
                 Creation = media.Creation,
                 Id = media.Id,
                 Length = media.Length,
                 Resolution = media.Resolution,
-                Status = media.Status,
+                Status = media.Status.ToString(),
                 Captions = new List<Caption>(media.Subtitles.Select(s => new Caption(s))),
                 Description = media.Metadata?.Description,
                 Popularity = media.Metadata?.Vote,
@@ -26,11 +27,12 @@ namespace Kast.Api.Models
             };
 
         public string? Name { get; private init; }
+        public string? Type { get; private init; }
         public DateTime Creation { get; private init; }
         public Guid Id { get; private init; }
         public TimeSpan Length { get; private init; }
         public VideoSize Resolution { get; private init; }
-        public MediaStatus Status { get; private init; }
+        public string Status { get; private init; }
         public IReadOnlyList<Caption>? Captions { get; private init; }
         public string? Description { get; private init; }
         public double? Popularity { get; private init; }

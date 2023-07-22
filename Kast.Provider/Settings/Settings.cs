@@ -34,7 +34,7 @@ namespace Kast.Provider
 
             return Application.Equals(other.Application) 
                 && Library.Equals(other.Library) 
-                && Preferences.Equals(other.Preferences);
+                && Preferences.SequenceEqual(other.Preferences);
         }
 
         public override bool Equals(object? obj)
@@ -224,6 +224,7 @@ namespace Kast.Provider
                 || !Utilities.InsensitiveCompare(Uri.ToString(), other.Uri.ToString())
                 || HttpPort != other.HttpPort
                 || MaxDegreeOfParallelism != other.MaxDegreeOfParallelism
+                || ReceiverRefreshInterval != other.ReceiverRefreshInterval
                 || MediaInfoTimeout != other.MediaInfoTimeout
                 || MetadataTimeout != other.MetadataTimeout
                 || FileAccessTimeout != other.FileAccessTimeout)

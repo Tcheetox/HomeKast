@@ -71,11 +71,15 @@ namespace Kast.Provider.Supports
                 Debug.WriteLine(timing);
 
             if (logger == null)
+            {
+                Store.Clear();
                 return;
+            }
 
             logger.LogDebug(label);
             foreach (Timing timing in Store.Values)
                 logger.LogDebug(timing.ToString());
+            Store.Clear();
         }
     }
 }

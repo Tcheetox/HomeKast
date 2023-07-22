@@ -18,8 +18,16 @@ namespace Kast.Provider.Media
 
             Logger = logger;
             SettingsProvider = settingsProvider;
+            SettingsProvider.SettingsChanged += OnSettingsChanged;
             MetadataProvider = metadataProvider;
             OnLibraryChangeEventHandler += (_, __) => _groupedLibrary = null;
+        }
+
+        protected virtual void OnSettingsChanged(object? sender, Settings e)
+        {
+            if (e.Library.Equals(SettingsProvider.Settings.Library))
+                return;
+            _ = RefreshAsync();
         }
 
         private MediaLibrary? _library;
@@ -29,6 +37,7 @@ namespace Kast.Provider.Media
             {
                 _library.Dispose();
                 _library = null;
+                _groupedLibrary = null;
             }
             _ = await GetLibraryAsync();
         }
@@ -52,7 +61,7 @@ namespace Kast.Provider.Media
             return null;
         }
 
-        public async Task<bool> AddOrRefreshAsync(string path)
+        public async Task<bool> AddOrUpdateAsync(string path)
         {
             if (string.IsNullOrWhiteSpace(path))
                 return false;
@@ -62,7 +71,7 @@ namespace Kast.Provider.Media
                 return false;
 
             var media = await CreateMediaAsync(path);
-            return media != null && library.AddOrRefreshAsync(media);
+            return media != null && library.AddOrUpdateAsync(media);
         }
 
         public async Task<bool> TryRemoveAsync(string path)
@@ -99,7 +108,7 @@ namespace Kast.Provider.Media
                     return _library;
 
                 _library = await CreateLibraryAsync();
-                Logger.LogInformation("MediaProvider retrieved {media} media from {directories} directories", _library.Count(), SettingsProvider.Library.Directories.Count);
+                Logger.LogInformation("MediaProvider retrieved {media} media from {directories} directories", _library.Count, SettingsProvider.Library.Directories.Count);
             }
             catch (Exception ex)
             {
@@ -107,8 +116,7 @@ namespace Kast.Provider.Media
             }
             finally
             {
-                if (_semaphore.CurrentCount == 0)
-                    _semaphore.Release();
+                _semaphore.Release();
                 MassTimer.Print();
             }
 
@@ -121,14 +129,14 @@ namespace Kast.Provider.Media
             await Parallel.ForEachAsync(SettingsProvider
                 .Library
                 .Directories
-                .SelectMany(directory => Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories))
+                .SelectMany(directory => Directory.EnumerateFiles(directory, "*.*", SearchOption.AllDirectories))
                 .Where(f => SettingsProvider.Library.Extensions.Contains(Path.GetExtension(f))),
                 new ParallelOptions() { MaxDegreeOfParallelism = SettingsProvider.Application.MaxDegreeOfParallelism },
                 async (file, _) =>
                 {
                     var media = await CreateMediaAsync(file);
                     if (media != null)
-                        library.AddOrRefreshAsync(media);
+                        library.AddOrUpdateAsync(media);
                 });
             return library;
         }

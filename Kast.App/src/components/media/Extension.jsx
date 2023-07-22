@@ -6,7 +6,9 @@ import { Details } from '../../assets/icons'
 import useTimespan from '../../hooks/useTimespan'
 import Conditional from '../../hoc/Conditional'
 
-export default function Extension({ media }) {
+export default function Extension({ collection }) {
+  const media = collection[0]
+  const isSerie = collection.length > 1
   const duration = useTimespan(media.length)
 
   return (
@@ -16,7 +18,9 @@ export default function Extension({ media }) {
       </Row>
       <Row className='metadata'>
         <Col className='timeAndRate'>
-          <Row>{duration}</Row>
+          <Row>
+            <Conditional test={!isSerie}>{duration}</Conditional>
+          </Row>
           <Row>{media.popularity ? `${media.popularity.toFixed(1)}/10` : null}</Row>
         </Col>
         <Col className='resolutionAndEpisode'>
@@ -25,7 +29,9 @@ export default function Extension({ media }) {
               <div className='resolution'>{media.resolution === 35 ? '720p' : '1080p'}</div>
             </Conditional>
           </Row>
-          <Row>4 Episodes</Row>
+          <Row>
+            <Conditional test={isSerie}>{`${collection.length} Episodes`}</Conditional>
+          </Row>
         </Col>
         <Col className='more'>
           <Details />

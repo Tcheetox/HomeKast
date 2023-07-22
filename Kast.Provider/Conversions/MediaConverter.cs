@@ -70,7 +70,7 @@ namespace Kast.Provider.Conversions
                     _streamFactory.ConvertAsync(context)
                 },
                 onStart: (_o, _e) => media.UpdateStatus(0),
-                onSuccess: (_o, _e) => _mediaProvider.AddOrRefreshAsync(context.MediaTargetPath),
+                onSuccess: (_o, _e) => _mediaProvider.AddOrUpdateAsync(context.MediaTargetPath),
                 onFinally: (_o, _e) =>
                 {
                     _conversionTracking.TryRemove(media, out _);

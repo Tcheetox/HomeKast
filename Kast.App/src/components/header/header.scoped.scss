@@ -2,6 +2,9 @@
   height: 44px;
   fill: var(--main-color);
   transition: all var(--main-transition-duration);
+  &:hover {
+    fill: var(--main-hover-color);
+  }
 }
 
 .title {

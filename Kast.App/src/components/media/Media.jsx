@@ -7,7 +7,7 @@ import Extension from './Extension'
 
 export default function Media({ collection }) {
   const media = collection[0]
-  console.log(media)
+
   return (
     <div className='media'>
       {media.hasThumbnail ? (
@@ -18,8 +18,8 @@ export default function Media({ collection }) {
           <img className='thumbnail not-found' src={notFound} />
         </>
       )}
-      <Overlay id={media.id} status={media.status}>
-        <Extension media={media} />
+      <Overlay id={media.id} status={collection.length === 1 ? media.status : null}>
+        <Extension collection={collection} />
       </Overlay>
     </div>
   )
