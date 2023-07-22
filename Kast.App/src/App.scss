@@ -13,6 +13,7 @@ body,
   display: flex;
   flex-direction: column;
   background-color: darken(#343a40, 20%);
+  scrollbar-gutter: stable;
 }
 
 code {

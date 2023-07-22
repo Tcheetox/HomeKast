@@ -101,6 +101,7 @@ namespace Kast.Provider.Media
             if (_library != null)
                 return _library;
 
+            bool dumpTimer = false;
             try
             {
                 await _semaphore.WaitAsync();
@@ -108,6 +109,7 @@ namespace Kast.Provider.Media
                     return _library;
 
                 _library = await CreateLibraryAsync();
+                dumpTimer = true;
                 Logger.LogInformation("MediaProvider retrieved {media} media from {directories} directories", _library.Count, SettingsProvider.Library.Directories.Count);
             }
             catch (Exception ex)
@@ -117,7 +119,8 @@ namespace Kast.Provider.Media
             finally
             {
                 _semaphore.Release();
-                MassTimer.Print();
+                if (dumpTimer)
+                    MassTimer.Print();
             }
 
             return _library ?? new MediaLibrary(OnLibraryChangeEventHandler);

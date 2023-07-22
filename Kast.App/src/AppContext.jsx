@@ -11,7 +11,7 @@ const AppContextUpdater = createContext()
 export function useContextConsumer(key = null) {
   const consumer = useContext(AppContextConsumer)
   if (consumer === undefined) throw new Error(`useContextConsumer must be used within a ContextProvider`)
-  return key != null ? consumer[key] : consumer
+  return key !== null ? consumer[key] : consumer
 }
 
 export const useContextUpdater = (key = null) => {
