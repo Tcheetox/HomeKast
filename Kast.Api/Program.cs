@@ -60,6 +60,7 @@ builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = 
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy
     => policy
     .AllowAnyOrigin()
+    .AllowAnyMethod()
     .AllowAnyHeader()
     )
 );

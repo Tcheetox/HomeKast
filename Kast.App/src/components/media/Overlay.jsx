@@ -1,8 +1,7 @@
 import React from 'react'
 
 import './overlay.scoped.scss'
-import Switch from '../../hoc/Switch'
-import Case from '../../hoc/Case'
+import { Case, Switch } from '../../hoc/'
 import useMedia from '../../hooks/useMedia'
 import { Play, Convert, Subtitles, Queued } from '../../assets/icons/index.js'
 

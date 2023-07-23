@@ -3,7 +3,7 @@
   height: 420px;
   border-radius: var(--main-radius);
   position: relative;
-  background-color: darken(#343a40, 20%);
+  background-color: var(--main-dark-color);
   margin-bottom: var(--main-margin-width);
 
   transition-duration: var(--main-transition-duration);

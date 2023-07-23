@@ -12,8 +12,18 @@ body,
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: darken(#343a40, 20%);
+  background-color: var(--main-dark-color);
   scrollbar-gutter: stable;
+}
+
+// Avoid modal opening tilt shift...
+.modal-open {
+  overflow-y: auto !important;
+  padding-right: 0 !important;
+}
+.modal-content {
+  background-color: var(--main-dark-color);
+  color: white;
 }
 
 code {
@@ -28,7 +38,8 @@ small {
   --main-radius: 3px;
   --main-color: #007bff;
   --main-hover-color: #0056b3;
-  --main-dark-color: #343a40;
+  --main-dark-color: #060708;
+  --main-base-dark-color: #343a40;
   --main-transition-duration: 100ms;
   --main-padding-width: 1rem;
   --main-margin-width: 1rem;
@@ -44,7 +55,7 @@ small {
   border-radius: 15px;
   width: 120px;
   margin: auto;
-  background-color: darken(#343a40, 12%);
+  background-color: var(--main-dark-color);
   transition: width var(--main-transition-duration) ease;
   color: white;
   height: 35px;

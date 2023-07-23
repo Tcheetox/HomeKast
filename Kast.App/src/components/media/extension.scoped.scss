@@ -1,5 +1,5 @@
 .extension {
-  background-color: darken(#343a40, 20%);
+  background-color: var(--main-dark-color);
   //background-color: gray;
   transform: translate(0, 360px);
   z-index: 1;

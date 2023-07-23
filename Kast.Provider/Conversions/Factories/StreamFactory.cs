@@ -4,6 +4,7 @@ using Xabe.FFmpeg;
 using Microsoft.Extensions.Logging;
 using Kast.Provider.Supports;
 using Kast.Provider.Extensions;
+using Xabe.FFmpeg.Extensions;
 
 namespace Kast.Provider.Conversions.Factories
 {
@@ -29,14 +30,19 @@ namespace Kast.Provider.Conversions.Factories
                 IConversion conversion = FFmpeg.Conversions
                     .New()
                     .SetInput(context.Media.FilePath)
+                   // .AddParameter("-f matroska pipe:1")
                     .SetVideoCodec(VideoCodec.h264)
                     .SetAudioCodec(AudioCodec.mp3)
                     .SetAudioStream(context.AudioStreamIndex)
                     .SetVideoStream(context)
                     .SetVideoSize(context.Media.Resolution)
                     .SetSubtitles(context)
+                    //.PipeOutput(PipeDescriptor.stdout)
                     //.UseMultiThread(16)
                     .SetOutput(context.MediaTemporaryPath);
+
+              //  conversion.OnVideoDataReceived += Conversion_OnVideoDataReceived;
+             //   conversion.OnDataReceived += Conversion_OnDataReceived;
 
                 conversion.OnProgress += (object sender, ConversionProgressEventArgs args) => context.Update(args, Target);
 
@@ -54,5 +60,17 @@ namespace Kast.Provider.Conversions.Factories
                     context.Media,
                     clock.Elapsed.TotalMinutes);
             };
+
+        private void Conversion_OnDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            //_logger.LogInformation(e.Data);
+        }
+
+        private void Conversion_OnVideoDataReceived(object sender, VideoDataEventArgs args)
+        {
+            var stream = new MemoryStream();
+            stream.WriteAsync(args.Data);
+            
+        }
     }
 }

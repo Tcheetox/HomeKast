@@ -4,6 +4,9 @@
     position: absolute;
     left: 50%;
     top: 13%;
+    &:hover {
+      cursor: pointer;
+    }
   }
 
   align-items: center;
@@ -11,4 +14,8 @@
   height: 44px;
   position: relative;
   margin-left: 0.75rem;
+}
+
+.modal-content {
+  color: red;
 }
