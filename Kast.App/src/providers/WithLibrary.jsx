@@ -13,10 +13,7 @@ export default function WithLibrary() {
           'access-control-allow-origin': '*',
         },
       }).then(value => value.json()),
-    onSuccess: data => {
-      console.log('UPDATING CONTEXT')
-      update(data)
-    },
+    onSuccess: data => update(data),
     initialData: [],
     // refetchInterval: refetch,
   })

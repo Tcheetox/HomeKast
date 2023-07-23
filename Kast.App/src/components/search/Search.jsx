@@ -1,11 +1,14 @@
-import React, { useState } from 'react'
+import React from 'react'
 
+import { useContextUpdater } from '../../AppContext'
+import useLibrary from '../../hooks/useLibrary'
 import { Form } from 'react-bootstrap/'
 import './search.scoped.scss'
 import Magnifying from '../../assets/icons/magnifying.svg'
 
 export default function Search() {
-  const [search, setSearch] = useState('')
+  const { search } = useLibrary()
+  const setSearch = useContextUpdater('search')
 
   return (
     <div className='search'>
@@ -17,7 +20,8 @@ export default function Search() {
         type='string'
         aria-describedby='search'
         size='sm'
-        className=' shadow-none'
+        className='shadow-none'
+        maxLength={100}
       />
       <Magnifying />
     </div>

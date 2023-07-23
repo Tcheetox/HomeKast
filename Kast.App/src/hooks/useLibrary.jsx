@@ -1,5 +1,8 @@
 import { useContextConsumer } from '../AppContext'
 
 export default function useLibrary() {
-  return useContextConsumer('library') ?? []
+  return {
+    library: useContextConsumer('library') ?? [],
+    search: useContextConsumer('search'),
+  }
 }

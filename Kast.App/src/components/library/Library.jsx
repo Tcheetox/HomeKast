@@ -1,24 +1,37 @@
 import React, { useState, useEffect } from 'react'
 
 import './library.scoped.scss'
+import { search as searchEngine } from 'ss-search'
 import useLibrary from '../../hooks/useLibrary'
 import Media from '../media/Media'
 import InfiniteScroll from 'react-infinite-scroller'
 
 export default function Library() {
   const perPage = 18
-  const library = useLibrary()
-  const [shown, setShown] = useState([])
-  useEffect(() => setShown(p => library.slice(0, p.length)), [library, setShown])
+  const { library, search } = useLibrary()
+  const [searchResults, setSearchResults] = useState([])
+  const [shownResults, setShownResults] = useState([])
+
+  useEffect(() => setShownResults(p => searchResults.slice(0, p.length)), [searchResults, setShownResults])
+
+  useEffect(() => {
+    const flattenedLibrary = library.map(e => e[0])
+    const results = searchEngine(flattenedLibrary, ['name', 'description'], search)
+    const searchedResults = results.map(e => {
+      const idx = flattenedLibrary.findIndex(i => i.name === e.name)
+      return library[idx]
+    })
+    setSearchResults(searchedResults)
+  }, [search, library, setSearchResults])
 
   return (
     <InfiniteScroll
       className='library'
       pageStart={0}
-      loadMore={() => setShown(p => library.slice(0, p.length + perPage))}
-      hasMore={shown.length < library.length}
+      loadMore={() => setShownResults(p => searchResults.slice(0, p.length + perPage))}
+      hasMore={shownResults.length < searchResults.length}
     >
-      {shown.map(c => (
+      {shownResults.map(c => (
         <Media key={c[0].name} collection={c} />
       ))}
     </InfiniteScroll>

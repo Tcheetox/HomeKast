@@ -23,12 +23,6 @@ export const useContextUpdater = (key = null) => {
 export const AppContextProvider = props => {
   const [context, setContext] = useState({ library: [], casters: [] })
 
-  // MONITOR CONTEXT FOR DEBUG
-  // useEffect(() => {
-  //   console.log('> CONTEXT')
-  //   console.log(context)
-  // }, [context])
-
   return (
     <AppContextUpdater.Provider value={setContext}>
       <WithLibrary />
