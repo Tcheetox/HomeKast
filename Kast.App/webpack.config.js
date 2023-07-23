@@ -19,6 +19,7 @@ module.exports = {
     hot: true,
     liveReload: true,
   },
+  devtool: 'source-map',
   resolve: {
     extensions: ['.js', '.jsx', '.json'],
   },

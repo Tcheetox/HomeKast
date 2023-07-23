@@ -21,3 +21,10 @@
 .header {
   margin: var(--main-margin-width) auto;
 }
+
+.options {
+  height: 44px;
+  align-content: flex-end;
+  flex-wrap: wrap;
+  flex-direction: column;
+}

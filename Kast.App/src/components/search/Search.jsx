@@ -1,8 +1,25 @@
-import React from 'react'
+import React, { useState } from 'react'
 
-import { InputGroup, Form } from 'react-bootstrap/'
+import { Form } from 'react-bootstrap/'
 import './search.scoped.scss'
+import Magnifying from '../../assets/icons/magnifying.svg'
 
 export default function Search() {
-  return <Form.Control aria-label='Search' aria-describedby='search' size='sm' className='search' />
+  const [search, setSearch] = useState('')
+
+  return (
+    <div className='search'>
+      <Form.Control
+        aria-label='Search'
+        placeholder='Search...'
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        type='string'
+        aria-describedby='search'
+        size='sm'
+        className=' shadow-none'
+      />
+      <Magnifying />
+    </div>
+  )
 }

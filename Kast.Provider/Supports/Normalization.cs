@@ -97,7 +97,7 @@ namespace Kast.Provider.Supports
 
             var yearMatch = _year.Match(entry);
             if (yearMatch.Success && int.TryParse(yearMatch.Value, out int parsedYear)
-                && parsedYear > 1900 && parsedYear < DateTime.Now.Year)
+                && parsedYear > 1900 && parsedYear <= (DateTime.Now.Year + 1))
             {
                 year = parsedYear;
                 return true;
