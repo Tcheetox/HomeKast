@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useContextUpdater } from '../AppContext'
 
 export default function WithLibrary() {
-  const update = useContextUpdater('library')
+  const updateLibrary = useContextUpdater('library')
   const interval = parseInt(process.env.REACT_APP_LIBRARY_REFETCH_INTERVAL)
 
   useQuery({
@@ -13,7 +13,7 @@ export default function WithLibrary() {
           'access-control-allow-origin': '*',
         },
       }).then(value => value.json()),
-    onSuccess: data => update(data),
+    onSuccess: updateLibrary,
     initialData: [],
     // refetchInterval: refetch,
   })

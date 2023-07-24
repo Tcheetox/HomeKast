@@ -110,6 +110,9 @@ small {
   .nav-default {
     min-width: 40px;
   }
+  .nav-link.disabled {
+    color: var(--main-base-dark-color);
+  }
 }
 
 // Some SVG's are kind boring...

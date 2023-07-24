@@ -51,7 +51,9 @@ export default function Settings() {
           <Modal.Title>Settings</Modal.Title>
           <Nav variant='underline' defaultActiveKey={type} onSelect={setType}>
             <Nav.Item className='nav-default'>
-              <Nav.Link eventKey='default'>Basic</Nav.Link>
+              <Nav.Link eventKey='default' disabled>
+                Basic
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item className='nav-advanced'>
               <Nav.Link eventKey='advanced'>Advanced</Nav.Link>

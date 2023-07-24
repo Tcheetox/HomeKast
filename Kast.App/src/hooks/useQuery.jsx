@@ -1,6 +1,10 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient, useIsFetching } from '@tanstack/react-query'
 
 export default function useQuery(key) {
   const queryClient = useQueryClient()
-  return { refetch: () => queryClient.refetchQueries({ queryKey: key }) }
+
+  return {
+    refetch: () => queryClient.refetchQueries({ queryKey: [key] }),
+    isFetching: () => useIsFetching({ queryKey: [key] }) > 0,
+  }
 }
