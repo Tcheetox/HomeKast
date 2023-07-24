@@ -16,16 +16,6 @@ body,
   scrollbar-gutter: stable;
 }
 
-// Avoid modal opening tilt shift...
-.modal-open {
-  overflow-y: auto !important;
-  padding-right: 0 !important;
-}
-.modal-content {
-  background-color: var(--main-dark-color);
-  color: white;
-}
-
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
@@ -39,6 +29,7 @@ small {
   --main-color: #007bff;
   --main-hover-color: #0056b3;
   --main-dark-color: #060708;
+  --main-dark-12-color: #191b1e;
   --main-base-dark-color: #343a40;
   --main-transition-duration: 100ms;
   --main-padding-width: 1rem;
@@ -55,7 +46,8 @@ small {
   border-radius: 15px;
   width: 120px;
   margin: auto;
-  background-color: var(--main-dark-color);
+  // background-color: var(--main-dark-color);
+  background-color: var(--main-dark-12-color);
   transition: width var(--main-transition-duration) ease;
   color: white;
   height: 35px;
@@ -66,11 +58,57 @@ small {
   &:focus {
     color: white;
     width: 300px;
-    background-color: darken(#343a40, 12%);
+    background-color: var(--main-dark-12-color);
     border-color: transparent;
   }
   &::placeholder {
     color: lighten(#343a40, 10%);
+  }
+}
+
+// Modal
+.modal-open {
+  overflow-y: auto !important;
+  padding-right: 0 !important;
+}
+.modal-content {
+  //background-color: var(--main-dark-color);
+  background-color: var(--main-dark-12-color);
+  color: white;
+}
+.modal-footer {
+  padding-top: 0;
+  border-top: none;
+}
+.modal-header {
+  border-bottom: none;
+  padding-bottom: 0;
+  .nav-link {
+    color: white;
+  }
+  .nav-link.active {
+    color: var(--main-color);
+    font-weight: 500;
+  }
+  .modal-title {
+    font-weight: unset;
+  }
+}
+.modal-body {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+// Reduce nav-item colliding on .active
+.settings-modal {
+  .nav-item {
+    text-align: center;
+  }
+  .nav-advanced {
+    min-width: 75px;
+  }
+  .nav-default {
+    min-width: 40px;
   }
 }
 

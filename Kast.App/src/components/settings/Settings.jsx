@@ -22,15 +22,19 @@ export default function Settings() {
   const hide = () => setShowModal(false)
 
   const update = useMutation({
-    mutationFn: async () =>
-      await fetch(`${process.env.REACT_APP_BACKEND_URI}/settings`, {
+    mutationFn: () =>
+      fetch(`${process.env.REACT_APP_BACKEND_URI}/settings`, {
         method: 'PUT',
         body: JSON.stringify(localSettings),
         headers: {
           'access-control-allow-origin': '*',
           'content-type': 'application/json',
         },
-      }).then(value => value.json()),
+      }).then(async r => {
+        const bodyPromise = r.json()
+        if (r.ok) return bodyPromise
+        throw Error(JSON.stringify(await bodyPromise))
+      }),
     onSuccess: setGlobalSettings,
   })
 
@@ -42,19 +46,20 @@ export default function Settings() {
   return (
     <div className='settings'>
       <Gear onClick={() => setShowModal(true)} />
-      <Modal show={showModal} onHide={hide} size='lg'>
+      <Modal show={showModal} onHide={hide} size='lg' className='settings settings-modal'>
         <Modal.Header>
           <Modal.Title>Settings</Modal.Title>
-          <Nav variant='tabs' defaultActiveKey={type} onSelect={setType}>
-            <Nav.Item>
+          <Nav variant='underline' defaultActiveKey={type} onSelect={setType}>
+            <Nav.Item className='nav-default'>
               <Nav.Link eventKey='default'>Basic</Nav.Link>
             </Nav.Item>
-            <Nav.Item>
+            <Nav.Item className='nav-advanced'>
               <Nav.Link eventKey='advanced'>Advanced</Nav.Link>
             </Nav.Item>
           </Nav>
         </Modal.Header>
         <Modal.Body>
+          <hr className='separator' />
           <Switch test={type}>
             <Case value={'default'}>
               <Basic setSettings={setLocalSettings} settings={localSettings} />
@@ -63,6 +68,7 @@ export default function Settings() {
               <Advanced setSettings={setLocalSettings} settings={localSettings} />
             </Case>
           </Switch>
+          <hr className='separator' />
         </Modal.Body>
         <Modal.Footer>
           <Button variant='secondary' size='sm' onClick={hide}>

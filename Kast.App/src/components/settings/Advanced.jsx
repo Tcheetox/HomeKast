@@ -32,7 +32,7 @@ export default function Advanced({ settings, setSettings }) {
       height='auto'
       width='auto'
       confirmGood={false}
-      colors={{ background: '#060708' }}
+      colors={{ background: '#191b1e' }}
       onKeyPressUpdate={false}
     />
   )
