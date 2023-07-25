@@ -132,6 +132,7 @@ namespace Kast.Provider.Media
             await Parallel.ForEachAsync(SettingsProvider
                 .Library
                 .Directories
+                .Where(d => Directory.Exists(d))
                 .SelectMany(directory => Directory.EnumerateFiles(directory, "*.*", SearchOption.AllDirectories))
                 .Where(f => SettingsProvider.Library.Extensions.Contains(Path.GetExtension(f))),
                 new ParallelOptions() { MaxDegreeOfParallelism = SettingsProvider.Application.MaxDegreeOfParallelism },

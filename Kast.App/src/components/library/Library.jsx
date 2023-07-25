@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react'
 
 import './library.scoped.scss'
 import { search as searchEngine } from 'ss-search'
+import Loading from '../loading/Loading'
 import useLibrary from '../../hooks/useLibrary'
 import Media from '../media/Media'
 import InfiniteScroll from 'react-infinite-scroller'
 
 export default function Library() {
   const perPage = 18
-  const { library, search } = useLibrary()
+  const { library, search, isFetching, isLoading } = useLibrary()
   const [searchResults, setSearchResults] = useState([])
   const [shownResults, setShownResults] = useState([])
 
@@ -24,7 +25,9 @@ export default function Library() {
     setSearchResults(searchedResults)
   }, [search, library, setSearchResults])
 
-  return (
+  return isLoading() ? (
+    <Loading />
+  ) : (
     <InfiniteScroll
       className='library'
       pageStart={0}
