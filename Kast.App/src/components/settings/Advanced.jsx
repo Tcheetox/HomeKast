@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react'
 
 // https://github.com/AndrewRedican/react-json-editor-ajrm#readme
 // Hacking implementation to obtain kind of desired behavior
+// Move to ACE - REACT ?!
 
 import JSONInput from 'react-json-editor-ajrm'
 import locale from 'react-json-editor-ajrm/locale/en'

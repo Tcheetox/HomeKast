@@ -9,7 +9,7 @@ import InfiniteScroll from 'react-infinite-scroller'
 
 export default function Library() {
   const perPage = 18
-  const { library, search, isFetching, isLoading } = useLibrary()
+  const { library, search, isLoading } = useLibrary()
   const [searchResults, setSearchResults] = useState([])
   const [shownResults, setShownResults] = useState([])
 
@@ -25,7 +25,7 @@ export default function Library() {
     setSearchResults(searchedResults)
   }, [search, library, setSearchResults])
 
-  return isLoading() ? (
+  return isLoading ? (
     <Loading />
   ) : (
     <InfiniteScroll

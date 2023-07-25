@@ -11,6 +11,6 @@ export default function useLibrary() {
     search: useContextConsumer('search'),
     refetch,
     isFetching,
-    isLoading: () => isFetching() && library.length === 0,
+    isLoading: isFetching() && library.length === 0,
   }
 }

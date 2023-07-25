@@ -70,6 +70,7 @@ namespace Kast.Provider.Conversions.Factories
         {
             var stream = new MemoryStream();
             stream.WriteAsync(args.Data);
+            stream.CopyToAsync
             
         }
     }

@@ -1,6 +1,6 @@
 import React, { useContext, createContext, useState } from 'react'
 
-import { WithLibrary, WithCasters, WithSettings } from './providers/'
+import { WithLibrary, WithCasters, WithSettings, WithConversions } from './providers/'
 const AppContextConsumer = createContext()
 const AppContextUpdater = createContext()
 
@@ -26,6 +26,7 @@ export const AppContextProvider = props => {
       <WithLibrary />
       <WithCasters />
       <WithSettings />
+      <WithConversions />
       <AppContextConsumer.Provider value={context}>{props.children}</AppContextConsumer.Provider>
     </AppContextUpdater.Provider>
   )
