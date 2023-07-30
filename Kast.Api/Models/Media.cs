@@ -32,7 +32,7 @@ namespace Kast.Api.Models
         public Guid Id { get; private init; }
         public TimeSpan Length { get; private init; }
         public VideoSize Resolution { get; private init; }
-        public string Status { get; private init; }
+        public string? Status { get; private init; }
         public IReadOnlyList<Caption>? Captions { get; private init; }
         public string? Description { get; private init; }
         public double? Popularity { get; private init; }

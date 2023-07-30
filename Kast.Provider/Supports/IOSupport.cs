@@ -14,7 +14,7 @@ namespace Kast.Provider.Supports
             return directory;
         }
 
-        public static string GetTempPath(string extension = ".temp")
+        public static string GetTempPath(string extension = ".tmp")
             => Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + extension);
 
         public static async Task MoveAsync(string from, string to, bool overwrite = true, int? timeoutMs = null)
@@ -26,6 +26,17 @@ namespace Kast.Provider.Supports
                 return;
 
             await TryPerformOnFileWithRetryAsync(from, _from => File.Move(from, to), timeoutMs);
+        }
+
+        public static async Task CopyAsync(string from, string to, bool overwrite = true, int? timeoutMs = null)
+        {
+            if (!File.Exists(from))
+                return;
+
+            if (File.Exists(to) && (!overwrite || !await TryPerformOnFileWithRetryAsync(to, _to => File.Delete(_to), timeoutMs)))
+                return;
+
+            await TryPerformOnFileWithRetryAsync(from, _from => File.Copy(from, to), timeoutMs);
         }
 
         public static async Task DeleteAsync(string path, int? timeoutMs = null)

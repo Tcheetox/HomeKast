@@ -109,7 +109,7 @@ namespace Kast.Provider.Cast
             if (senderStatus?.FirstOrDefault(e => e.Key.EndsWith("receiver")).Value is ReceiverStatus receiverStatus)
                 _receiverStatus = receiverStatus;
             if (senderStatus?.FirstOrDefault(e => e.Key.EndsWith("media")).Value is MediaStatus[] mediaStatus && mediaStatus.Any())
-                _mediaStatus = mediaStatus.First();
+                _mediaStatus = mediaStatus[0];
         }
 
         private async Task GetMediaStatusAsync()

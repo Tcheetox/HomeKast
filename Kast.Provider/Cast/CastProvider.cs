@@ -24,7 +24,7 @@ namespace Kast.Provider.Cast
             {
                 while(!_refreshCanceller.IsCancellationRequested)
                 {
-                    _logger.LogInformation("Restoring {target}'s context...", nameof(IReceiver));
+                    _logger.LogDebug("Refreshing {target}'s context...", nameof(IReceiver));
                     await RefreshStore();
                     await Task.Delay(TimeSpan.FromMilliseconds(settingsProvider.Application.ReceiverRefreshInterval));
                 }

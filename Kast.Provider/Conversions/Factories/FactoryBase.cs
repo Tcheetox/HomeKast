@@ -10,8 +10,10 @@ namespace Kast.Provider.Conversions.Factories
 
     internal abstract class FactoryBase
     {
-        public readonly FactoryTarget Target;
+        protected readonly FactoryTarget Target;
         protected readonly SettingsProvider SettingsProvider;
+        protected int? FileAccessTimeout => SettingsProvider.Application.FileAccessTimeout;
+
         protected FactoryBase(SettingsProvider settingsProvider, FactoryTarget target)
         {
             SettingsProvider = settingsProvider;

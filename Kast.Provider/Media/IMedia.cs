@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using Kast.Provider.Conversions;
+using System.Text.Json.Serialization;
 using Xabe.FFmpeg;
 
 namespace Kast.Provider.Media

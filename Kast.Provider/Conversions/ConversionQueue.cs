@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Xabe.FFmpeg.Exceptions;
 
@@ -25,8 +26,9 @@ namespace Kast.Provider.Conversions
                     {
                         _logger.LogInformation("Conversion skipped for {item}", item);
                         continue;
-                    }    
+                    }
 
+                    var clock = Stopwatch.StartNew();
                     try
                     {
                         _logger.LogWarning("Conversion starting for {item}", item);
@@ -36,20 +38,24 @@ namespace Kast.Provider.Conversions
                             item.CancellationToken.ThrowIfCancellationRequested();
                             await conversion(item.CancellationToken);
                         }
+                        clock.Stop();
+                        _logger.LogInformation("Conversion successful for {item} after {time} seconds", item, clock.Elapsed.TotalSeconds);
                         item.OnSuccess?.Invoke(this, EventArgs.Empty);
                     }
                     catch (OperationCanceledException ex) 
                     {
+                        _logger.LogError(ex, "Conversion cancelled by user for {item} after {time} seconds", item, clock.Elapsed.TotalSeconds);
                         item.OnError?.Invoke(this, EventArgs.Empty);
-                        _logger.LogError(ex, "Conversion cancelled by user for {item}", item);
+                        
                     }
                     catch (ConversionException ex)
                     {
+                        _logger.LogError(ex, "Conversion error for {item} after {time} seconds", item, clock.Elapsed.TotalSeconds);
                         item.OnError?.Invoke(this, EventArgs.Empty);
-                        _logger.LogError(ex, "Conversion error for {item}", item);
                     }
                     finally
                     {
+                        clock.Stop();
                         item.OnFinally?.Invoke(this, EventArgs.Empty);
                         item.Dispose();
                     }

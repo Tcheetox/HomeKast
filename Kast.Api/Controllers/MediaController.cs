@@ -4,6 +4,9 @@ using Kast.Provider.Media;
 using Kast.Api.Models;
 using Kast.Api.Problems;
 using Kast.Provider;
+using Kast.Provider.Conversions;
+using System.Collections;
+using System.IO.Pipelines;
 
 namespace Kast.Api.Controllers
 {
@@ -13,11 +16,13 @@ namespace Kast.Api.Controllers
     {
         private readonly ILogger<MediaController> _logger;
         private readonly IMediaProvider _mediaProvider;
+        private readonly IMediaConverter _mediaConverter;
 
-        public MediaController(ILogger<MediaController> logger, IMediaProvider mediaProvider)
+        public MediaController(ILogger<MediaController> logger, IMediaProvider mediaProvider, IMediaConverter mediaConverter)
         {
             _logger = logger;
             _mediaProvider = mediaProvider;
+            _mediaConverter = mediaConverter;
         }
 
         [HttpGet]
@@ -87,10 +92,22 @@ namespace Kast.Api.Controllers
             if (media == null)
                 return NotFound();
 
-            return new PhysicalFileResult(media.FilePath, media.ContentType)
-            {
-                EnableRangeProcessing = true
-            };
+            if (media.Status == MediaStatus.Playable)
+                return new PhysicalFileResult(media.FilePath, media.ContentType)
+                {
+                    EnableRangeProcessing = true
+                };
+
+            if (!_mediaConverter.TryGetValue(media, out var conversion) || conversion?.StreamHandle == null)
+                return NotFound();
+
+            await conversion.StreamHandle.BufferingAsync();
+            using var reader = conversion.StreamHandle.GetReader();
+            await reader.CopyToAsync(Response.BodyWriter.AsStream(), 81920);
+
+            await Response.BodyWriter.CompleteAsync();
+
+            return Ok();
         }
 
         [HttpGet("{mediaId:guid}/subtitles/{idx:int}")]

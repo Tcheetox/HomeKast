@@ -13,29 +13,47 @@ namespace Kast.Provider.Conversions
             SubtitlesOnly
         }
 
-        public readonly IMedia Media;
+        public string Name => Media.Name;
+        public Guid Id => Media.Id;
+        public MediaStatus Status => Media.Status;
+        public FactoryTarget? Target { get; private set; }
+        public ConversionProgressEventArgs? Progress { get; private set; }
+        
         public readonly ConversionType Type;
-        public readonly string MediaTargetPath;
-        public readonly int? SubtitlesStreamIndex;
-        public readonly int AudioStreamIndex;
-        public readonly string TargetDirectory;
+        public readonly StreamHandle? StreamHandle;
+        
+        internal bool BurnSubtitles { get; set; }
+        internal readonly IMedia Media;
+        internal readonly string TargetPath;
+        internal readonly string? TemporaryTargetPath;
+        internal readonly int? SubtitlesStreamIndex;
+        internal readonly int AudioStreamIndex;
+        
+        private string Extension => BurnSubtitles ? ".mp4" : ".mkv";
 
         public ConversionContext(IMedia media, SettingsProvider settingsProvider) 
-        { 
+        {
+            if (media.Info == null)
+                throw new ArgumentNullException(nameof(media), $"Media info must be defined");
+
             Media = media;
-            TargetDirectory = IOSupport.CreateTargetDirectory(media.FilePath);
+            
             Type = media.Status != MediaStatus.MissingSubtitles ? ConversionType.FullConversion : ConversionType.SubtitlesOnly;
-            MediaTargetPath = Type != ConversionType.SubtitlesOnly
-                ? Path.Combine(TargetDirectory, $"_{Media.FileName.Replace(Media.Extension, Extension)}")
-                : Media.FilePath;
+            TargetPath = Path.Combine(IOSupport.CreateTargetDirectory(media.FilePath), $"_{Path.ChangeExtension(Media.FileName, Extension)}");
+
+            if (Type == ConversionType.FullConversion)
+            {
+                TemporaryTargetPath = Path.ChangeExtension(TargetPath, ".tmp");
+                StreamHandle = new StreamHandle(TemporaryTargetPath, TargetPath);
+            }
 
             // Define streams preferred index
-            var audioStreams = Media.Info!.AudioStreams.ToList();
-            var subtitlesStreams = Media.Info!.SubtitleStreams.ToList();
+            var audioStreams = Media.Info.AudioStreams.ToList();
+            var subtitlesStreams = Media.Info.SubtitleStreams.ToList();
             foreach (var setting in settingsProvider.Preferences)
             {
-                var audioStream = audioStreams.FirstOrDefault(s => s.Language.ToLower() == setting.Language?.ToLower());
-                var subtitlesStream = subtitlesStreams.FirstOrDefault(s => s.Language.ToLower() == setting.Subtitles?.ToLower());
+                var audioStream = audioStreams.Find(s => Utilities.InsensitiveCompare(s.Language, setting.Language));
+                var subtitlesStream = subtitlesStreams.Find(s => Utilities.InsensitiveCompare(s.Language, setting.Subtitles));
                 if (audioStream != null && (subtitlesStream != null || string.IsNullOrWhiteSpace(setting.Subtitles)))
                 {
                     AudioStreamIndex = audioStreams.IndexOf(audioStream);
@@ -45,19 +63,7 @@ namespace Kast.Provider.Conversions
             }
         }
 
-        public string Name => Media.Name;
-        public Guid Id => Media.Id;
-        public MediaStatus Status => Media.Status;
-        public FactoryTarget? Target { get; private set; }
-        public ConversionProgressEventArgs? Progress { get; private set; }
-        public int QueueCount { get; set; }
-        public bool BurnSubtitles { get; set; }
-        public string Extension => BurnSubtitles ? ".mp4" : ".mkv";
-
-        private string? _mediaTemporaryPath;
-        public string MediaTemporaryPath => _mediaTemporaryPath ??= IOSupport.GetTempPath(Extension);
-
-        internal void Update(ConversionProgressEventArgs? args, FactoryTarget? target)
+        internal void Update(ConversionProgressEventArgs? args = null, FactoryTarget? target = null)
         {
             Progress = args;
             Target = target;

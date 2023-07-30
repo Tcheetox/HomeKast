@@ -63,15 +63,15 @@ namespace Kast.Provider.Media
 
         public async Task<bool> AddOrUpdateAsync(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
                 return false;
 
             var library = await GetLibraryAsync();
-            if (library.TryGetValue(path, out IMedia? _))
-                return false;
+            if (library.TryGetValue(path, out IMedia? media))
+                return library.AddOrUpdate(media!);
 
-            var media = await CreateMediaAsync(path);
-            return media != null && library.AddOrUpdateAsync(media);
+            media = await CreateMediaAsync(path);
+            return media != null && library.AddOrUpdate(media);
         }
 
         public async Task<bool> TryRemoveAsync(string path)
@@ -140,7 +140,7 @@ namespace Kast.Provider.Media
                 {
                     var media = await CreateMediaAsync(file);
                     if (media != null)
-                        library.AddOrUpdateAsync(media);
+                        library.AddOrUpdate(media);
                 });
             return library;
         }

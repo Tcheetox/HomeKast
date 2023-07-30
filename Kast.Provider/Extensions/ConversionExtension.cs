@@ -1,5 +1,6 @@
 ﻿using Xabe.FFmpeg;
 using Kast.Provider.Conversions;
+using Xabe.FFmpeg.Events;
 
 namespace Kast.Provider.Extensions
 {
@@ -21,6 +22,19 @@ namespace Kast.Provider.Extensions
             if (state.BurnSubtitles && state.SubtitlesStreamIndex.HasValue)
                 return conversion;
             return conversion.AddParameter("-map 0:v:0");
+        }
+
+        public static IConversion SetOnProgress(this IConversion conversion, ConversionProgressEventHandler handler) 
+        {
+            conversion.OnProgress += handler;
+            return conversion;
+        }
+
+        public static IConversion SetOutputWriter(this IConversion conversion, Func<ReadOnlyMemory<byte>, CancellationToken, Task> write, CancellationToken token)
+        {
+            conversion.AddParameter("-f matroska pipe:1");
+            conversion.OnVideoDataReceived += async (_, args) => await write(args.Data, token);
+            return conversion;
         }
 
         public static IConversion SetSubtitles(this IConversion conversion, ConversionContext state)

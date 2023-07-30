@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using Xabe.FFmpeg;
 using Kast.Provider.Supports;
+using Kast.Provider.Conversions;
 
 namespace Kast.Provider.Media
 {

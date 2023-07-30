@@ -22,11 +22,12 @@ namespace Kast.Provider.Media
         private MediaLibrary(IEnumerable<IMedia> store, EventHandler? onChangeEventHandler = null)
         {
             _onChangeEventHandler = onChangeEventHandler;
-            _store = new(store.Where(e => File.Exists(e.FilePath))
-                .Select(e => new KeyValuePair<MultiKey<Guid, string>, IMedia>(new MultiKey<Guid, string>(e.Id, e.FilePath), e)), 
-                key2Comparer: StringComparer.OrdinalIgnoreCase);
+            _store = new(
+                store.Select(e => new KeyValuePair<MultiKey<Guid, string>, IMedia>(new MultiKey<Guid, string>(e.Id, e.FilePath), e)), 
+                key2Comparer: StringComparer.OrdinalIgnoreCase
+                );
 
-            // Refresh companionship
+            // Validate entries companionship
             foreach (var entry in _store.Values)
             {
                 if (!File.Exists(entry.FilePath))
@@ -40,7 +41,7 @@ namespace Kast.Provider.Media
             }
         }
 
-        public bool AddOrUpdateAsync(IMedia media)
+        public bool AddOrUpdate(IMedia media)
         {
             _store.GetOrAdd(media.Id, media.FilePath, media, out bool added);
             AddCompanionship(media);
@@ -102,7 +103,7 @@ namespace Kast.Provider.Media
         {
             if (media.FileName.StartsWith('_'))
             {
-                // Long shot a finding the non-converted original media path
+                // Long shot at finding the non-converted original media path
                 var originalName = media.FileName[1..].Replace(media.Extension, ".mkv");
                 yield return Path.Combine(media.Directory, media.FileName[1..]);
                 var directoryInfo = new DirectoryInfo(media.Directory);

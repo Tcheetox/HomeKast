@@ -49,7 +49,7 @@ namespace Kast.Api.Controllers
             if (media == null)
                 return NotFound();
             
-            if (media.Status != MediaStatus.Playable)
+            if (media.Status != MediaStatus.Playable && media.Status != MediaStatus.Converting)
                 return BadRequest();
 
             if (await _castProvider.TryStart(receiverId, media))

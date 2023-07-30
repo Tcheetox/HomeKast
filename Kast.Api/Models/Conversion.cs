@@ -1,6 +1,4 @@
 ﻿using Kast.Provider.Conversions;
-using Kast.Provider.Conversions.Factories;
-using Kast.Provider.Media;
 
 namespace Kast.Api.Models
 {
@@ -10,19 +8,17 @@ namespace Kast.Api.Models
 
         public string Name { get; private set; }
         public Guid Id { get; private set; }
-        public FactoryTarget? Target { get; private set; }
-        public int InQueue { get; private set; }
+        public string? Target { get; private set; }
         public int Progress { get; private set; }   
-        public MediaStatus Status { get; private set; }
+        public string? Status { get; private set; }
 
         private Conversion(ConversionContext state) 
         { 
             Name = state.Name;
             Id = state.Id;
-            Target = state.Target;
-            InQueue = state.QueueCount;
+            Target = state.Target.ToString();
             Progress = state.Progress?.Percent ?? 0;
-            Status = state.Status;
+            Status = state.Status.ToString();
         }
     }
 }

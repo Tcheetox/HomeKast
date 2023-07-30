@@ -1,9 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using Xabe.FFmpeg;
 using Kast.Provider.Conversions.Factories;
 using Kast.Provider.Media;
 using Kast.Provider.Supports;
-using Xabe.FFmpeg;
 
 namespace Kast.Provider.Conversions
 {
@@ -70,12 +70,11 @@ namespace Kast.Provider.Conversions
                     _streamFactory.ConvertAsync(context)
                 },
                 onStart: (_o, _e) => media.UpdateStatus(0),
-                onSuccess: (_o, _e) => _mediaProvider.AddOrUpdateAsync(context.MediaTargetPath),
+                onSuccess: async (_o, _e) => await _mediaProvider.AddOrUpdateAsync(context.TargetPath),
                 onFinally: (_o, _e) =>
                 {
                     _conversionTracking.TryRemove(media, out _);
-                    media.UpdateStatus();
-                    _ = IOSupport.DeleteAsync(context.MediaTemporaryPath, _settingsProvider.Application.FileAccessTimeout);
+                    context.Update();
                 });
 
             return _conversionTracking.TryAdd(media, new ConversionInfo(token, context)) 
@@ -90,7 +89,7 @@ namespace Kast.Provider.Conversions
             _logger.LogInformation("Stopping conversion for {media}", media);
 
             info.Token.Dispose();
-            info.Container.Update(null, null);
+            info.Container.Update();
             return true;
         }
 
@@ -101,20 +100,11 @@ namespace Kast.Provider.Conversions
                 return false;
 
             state = info!.Container;
-            state.QueueCount = _conversionTracking.Count;
             return true;
         }
 
         public IEnumerable<ConversionContext> GetAll()
-        {
-            var currentCount = _conversionTracking.Count;
-            return _conversionTracking.Values.Select(e =>
-            {
-                var state = e.Item2;
-                state.QueueCount = currentCount;
-                return state;
-            });
-        }
+            => _conversionTracking.Values.Select(e => e.Item2);
 
         #region IDisposable
         private bool _disposedValue;
