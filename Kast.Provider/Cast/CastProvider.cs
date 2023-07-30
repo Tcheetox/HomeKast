@@ -199,7 +199,6 @@ namespace Kast.Provider.Cast
                 Tracks = subtitles,
                 Metadata = metadata,
                 Duration = media.Length.TotalSeconds,
-                ContentType = media.ContentType,
                 StreamType = StreamType.Buffered,
                 CustomData = new Dictionary<string, string> { { media.Id.ToString(), media.Name } }
             };

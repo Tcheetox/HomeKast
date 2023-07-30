@@ -28,8 +28,6 @@ namespace Kast.Provider.Conversions
         internal readonly string? TemporaryTargetPath;
         internal readonly int? SubtitlesStreamIndex;
         internal readonly int AudioStreamIndex;
-        
-        private string Extension => BurnSubtitles ? ".mp4" : ".mkv";
 
         public ConversionContext(IMedia media, SettingsProvider settingsProvider) 
         {
@@ -39,7 +37,7 @@ namespace Kast.Provider.Conversions
             Media = media;
             
             Type = media.Status != MediaStatus.MissingSubtitles ? ConversionType.FullConversion : ConversionType.SubtitlesOnly;
-            TargetPath = Path.Combine(IOSupport.CreateTargetDirectory(media.FilePath), $"_{Path.ChangeExtension(Media.FileName, Extension)}");
+            TargetPath = Path.Combine(IOSupport.CreateTargetDirectory(media.FilePath), $"_{Path.ChangeExtension(Media.FileName, ".mkv")}");
 
             if (Type == ConversionType.FullConversion)
             {

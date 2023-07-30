@@ -24,8 +24,6 @@ namespace Kast.Provider.Media
         Metadata? Metadata { get; }
         public int? Year { get; }
         SubtitlesList Subtitles { get; }
-        [JsonIgnore]
-        string ContentType { get; }
 
         void UpdateStatus(int? progress = null);
         void UpdateMetadata(Metadata? metadata = null);

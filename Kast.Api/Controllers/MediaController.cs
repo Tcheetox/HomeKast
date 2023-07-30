@@ -83,7 +83,7 @@ namespace Kast.Api.Controllers
         }
 
         [HttpGet("{mediaId:guid}/stream")]
-        [Produces("video/mp4", "video/x-matroska")]
+        [Produces("video/x-matroska")]
         [ProducesResponseType(typeof(PhysicalFileResult), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetStreamAsync([FromRoute] Guid mediaId)
@@ -93,7 +93,7 @@ namespace Kast.Api.Controllers
                 return NotFound();
 
             if (media.Status == MediaStatus.Playable)
-                return new PhysicalFileResult(media.FilePath, media.ContentType)
+                return new PhysicalFileResult(media.FilePath, "video/x-matroska")
                 {
                     EnableRangeProcessing = true
                 };
