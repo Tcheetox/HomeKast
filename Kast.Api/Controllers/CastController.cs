@@ -12,11 +12,9 @@ namespace Kast.Api.Controllers
     {
         private readonly IMediaProvider _mediaProvider;
         private readonly ICastProvider _castProvider;
-        private readonly ILogger<CastController> _logger;
 
-        public CastController(ILogger<CastController> logger, IMediaProvider mediaProvider, ICastProvider castProvider) 
+        public CastController(IMediaProvider mediaProvider, ICastProvider castProvider) 
         { 
-            _logger = logger;
             _mediaProvider = mediaProvider;
             _castProvider = castProvider;
         }

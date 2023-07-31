@@ -1,32 +1,50 @@
-﻿
-using Kast.Provider.Supports;
+﻿using Kast.Provider.Supports;
+using System.Diagnostics;
 
 namespace Kast.Provider.Conversions
 {
     public class StreamHandle
     {
-        private FileStream Writer => _lazyWriter.Value;
-        private readonly Lazy<FileStream> _lazyWriter;
         private readonly string _temporaryTargetPath;
         private readonly string _targetPath;
-        private readonly TaskCompletionSource _buffering = new();
-        public async Task BufferingAsync() => await _buffering.Task;
+        private readonly SettingsProvider _settingsProvider;
 
-        public StreamHandle(string temporaryTargetPath, string targetPath) 
+        private int? FileAccessTimeout => _settingsProvider.Application.FileAccessTimeout;
+
+        public async Task BufferingAsync(TimeSpan? timeSpan = null)
+        {
+            timeSpan ??= TimeSpan.MaxValue;
+            var watch = Stopwatch.StartNew();
+            while (watch.Elapsed <= timeSpan 
+                && (await IOSupport.GetFileInfoAsync(_temporaryTargetPath, FileAccessTimeout))?.Length <= Constants.MediaStreamingBuffer)
+                await Task.Delay(50);
+        }
+
+        public StreamHandle(string temporaryTargetPath, string targetPath, SettingsProvider settingsProvider) 
         {
             _temporaryTargetPath = temporaryTargetPath;
             _targetPath = targetPath;
-            _lazyWriter = new Lazy<FileStream>(() => new FileStream(_temporaryTargetPath, FileMode.Create, FileAccess.Write, FileShare.Read));
+            _settingsProvider = settingsProvider;
         }
 
-        public ReaderStream GetReader() => new(this);
+        public Stream GetReader() => new ReaderStream(this);
 
         public class ReaderStream : FileStream
         {
             public bool IsReadCompleted => IsWriteCompleted && _readBytes >= TotalBytes;
             private bool IsWriteCompleted => _handle.IsWriteCompleted;
 
-            private long TotalBytes => _handle._writtenBytes;
+            private FileInfo? _swappedInfo;
+            private long TotalBytes
+            {
+                get
+                {
+                    if (!IsWriteCompleted)
+                        return new FileInfo(_handle._temporaryTargetPath).Length;
+                    _swappedInfo ??= new FileInfo(_handle._targetPath);
+                    return _swappedInfo.Length;
+                }
+            }
 
             private readonly StreamHandle _handle;
             public ReaderStream(StreamHandle handle) 
@@ -38,7 +56,7 @@ namespace Kast.Provider.Conversions
             private FileStream? _swappedStream;
             private async ValueTask<int> ReadInternalAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
             {
-                if (!IsWriteCompleted || !File.Exists(_handle._targetPath))
+                if (!IsWriteCompleted)
                     return await base.ReadAsync(buffer, cancellationToken);
 
                 if (_swappedStream == null)
@@ -46,7 +64,7 @@ namespace Kast.Provider.Conversions
                     _swappedStream = new FileStream(_handle._targetPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     _swappedStream.Seek(_readBytes, SeekOrigin.Begin);
                 }
-                    
+
                 return await _swappedStream.ReadAsync(buffer, cancellationToken);
             }
 
@@ -56,6 +74,25 @@ namespace Kast.Provider.Conversions
                 var read = await ReadInternalAsync(buffer, cancellationToken);
                 _readBytes += read;
                 return read;
+            }
+
+            public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+            {
+                while (!IsReadCompleted)
+                {
+                    bufferSize = Math.Min(bufferSize, (int)(TotalBytes - _readBytes));
+                    Memory<byte> buffer = new byte[bufferSize];
+                    var read = await ReadAsync(buffer, cancellationToken);
+
+                    if (read == 0)
+                        continue;
+
+                    if (read < bufferSize) // Trim might be needed when switching the underlying stream
+                        buffer = buffer[..read];
+
+                    await destination.WriteAsync(buffer, cancellationToken);
+                    await destination.FlushAsync(cancellationToken);
+                }
             }
 
             protected override void Dispose(bool disposing)
@@ -69,25 +106,17 @@ namespace Kast.Provider.Conversions
             }
         }
 
-        private long _writtenBytes;
-        public async Task WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
-        {
-            await Writer.WriteAsync(buffer, cancellationToken);
-            await Writer.FlushAsync(cancellationToken);
-            _writtenBytes += buffer.Length;
-            if (_writtenBytes >= Constants.MediaStreamingBuffer && !_buffering.Task.IsCompleted)
-                _buffering.TrySetResult();
-        }
-
         public bool IsWriteCompleted { get; private set; }
         public async Task CompleteAsync()
         {
-            if (!_lazyWriter.IsValueCreated || IsWriteCompleted)
+            if (!IsWriteCompleted)
                 return;
 
-            await Writer.FlushAsync();
-            await Writer.DisposeAsync();
+            if (!File.Exists(_targetPath))
+                throw new ArgumentException("Target file must exist before you flag this handle as completed");
+
             IsWriteCompleted = true;
+            await Task.FromResult(IsWriteCompleted);
         }
     }
 }

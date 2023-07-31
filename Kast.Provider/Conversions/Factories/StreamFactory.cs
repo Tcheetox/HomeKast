@@ -19,10 +19,11 @@ namespace Kast.Provider.Conversions.Factories
                 if (_token.IsCancellationRequested || context.Media.Status != Media.MediaStatus.Unplayable)
                     return;
 
-                // Convert file
+                // Define conversion
                 IConversion conversion = FFmpeg.Conversions
                     .New()
                     .SetInput(context.Media.FilePath)
+                    .SetOutput(context.TemporaryTargetPath)
                     .SetVideoCodec(VideoCodec.h264)
                     .SetAudioCodec(AudioCodec.mp3)
                     .SetAudioStream(context.AudioStreamIndex)
@@ -30,8 +31,8 @@ namespace Kast.Provider.Conversions.Factories
                     .SetVideoSize(context.Media.Resolution)
                     .SetSubtitles(context)
                     //.UseMultiThread(16)
-                    .SetOnProgress((_, args) => context.Update(args, Target))
-                    .SetOutputWriter(context.StreamHandle!.WriteAsync, _token);
+                    .AddParameter("-f matroska")
+                    .SetOnProgress((_, args) => context.Update(args, Target));
 
                 _logger.LogInformation("Beginning stream conversion for {media}", context.Media);
                 _logger.LogInformation("Arguments: {args}", conversion.Build());
@@ -39,14 +40,11 @@ namespace Kast.Provider.Conversions.Factories
                 try
                 {
                     await conversion.Start(_token);
+
                     _logger.LogInformation("Adjusting converted stream for {media}", context.Media);
-                    await FFmpeg.Conversions
-                        .New()
-                        .SetInput(context.TemporaryTargetPath!)
-                        .AddParameter($"-c copy -t {context.Media.Info!.Duration.TotalMilliseconds}")
-                        .SetOutput(context.TargetPath)
-                        .Start(_token);
-                    await context.StreamHandle.CompleteAsync();
+
+                    await IOSupport.CopyAsync(context.TemporaryTargetPath!, context.TargetPath, timeoutMs: FileAccessTimeout);
+                    await context.Handle!.CompleteAsync();
                 }
                 finally
                 {

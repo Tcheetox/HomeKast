@@ -9,16 +9,15 @@ namespace Kast.Provider.Media
         string Name { get; }
         [JsonIgnore]
         IMedia? Companion { get; }
-        DateTime Creation { get; }
-        string Directory { get; }
-        string Extension { get; }
         string FileName { get; }
+        string FilePath { get; }
+        [JsonIgnore]
+        FileInfo FileInfo { get; }
         Guid Id { get; }
         [JsonIgnore]
         IMediaInfo? Info { get; }
         string Type { get; }
         TimeSpan Length { get; }
-        string FilePath { get; }
         VideoSize Resolution { get; }
         MediaStatus Status { get; }
         Metadata? Metadata { get; }

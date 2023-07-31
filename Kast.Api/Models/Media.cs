@@ -12,7 +12,7 @@ namespace Kast.Api.Models
             {
                 Name = media.Name,
                 Type = media.Type,
-                Creation = media.Creation,
+                Creation = media.FileInfo.CreationTime,
                 Id = media.Id,
                 Length = media.Length,
                 Resolution = media.Resolution,

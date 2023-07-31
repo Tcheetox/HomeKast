@@ -32,7 +32,7 @@ namespace Kast.Provider.Supports
         public static bool IsConversionRequired(MediaBase media)
             => !((media.Resolution == VideoSize.Hd1080 || media.Resolution == VideoSize.Hd720)
             && media.VideoFrameRate <= 60 // TODO: DBC Chromecast spec
-            && AcceptedExtensions.Contains(media.Extension)
+            && AcceptedExtensions.Contains(media.FileInfo.Extension)
             && VideoCodecs.Contains(media.VideoCodec)
             && AudioCodecs.Contains(media.AudioCodec));
 

@@ -101,21 +101,25 @@ namespace Kast.Provider.Media
 
         private static IEnumerable<string> ExpectedCompanionPath(IMedia media)
         {
+            if (media.FileInfo.Directory == null)
+                yield break;
+
             if (media.FileName.StartsWith('_'))
             {
                 // Long shot at finding the non-converted original media path
-                var originalName = media.FileName[1..].Replace(media.Extension, ".mkv");
-                yield return Path.Combine(media.Directory, media.FileName[1..]);
-                var directoryInfo = new DirectoryInfo(media.Directory);
-                if (directoryInfo?.Parent != null)
-                    yield return Path.Combine(directoryInfo.Parent.FullName, originalName);
+                var originalName = media.FileName[1..];
+                yield return Path.Combine(media.FileInfo.DirectoryName!, originalName);
+                if (!string.IsNullOrWhiteSpace(media.FileInfo.Directory.Parent?.Name))
+                    yield return Path.Combine(media.FileInfo.Directory.Parent.Name, originalName);
             }
 
             // Ibidem for the converted file
-            var mediaWithoutExtension = media.FileName.Replace(media.Extension, string.Empty);
-            var targetDirectory = media.Directory.EndsWith(mediaWithoutExtension) ? media.Directory : Path.Combine(media.Directory, mediaWithoutExtension);
-                foreach (var extension in ConversionSupport.AcceptedExtensions)
-                    yield return Path.Combine(targetDirectory, $"_{mediaWithoutExtension}{extension}");
+            var mediaWithoutExtension = Path.GetFileNameWithoutExtension(media.FilePath);
+            var targetDirectory = media.FileInfo.Directory.Name.EndsWith(mediaWithoutExtension)
+                ? media.FileInfo.DirectoryName!
+                : Path.Combine(media.FileInfo.DirectoryName!, mediaWithoutExtension);
+            foreach (var extension in ConversionSupport.AcceptedExtensions)
+                yield return Path.Combine(targetDirectory, $"_{mediaWithoutExtension}{extension}");
         }
         #endregion
 

@@ -98,12 +98,12 @@ namespace Kast.Api.Controllers
                     EnableRangeProcessing = true
                 };
 
-            if (!_mediaConverter.TryGetValue(media, out var conversion) || conversion?.StreamHandle == null)
+            if (!_mediaConverter.TryGetValue(media, out var conversion) || conversion?.Handle == null)
                 return NotFound();
 
-            await conversion.StreamHandle.BufferingAsync();
-            using var reader = conversion.StreamHandle.GetReader();
-            await reader.CopyToAsync(Response.BodyWriter.AsStream(), 81920);
+            await conversion.Handle.BufferingAsync();
+            using var reader = conversion.Handle.GetReader();
+            await reader.CopyToAsync(Response.BodyWriter.AsStream());
 
             await Response.BodyWriter.CompleteAsync();
 

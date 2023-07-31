@@ -90,7 +90,7 @@ namespace Kast.Provider.Media
         public async Task<IEnumerable<IGrouping<string, IMedia>>> GetGroupAsync()
             => _groupedLibrary ??= (await GetAllAsync())
             .Where(m => m.Status != MediaStatus.Hidden)
-            .OrderByDescending(m => m.Creation)
+            .OrderByDescending(m => m.FileInfo.CreationTime)
             .ThenByDescending(m => m.Status == MediaStatus.Playable)
             .GroupBy(m => m.Name)
             .ToList();

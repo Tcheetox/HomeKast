@@ -2,7 +2,6 @@
 using System.Text.Json.Serialization;
 using Xabe.FFmpeg;
 using Kast.Provider.Supports;
-using Kast.Provider.Conversions;
 
 namespace Kast.Provider.Media
 {
@@ -66,20 +65,14 @@ namespace Kast.Provider.Media
 
             UpdateStatus();
         }
-
         public string Name { get; protected set; }
         [JsonIgnore]
         public string FileName => FileInfo.Name.Capitalize();
         public abstract string Type { get; }
-        private FileInfo? _fileInfo;
-        private FileInfo FileInfo => _fileInfo ??= new(FilePath);
         public string FilePath { get; }
+        private FileInfo? _fileInfo;
         [JsonIgnore]
-        public string Directory => FileInfo.Directory!.FullName; 
-        [JsonIgnore]
-        public string Extension => FileInfo.Extension;
-        [JsonIgnore]
-        public DateTime Creation => FileInfo.CreationTime;
+        public FileInfo FileInfo => _fileInfo ??= new(FilePath);
         public TimeSpan Length { get; private set; }
         [JsonIgnore]
         public MediaStatus Status { get; private set; }

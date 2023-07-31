@@ -14,37 +14,35 @@ namespace Kast.Provider.Supports
             return directory;
         }
 
-        public static string GetTempPath(string extension = ".tmp")
-            => Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + extension);
-
-        public static async Task MoveAsync(string from, string to, bool overwrite = true, int? timeoutMs = null)
+        public static async Task<bool> MoveAsync(string from, string to, bool overwrite = true, int? timeoutMs = null)
         {
             if (!File.Exists(from))
-                return;
+                return false;
 
-            if (File.Exists(to) && (!overwrite || !await TryPerformOnFileWithRetryAsync(to, _to => File.Delete(_to), timeoutMs)))
-                return;
-
-            await TryPerformOnFileWithRetryAsync(from, _from => File.Move(from, to), timeoutMs);
+            return await TryPerformOnFileWithRetryAsync(from, _from => File.Move(from, to, overwrite), timeoutMs);
         }
 
-        public static async Task CopyAsync(string from, string to, bool overwrite = true, int? timeoutMs = null)
+        public static async Task<FileInfo?> GetFileInfoAsync(string path, int? timeoutMs = null)
+        {
+            FileInfo? fileInfo = null;
+            await TryPerformOnFileWithRetryAsync(path, path => fileInfo = new FileInfo(path), timeoutMs);
+            return fileInfo;
+        }
+
+        public static async Task<bool> CopyAsync(string from, string to, bool overwrite = true, int? timeoutMs = null)
         {
             if (!File.Exists(from))
-                return;
+                return false;
 
-            if (File.Exists(to) && (!overwrite || !await TryPerformOnFileWithRetryAsync(to, _to => File.Delete(_to), timeoutMs)))
-                return;
-
-            await TryPerformOnFileWithRetryAsync(from, _from => File.Copy(from, to), timeoutMs);
+            return await TryPerformOnFileWithRetryAsync(from, _from => File.Copy(from, to, overwrite), timeoutMs);
         }
 
-        public static async Task DeleteAsync(string path, int? timeoutMs = null)
+        public static async Task<bool> DeleteAsync(string path, int? timeoutMs = null)
         {
             if (!File.Exists(path))
-                return;
+                return false;
 
-            await TryPerformOnFileWithRetryAsync(path, _path => File.Delete(_path), timeoutMs);
+            return await TryPerformOnFileWithRetryAsync(path, _path => File.Delete(_path), timeoutMs);
         }
 
         public static async Task<bool> IsFileAvailableWithRetryAsync(string path, int? timeout = null)
