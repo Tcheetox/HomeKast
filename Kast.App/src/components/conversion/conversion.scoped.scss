@@ -3,10 +3,44 @@
     fill: white;
     height: 28px;
     width: 28px;
+    animation: spinForward 2000ms infinite linear;
   }
 
   display: flex;
   align-items: center;
   height: 44px;
-  margin-left: 0.75rem;
+  &.visible {
+    margin-left: 0.75rem;
+  }
+}
+
+.popover {
+  min-width: 180px;
+  background-color: var(--main-dark-12-color);
+  color: white;
+  padding: 0.3rem 0.5rem 0.5rem 0.5rem;
+
+  svg {
+    fill: var(--main-gray);
+    width: 20px;
+    height: 20px;
+    transition-duration: var(--main-transition-duration);
+
+    &:hover {
+      cursor: pointer;
+      fill: var(--main-gray-hover);
+    }
+  }
+
+  .col-icon {
+    flex-grow: 0;
+  }
+
+  .row-control {
+    margin-bottom: 0.3rem;
+  }
+
+  hr {
+    margin: 0.3rem 0;
+  }
 }

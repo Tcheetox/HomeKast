@@ -35,12 +35,14 @@ small {
   --main-padding-width: 1rem;
   --main-margin-width: 1rem;
   --main-gray: gray;
+  --main-gray-hover: #676767;
 }
 
 .container-fluid {
   max-width: 95vw;
 }
 
+// TODO: move that kind of override elsewhere
 // Bootstrap override for search control
 .search input {
   border-radius: 15px;
@@ -125,5 +127,52 @@ small {
 .settings svg {
   path {
     fill: white !important;
+  }
+}
+
+.popover {
+  .popover-header,
+  .popover-body {
+    background-color: unset;
+    color: unset;
+    padding: unset;
+  }
+  .popover-header {
+    font-size: 14px;
+    text-align: left;
+    border: unset;
+  }
+  .popover-arrow::after,
+  .popover-header::before {
+    border-bottom-color: var(--main-dark-12-color) !important;
+  }
+}
+
+.btn-unstyle {
+  background-color: unset !important;
+  border: none;
+  padding: 0;
+  &:hover,
+  &:active {
+    background-color: unset !important;
+    border: none;
+  }
+}
+
+@keyframes spinBackward {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes spinForward {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }

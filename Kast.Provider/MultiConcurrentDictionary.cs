@@ -19,7 +19,6 @@ namespace Kast.Provider
     }
     #endregion
 
-    // TODO: throw on key mismatch, its the case... sadge (remove Ig ue
     public class MultiConcurrentDictionary<TK1, TK2, TValue> : IDictionary<MultiKey<TK1, TK2>, TValue>
         where TK1 : notnull
         where TK2 : notnull
@@ -107,10 +106,12 @@ namespace Kast.Provider
             if (_valDictionary.TryGetValue(key, out KeyValuePair<TK2, TValue> entry))
             {
                 value = entry.Value;
+                ThrowOnInconsistency();
                 return true;
             }
 
             value = default;
+            ThrowOnInconsistency();
             return false;
         }
 
@@ -119,10 +120,12 @@ namespace Kast.Provider
             if (_keyDictionary.TryGetValue(key, out TK1? key1) && _valDictionary.TryGetValue(key1, out var entry))
             {
                 value = entry.Value;
+                ThrowOnInconsistency();
                 return true;
             }
 
             value = default!;
+            ThrowOnInconsistency();
             return false;
         }
 
@@ -146,6 +149,7 @@ namespace Kast.Provider
                 if (existingKey && existingEntry)
                 {
                     added = false;
+                    ThrowOnInconsistency();
                     return valOrNew.Value;
                 }
 
@@ -165,9 +169,17 @@ namespace Kast.Provider
                     _valDictionary.Remove(keyRefOrNew!);
                     valOrNew = new KeyValuePair<TK2, TValue>(key2, value);
                 }
-
+                ThrowOnInconsistency();
                 return value;
             }
+        }
+
+        private void ThrowOnInconsistency()
+        {
+#if DEBUG
+            if (_valDictionary.Count != _keyDictionary.Count)
+                throw new InvalidOperationException($"{nameof(MultiConcurrentDictionary<TK1, TK2, TValue>)} count mismatch: {nameof(_valDictionary)} ({_valDictionary.Count}) vs {nameof(_keyDictionary)} ({_keyDictionary.Count}) ");
+#endif        
         }
 
         public TValue AddOrUpdate(MultiKey<TK1, TK2> multiKey, TValue value, out bool added)
@@ -192,6 +204,7 @@ namespace Kast.Provider
                     keyRefOrNew = key1;
                     valOrNew = new KeyValuePair<TK2, TValue>(key2, value);
                     added = true;
+                    ThrowOnInconsistency();
                     return value;
                 }
 
@@ -214,6 +227,7 @@ namespace Kast.Provider
                     keyRefOrNew = key1;
                 }
 
+                ThrowOnInconsistency();
                 return value;
             }
         }
@@ -229,10 +243,12 @@ namespace Kast.Provider
                 if (_keyDictionary.Remove(key2) && _valDictionary.Remove(key1, out var entry))
                 {
                     value = entry.Value;
+                    ThrowOnInconsistency();
                     return true;
                 }
 
                 value = default;
+                ThrowOnInconsistency();
                 return false;
             }
         }
@@ -246,10 +262,12 @@ namespace Kast.Provider
                 if (_keyDictionary.Remove(key, out TK1? key1) && _valDictionary.Remove(key1, out var entry))
                 {
                     value = entry.Value;
+                    ThrowOnInconsistency();
                     return true;
                 }
 
                 value = default;
+                ThrowOnInconsistency();
                 return false;
             }
         }
@@ -263,10 +281,12 @@ namespace Kast.Provider
                 if (_valDictionary.Remove(key, out var entry) && _keyDictionary.Remove(entry.Key))
                 {
                     value = entry.Value;
+                    ThrowOnInconsistency();
                     return true;
                 }
 
                 value = default;
+                ThrowOnInconsistency();
                 return false;
             }
         }
@@ -312,7 +332,6 @@ namespace Kast.Provider
                     .ToList();
             }
         }
-
 
         bool ICollection<KeyValuePair<MultiKey<TK1, TK2>, TValue>>.IsReadOnly
             => ((IDictionary<TK1, KeyValuePair<TK2, TValue>>)_valDictionary).IsReadOnly;

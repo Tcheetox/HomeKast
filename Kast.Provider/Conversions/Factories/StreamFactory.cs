@@ -30,7 +30,7 @@ namespace Kast.Provider.Conversions.Factories
                     .SetVideoStream(context)
                     .SetVideoSize(context.Media.Resolution)
                     .SetSubtitles(context)
-                    //.UseMultiThread(16)
+                    .UseMultiThread(1) // TEMP
                     .AddParameter("-f matroska")
                     .SetOnProgress((_, args) => context.Update(args, Target));
 

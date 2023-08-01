@@ -8,6 +8,7 @@ export default function useConversions() {
 
   return {
     conversions,
+    isConverting: conversions.length > 0,
     refetch,
     isFetching,
   }

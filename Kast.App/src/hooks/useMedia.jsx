@@ -1,24 +1,33 @@
 import { useMutation } from '@tanstack/react-query'
+import { useLibrary, useConversions } from './'
 
 export default function useMedia(id, receiverId = null) {
-  const startConversion = useMutation(
-    () =>
-      fetch(`${process.env.REACT_APP_BACKEND_URI}/conversion/${id}/start`, {
-        method: 'POST',
-      }),
-    {
-      onError: error => console.error(error),
-    }
+  const library = useLibrary()
+  const conversions = useConversions()
+  const startConversion = useMutation(() =>
+    fetch(`${process.env.REACT_APP_BACKEND_URI}/conversion/${id}/start`, {
+      method: 'POST',
+    }).then(async r => {
+      if (r.ok) {
+        library.refetch()
+        conversions.refetch()
+        return
+      }
+      throw Error(JSON.stringify(await r.json()))
+    })
   )
 
-  const stopConversion = useMutation(
-    () =>
-      fetch(`${process.env.REACT_APP_BACKEND_URI}/conversion/${id}/stop`, {
-        method: 'POST',
-      }),
-    {
-      onError: error => console.error(error),
-    }
+  const stopConversion = useMutation(() =>
+    fetch(`${process.env.REACT_APP_BACKEND_URI}/conversion/${id}/stop`, {
+      method: 'POST',
+    }).then(async r => {
+      if (r.ok) {
+        library.refetch()
+        conversions.refetch()
+        return
+      }
+      throw Error(JSON.stringify(await r.json()))
+    })
   )
 
   const playMedia = useMutation(() => {

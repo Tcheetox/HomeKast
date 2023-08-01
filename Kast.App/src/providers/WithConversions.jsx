@@ -15,7 +15,7 @@ export default function WithConversions() {
       }).then(value => value.json()),
     onSuccess: updateConversions,
     initialData: [],
-    // refetchInterval: refetch,
+    // refetchInterval: interval,
   })
 
   return null
