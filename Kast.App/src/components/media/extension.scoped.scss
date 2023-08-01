@@ -6,7 +6,7 @@
   position: relative;
   border-bottom-left-radius: var(--main-radius);
   border-bottom-right-radius: var(--main-radius);
-  color: white;
+  color: var(--white);
   font-size: 13px;
   box-shadow: 2px 7px 5px 3px black;
 }
@@ -18,14 +18,14 @@
 }
 
 .title {
-  color: white;
+  color: var(--white);
   text-align: center;
   font-size: 22px;
   font-weight: 500;
 }
 
 svg {
-  fill: white;
+  fill: var(--white);
 }
 
 .resolution {

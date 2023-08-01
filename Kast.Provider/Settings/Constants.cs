@@ -9,7 +9,6 @@ namespace Kast.Provider
 
         public const int FileAccessTimeout = 5000;
         public const int MetadataFetchTimeout = 5000;
-
         public const int MediaStreamingBuffer = 32 * 1024 * 1024;
     }
 }

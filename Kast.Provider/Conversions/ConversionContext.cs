@@ -20,7 +20,6 @@ namespace Kast.Provider.Conversions
         public ConversionProgressEventArgs? Progress { get; private set; }
         
         public readonly ConversionType Type;
-
         public readonly StreamHandle? Handle;
         
         internal bool BurnSubtitles { get; set; }
@@ -43,7 +42,7 @@ namespace Kast.Provider.Conversions
             if (Type == ConversionType.FullConversion)
             {
                 TemporaryTargetPath = Path.ChangeExtension(TargetPath, ".tmp");
-                Handle = new StreamHandle(TemporaryTargetPath, TargetPath, settingsProvider);
+                Handle = new StreamHandle(TemporaryTargetPath, TargetPath);
             }
 
             // Define streams preferred index

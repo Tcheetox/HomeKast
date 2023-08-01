@@ -1,9 +1,13 @@
 .conversion {
   svg {
-    fill: white;
+    fill: var(--white);
     height: 28px;
     width: 28px;
     animation: spinForward 2000ms infinite linear;
+    transition-duration: var(--main-transition-duration);
+    &:hover {
+      fill: var(--white-hover);
+    }
   }
 
   display: flex;
@@ -17,7 +21,7 @@
 .popover {
   width: 180px;
   background-color: var(--main-dark-12-color);
-  color: white;
+  color: var(--white);
   padding: 0.3rem 0.5rem 0.5rem 0.5rem;
 
   svg {

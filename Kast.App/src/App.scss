@@ -36,6 +36,8 @@ small {
   --main-margin-width: 1rem;
   --main-gray: gray;
   --main-gray-hover: #676767;
+  --white: white;
+  --white-hover: #cccccc;
 }
 
 .container-fluid {
@@ -51,14 +53,14 @@ small {
   // background-color: var(--main-dark-color);
   background-color: var(--main-dark-12-color);
   transition: width var(--main-transition-duration) ease;
-  color: white;
+  color: var(--white);
   height: 35px;
   border-color: transparent;
   font-size: 1.05rem;
   padding-right: 45px;
   &:active,
   &:focus {
-    color: white;
+    color: var(--white);
     width: 300px;
     background-color: var(--main-dark-12-color);
     border-color: transparent;
@@ -76,7 +78,7 @@ small {
 .modal-content {
   //background-color: var(--main-dark-color);
   background-color: var(--main-dark-12-color);
-  color: white;
+  color: var(--white);
 }
 .modal-footer {
   padding-top: 0;
@@ -86,7 +88,7 @@ small {
   border-bottom: none;
   padding-bottom: 0;
   .nav-link {
-    color: white;
+    color: var(--white);
   }
   .nav-link.active {
     color: var(--main-color);
@@ -121,12 +123,25 @@ small {
 .search svg {
   circle,
   path {
-    stroke: white;
+    stroke: var(--white);
+    transition-duration: var(--main-transition-duration);
+  }
+  &:hover {
+    circle,
+    path {
+      stroke: var(--white-hover);
+    }
   }
 }
 .settings svg {
   path {
-    fill: white !important;
+    transition-duration: var(--main-transition-duration);
+    fill: var(--white) !important;
+  }
+  &:hover {
+    path {
+      fill: var(--white-hover) !important;
+    }
   }
 }
 

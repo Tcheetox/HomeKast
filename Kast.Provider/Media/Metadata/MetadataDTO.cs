@@ -6,42 +6,27 @@ namespace Kast.Provider.Media
     public class MetadataDTO
 #pragma warning restore S101 // Types should be named in PascalCase
     {
-#pragma warning disable S1075 // URIs should not be hardcoded
-        private const string _baseUrl = "https://image.tmdb.org/t/p/original";
-#pragma warning restore S1075 // URIs should not be hardcoded
-
-        private string? _backdrop;
         [JsonPropertyName("backdrop_path")]
-        public string? Backdrop
-        {
-            get => _backdrop;
-            set => _backdrop = _baseUrl + value;
-        }
-
+        public string? Backdrop { get; init; }
         [JsonPropertyName("media_type")]
-        public string? MediaType { get; set; }
+        public string? MediaType { get; init; }
         [JsonPropertyName("original_title")]
-        public string? OriginalTitle { get; set; }
+        public string? OriginalTitle { get; init; }
         [JsonPropertyName("popularity")]
-        public double? Popularity { get; set; }
-        private string? _poster;
+        public double? Popularity { get; init; }
         [JsonPropertyName("poster_path")]
-        public string? Poster 
-        {
-            get => _poster; 
-            set => _poster = _baseUrl + value;
-        }
+        public string? Poster { get; init; }
         [JsonPropertyName("release_date")]
-        public string? Released { get; set; }
+        public string? Released { get; init; }
         [JsonPropertyName("title")]
-        public string? Title { get; set; }
+        public string? Title { get; init; }
         [JsonPropertyName("vote_average")]
-        public double? Vote { get; set; }
+        public double? Vote { get; init; }
         [JsonPropertyName("vote_count")]
-        public int? VoteCount { get; set; }
+        public int? VoteCount { get; init; }
         [JsonPropertyName("overview")]
-        public string? Description { get; set; }
+        public string? Description { get; init; }
         [JsonPropertyName("genre_ids")]
-        public List<int>? Genres { get; set; }
+        public List<int>? Genres { get; init; }
     }
 }

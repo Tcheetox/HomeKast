@@ -10,11 +10,13 @@ namespace Kast.Provider.Media
     public abstract class MetadataProvider : IMetadataProvider
     {
         private readonly HttpClient _client;
-        private readonly string _baseUrl;
-
+        
         protected readonly ILogger<MetadataProvider> Logger;
         protected readonly SettingsProvider SettingsProvider;
         protected readonly JsonSerializerOptions Options;
+
+        private string BaseUrl => SettingsProvider.Application.BaseUrl!;
+        private string ImageBaseUrl => SettingsProvider.Application.ImageBaseUrl!;
 
         protected MetadataProvider(ILogger<MetadataProvider> logger, HttpClient httpClient, SettingsProvider settingsProvider, JsonSerializerOptions options)
         {
@@ -25,7 +27,6 @@ namespace Kast.Provider.Media
             if (string.IsNullOrWhiteSpace(settingsProvider.Application.BaseUrl))
                 throw new ArgumentException($"{nameof(settingsProvider)} must define a valid URL");
 
-            _baseUrl = settingsProvider.Application.BaseUrl;
             _client = httpClient; 
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", SettingsProvider.Application.ApiToken);
         }
@@ -42,7 +43,7 @@ namespace Kast.Provider.Media
                 using (MassTimer.Measure("GetMetadata"))
                 {
                     cancellation.CancelAfter(SettingsProvider.Application.MetadataTimeout ?? Constants.MetadataFetchTimeout);
-                    var content = await _client.GetStringAsync($"{_baseUrl}?query={HttpUtility.UrlEncode(media.Name)}", cancellation.Token);
+                    var content = await _client.GetStringAsync($"{BaseUrl}?query={HttpUtility.UrlEncode(media.Name)}", cancellation.Token);
                     var requests = JsonSerializer.Deserialize<MetadataResultsDTO>(content, Options);
                     var result = requests?.Results?.FirstOrDefault();
                     if (result != null)
@@ -55,7 +56,7 @@ namespace Kast.Provider.Media
                             OriginalTitle = result.OriginalTitle,
                             Vote = result.Vote,
                             Released = DateTime.TryParse(result.Released, out DateTime released) ? released : null,
-                            ImageUrl = result.Poster
+                            ImageUrl = ImageBaseUrl + result.Poster
                         };
                     }
                 }

@@ -180,6 +180,7 @@ namespace Kast.Provider
         }
 
         public string? BaseUrl { get; set; }
+        public string? ImageBaseUrl { get; set; }
 
         private int _maxDegreeOfParallelism = 1;
         public int MaxDegreeOfParallelism 

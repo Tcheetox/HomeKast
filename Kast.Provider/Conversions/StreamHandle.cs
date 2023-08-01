@@ -7,24 +7,19 @@ namespace Kast.Provider.Conversions
     {
         private readonly string _temporaryTargetPath;
         private readonly string _targetPath;
-        private readonly SettingsProvider _settingsProvider;
-
-        private int? FileAccessTimeout => _settingsProvider.Application.FileAccessTimeout;
 
         public async Task BufferingAsync(TimeSpan? timeSpan = null)
         {
             timeSpan ??= TimeSpan.MaxValue;
             var watch = Stopwatch.StartNew();
-            while (watch.Elapsed <= timeSpan 
-                && (await IOSupport.GetFileInfoAsync(_temporaryTargetPath, FileAccessTimeout))?.Length <= Constants.MediaStreamingBuffer)
+            while (watch.Elapsed <= timeSpan && (await IOSupport.GetFileInfoAsync(_temporaryTargetPath))?.Length <= Constants.MediaStreamingBuffer)
                 await Task.Delay(50);
         }
 
-        public StreamHandle(string temporaryTargetPath, string targetPath, SettingsProvider settingsProvider) 
+        public StreamHandle(string temporaryTargetPath, string targetPath) 
         {
             _temporaryTargetPath = temporaryTargetPath;
             _targetPath = targetPath;
-            _settingsProvider = settingsProvider;
         }
 
         public Stream GetReader() => new ReaderStream(this);

@@ -1,7 +1,6 @@
-﻿using Kast.Provider.Conversions;
-using Kast.Provider.Conversions.Factories;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Xabe.FFmpeg;
+using Kast.Provider.Conversions.Factories;
 
 namespace Kast.Provider.Media
 {
@@ -25,10 +24,10 @@ namespace Kast.Provider.Media
         public int? Year { get; }
         SubtitlesList Subtitles { get; }
 
-        void UpdateStatus(int? progress = null, FactoryTarget? target = null);
-        void UpdateMetadata(Metadata? metadata = null);
-        void UpdateCompanion(IMedia? companion = null);
-        void UpdateInfo(IMediaInfo? info = null);
+        internal void UpdateStatus(int? progress = null, FactoryTarget? target = null);
+        internal void UpdateMetadata(Metadata? metadata = null);
+        internal void UpdateCompanion(IMedia? companion = null);
+        internal void UpdateInfo(IMediaInfo? info = null);
 
         string ToString();
     }

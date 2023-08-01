@@ -17,14 +17,16 @@
 }
 
 svg {
-  fill: white;
+  fill: var(--white);
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  transition-duration: var(--main-transition-duration);
 
   &:hover {
     cursor: pointer;
+    fill: var(--white-hover);
   }
 }
 

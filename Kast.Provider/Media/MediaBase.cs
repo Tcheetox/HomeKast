@@ -147,6 +147,7 @@ namespace Kast.Provider.Media
         #region IEquatable<IMedia>
         public override bool Equals(object? obj)
             => Equals(obj as MediaBase);
+
         public virtual bool Equals(IMedia? other)
         {
             if (other == null) 

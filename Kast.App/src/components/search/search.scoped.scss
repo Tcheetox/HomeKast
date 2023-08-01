@@ -11,7 +11,7 @@ svg {
   transform: scale(0.7) translate(0, -72%);
   circle,
   path {
-    stroke: white;
+    stroke: var(--white);
   }
   position: absolute;
 }
