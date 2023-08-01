@@ -66,7 +66,7 @@ namespace Kast.Provider.Conversions
         {
             Progress = args;
             Target = target;
-            Media.UpdateStatus(args?.Percent);
+            Media.UpdateStatus(args?.Percent, target);
         }
     }
 }

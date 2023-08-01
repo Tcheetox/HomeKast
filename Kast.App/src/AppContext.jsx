@@ -9,13 +9,13 @@ const AppContextUpdater = createContext()
 export function useContextConsumer(key = null) {
   const consumer = useContext(AppContextConsumer)
   if (consumer === undefined) throw new Error(`useContextConsumer must be used within a ContextProvider`)
-  return key !== null ? consumer[key] : consumer
+  return key ? consumer[key] : consumer
 }
 
 export const useContextUpdater = (key = null) => {
   const updater = useContext(AppContextUpdater)
   if (!updater) throw new Error(`useContextUpdater must be used within a ContextProvider`)
-  return key === null ? updater : v => updater(_v => ({ ..._v, [key]: v }))
+  return key ? v => updater(_v => ({ ..._v, [key]: v })) : updater
 }
 
 export const AppContextProvider = props => {

@@ -98,7 +98,9 @@ namespace Kast.Api.Controllers
                     EnableRangeProcessing = true
                 };
 
-            if (!_mediaConverter.TryGetValue(media, out var conversion) || conversion?.Handle == null)
+            if (media.Status != MediaStatus.Streamable 
+                || !_mediaConverter.TryGetValue(media, out var conversion) 
+                || conversion?.Handle == null)
                 return NotFound();
 
             await conversion.Handle.BufferingAsync();

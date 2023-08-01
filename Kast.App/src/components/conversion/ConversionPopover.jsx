@@ -6,7 +6,7 @@ import { Stop } from '../../assets/icons'
 import { useMedia } from '../../hooks'
 
 export default function ConversionPopover({ conversions }) {
-  const current = conversions[0]
+  const current = conversions.find(i => i.status === 'Streamable') ?? conversions.find(i => i.status === 'Converting') ?? conversions[0]
   const { stopConversion } = useMedia(current.id)
 
   return (
@@ -15,7 +15,7 @@ export default function ConversionPopover({ conversions }) {
       <Popover.Body>
         <hr />
         <Row className='row-control'>
-          <Col>{current.name}</Col>
+          <Col className='col-name'>{current.name}</Col>
           <Col className='col-icon'>
             <Stop onClick={stopConversion} />
           </Col>

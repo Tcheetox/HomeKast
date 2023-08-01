@@ -127,7 +127,9 @@ namespace Kast.Provider.Media
         private sealed class CompanionComparer : IEqualityComparer<IMedia>
         {
             public bool Equals(IMedia? x, IMedia? y)
-                => x?.Type == y?.Type && x?.Length == y?.Length && Utilities.InsensitiveCompare(x?.Name, y?.Name);
+                => x?.Type == y?.Type && x?.Length == y?.Length 
+                && Utilities.InsensitiveCompare(x?.Name, y?.Name)
+                && x?.Id != y?.Id;
 
             public int GetHashCode([DisallowNull] IMedia obj)
             {

@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using Xabe.FFmpeg;
 using Kast.Provider.Supports;
+using Kast.Provider.Conversions.Factories;
 
 namespace Kast.Provider.Media
 {
@@ -12,6 +13,7 @@ namespace Kast.Provider.Media
         MissingSubtitles,
         Queued,
         Converting,
+        Streamable,
         Playable
     }
 
@@ -89,11 +91,17 @@ namespace Kast.Provider.Media
         public string AudioCodec { get; private set; }
         public int? Year { get; protected set; }
 
-        public void UpdateStatus(int? progress = null)
+        public void UpdateStatus(int? progress = null, FactoryTarget? target = null)
         {
             if (progress.HasValue)
             {
-                Status = progress.Value > 0 ? MediaStatus.Converting : MediaStatus.Queued;
+                if (progress < 0)
+                {
+                    Status = MediaStatus.Queued;
+                    return;
+                }
+
+                Status = target == FactoryTarget.Stream ? MediaStatus.Streamable : MediaStatus.Converting;
                 return;
             }
 

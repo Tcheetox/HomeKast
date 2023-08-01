@@ -15,7 +15,7 @@
 }
 
 .popover {
-  min-width: 180px;
+  width: 180px;
   background-color: var(--main-dark-12-color);
   color: white;
   padding: 0.3rem 0.5rem 0.5rem 0.5rem;
@@ -34,6 +34,12 @@
 
   .col-icon {
     flex-grow: 0;
+  }
+
+  .col-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .row-control {

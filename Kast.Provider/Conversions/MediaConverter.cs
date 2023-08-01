@@ -11,13 +11,13 @@ namespace Kast.Provider.Conversions
     {
         private sealed class ConversionInfo : Tuple<ConversionToken, ConversionContext>
         {
-            public readonly ConversionContext Container;
+            public readonly ConversionContext Context;
             public readonly ConversionToken Token;
             public ConversionInfo(ConversionToken token, ConversionContext container) 
                 : base (token, container)
             {
                 Token = token;
-                Container = container;
+                Context = container;
             }
         }
 
@@ -69,7 +69,7 @@ namespace Kast.Provider.Conversions
                     _subtitlesFactory.ConvertAsync(context),
                     _streamFactory.ConvertAsync(context)
                 },
-                onStart: (_o, _e) => media.UpdateStatus(0),
+                onAdd: (_o, _e) => media.UpdateStatus(-1),
                 onSuccess: async (_o, _e) => await _mediaProvider.AddOrUpdateAsync(context.TargetPath),
                 onFinally: (_o, _e) =>
                 {
@@ -89,7 +89,7 @@ namespace Kast.Provider.Conversions
             _logger.LogInformation("Stopping conversion for {media}", media);
 
             info.Token.Dispose();
-            info.Container.Update();
+            info.Context.Update();
             return true;
         }
 
@@ -99,7 +99,7 @@ namespace Kast.Provider.Conversions
             if (!_conversionTracking.TryGetValue(media, out ConversionInfo? info))
                 return false;
 
-            state = info!.Container;
+            state = info!.Context;
             return true;
         }
 

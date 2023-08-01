@@ -16,7 +16,7 @@ namespace Kast.Api.Models
         { 
             Name = state.Name;
             Id = state.Id;
-            Target = state.Target.ToString();
+            Target = state.Target?.ToString();
             Progress = state.Progress?.Percent ?? 0;
             Status = state.Status.ToString();
         }

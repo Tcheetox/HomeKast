@@ -63,7 +63,14 @@ namespace Kast.Provider.Conversions
             }, _queueCanceller.Token);
         }
 
-        public bool TryAdd(ConversionToken options) => _blockingConversions.TryAdd(options);
+        public bool TryAdd(ConversionToken options){
+            if (_blockingConversions.TryAdd(options))
+            {
+                options.OnAdd?.Invoke(this, EventArgs.Empty);
+                return true;
+            }
+            return false;
+        }
 
         #region IDisposable
         private bool _disposedValue;
