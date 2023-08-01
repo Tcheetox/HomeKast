@@ -46,7 +46,7 @@ export default function Settings() {
   return (
     <div className='settings'>
       <Gear onClick={() => setShowModal(true)} />
-      <Modal show={showModal} onHide={hide} size='lg' className='settings settings-modal'>
+      <Modal show={showModal} onHide={hide} size='lg' className='settings settings-modal' centered>
         <Modal.Header>
           <Modal.Title>Settings</Modal.Title>
           <Nav variant='underline' defaultActiveKey={type} onSelect={setType}>

@@ -99,8 +99,6 @@ namespace Kast.Provider.Media
         {
             if (_library != null)
                 return _library;
-
-            bool dumpTimer = false;
             try
             {
                 await _semaphore.WaitAsync();
@@ -108,7 +106,6 @@ namespace Kast.Provider.Media
                     return _library;
 
                 _library = await CreateLibraryAsync();
-                dumpTimer = true;
                 Logger.LogInformation("MediaProvider retrieved {media} media from {directories} directories", _library.Count, SettingsProvider.Library.Directories.Count);
             }
             catch (Exception ex)
@@ -118,8 +115,6 @@ namespace Kast.Provider.Media
             finally
             {
                 _semaphore.Release();
-                if (dumpTimer)
-                    MassTimer.Print();
             }
 
             return _library ?? new MediaLibrary(OnLibraryChangeEventHandler);
@@ -168,31 +163,28 @@ namespace Kast.Provider.Media
             if (!File.Exists(path))
                 return null;
 
-            using (MassTimer.Measure("GetMediaInfo"))
+            var canceller = new CancellationTokenSource();
+            try
             {
-                var canceller = new CancellationTokenSource();
-                try
-                {
-                    canceller.CancelAfter(SettingsProvider.Application.MediaInfoTimeout ?? Constants.FileAccessTimeout);
-                    var info = await FFmpeg.GetMediaInfo(path, canceller.Token);
-                    if (info != null && info.VideoStreams.Any() && info.AudioStreams.Any())
-                        return info;
-                }
-                catch (OperationCanceledException ex)
-                {
-                    Logger.LogError(ex, "Extracting media info timed-out for {path}", path);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Extracting media info unexpectedly failed for {path}", path);
-                }
-                finally
-                {
-                    canceller.Dispose();
-                }
-
-                return null;
+                canceller.CancelAfter(SettingsProvider.Application.MediaInfoTimeout ?? Constants.FileAccessTimeout);
+                var info = await FFmpeg.GetMediaInfo(path, canceller.Token);
+                if (info != null && info.VideoStreams.Any() && info.AudioStreams.Any())
+                    return info;
             }
+            catch (OperationCanceledException ex)
+            {
+                Logger.LogError(ex, "Extracting media info timed-out for {path}", path);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Extracting media info unexpectedly failed for {path}", path);
+            }
+            finally
+            {
+                canceller.Dispose();
+            }
+
+            return null;
         }
 
         #region IDisposable

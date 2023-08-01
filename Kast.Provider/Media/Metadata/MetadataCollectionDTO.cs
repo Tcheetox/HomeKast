@@ -3,7 +3,7 @@
 namespace Kast.Provider.Media
 {
 #pragma warning disable S101 // Types should be named in PascalCase
-    internal class MetadataResultsDTO
+    internal class MetadataCollectionDTO
 #pragma warning restore S101 // Types should be named in PascalCase
     {
         public int Page { get; set; }

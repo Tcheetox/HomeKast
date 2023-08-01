@@ -7,63 +7,70 @@ using Kast.Provider.Supports;
 
 namespace Kast.Provider.Media
 {
-    public abstract class MetadataProvider : IMetadataProvider
+    public class MetadataProvider : IMetadataProvider
     {
-        private readonly HttpClient _client;
-        
+        protected readonly HttpClient HttpClient;
         protected readonly ILogger<MetadataProvider> Logger;
         protected readonly SettingsProvider SettingsProvider;
         protected readonly JsonSerializerOptions Options;
 
-        private string BaseUrl => SettingsProvider.Application.BaseUrl!;
+        protected int MetadataTimeout => SettingsProvider.Application.MetadataTimeout ?? Constants.MetadataFetchTimeout;
+        private string MetadataEndpoint => SettingsProvider.Application.MetadataEndpoint!;
         private string ImageBaseUrl => SettingsProvider.Application.ImageBaseUrl!;
 
-        protected MetadataProvider(ILogger<MetadataProvider> logger, HttpClient httpClient, SettingsProvider settingsProvider, JsonSerializerOptions options)
+        public MetadataProvider(ILogger<MetadataProvider> logger, HttpClient httpClient, SettingsProvider settingsProvider, JsonSerializerOptions options)
         {
+            if (string.IsNullOrWhiteSpace(settingsProvider.Application.MetadataEndpoint))
+                throw new ArgumentException($"{nameof(settingsProvider)} must define a valid endpoint to retrieve {nameof(Metadata)}");
+
             Logger = logger;
+            HttpClient = httpClient;
             SettingsProvider = settingsProvider;
             Options = options;
-
-            if (string.IsNullOrWhiteSpace(settingsProvider.Application.BaseUrl))
-                throw new ArgumentException($"{nameof(settingsProvider)} must define a valid URL");
-
-            _client = httpClient; 
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", SettingsProvider.Application.ApiToken);
         }
 
-        private readonly ConcurrentDictionary<string, Metadata?> _store = new(StringComparer.OrdinalIgnoreCase);
-        public virtual async Task<Metadata?> GetAsync(IMedia media)
+        public async Task<Metadata?> GetAsync(IMedia media)
         {
             if (_store.TryGetValue(media.Name, out var metadata) || (metadata = media.Metadata) != null)
                 return metadata;
 
-            var cancellation = new CancellationTokenSource();
+            metadata = await GetInternalAsync(media);
+            _store.TryAdd(media.Name, metadata);
+
+            return metadata;
+        }
+
+        private readonly ConcurrentDictionary<string, Metadata?> _store = new(StringComparer.OrdinalIgnoreCase);
+        protected virtual async Task<Metadata?> GetInternalAsync(IMedia media)
+        {
             try
             {
-                using (MassTimer.Measure("GetMetadata"))
-                {
-                    cancellation.CancelAfter(SettingsProvider.Application.MetadataTimeout ?? Constants.MetadataFetchTimeout);
-                    var content = await _client.GetStringAsync($"{BaseUrl}?query={HttpUtility.UrlEncode(media.Name)}", cancellation.Token);
-                    var requests = JsonSerializer.Deserialize<MetadataResultsDTO>(content, Options);
-                    var result = requests?.Results?.FirstOrDefault();
-                    if (result != null)
+                using var cancellation = new CancellationTokenSource(MetadataTimeout);
+                using var request = new HttpRequestMessage(HttpMethod.Get, $"{MetadataEndpoint}?query={HttpUtility.UrlEncode(media.Name)}");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", SettingsProvider.Application.MetadataApiToken);
+
+                using var response = await HttpClient.SendAsync(request, cancellation.Token);
+                response.EnsureSuccessStatusCode();
+
+                var content = await response.Content.ReadAsStringAsync(cancellation.Token);
+                var requests = JsonSerializer.Deserialize<MetadataCollectionDTO>(content, Options);
+                var result = requests?.Results?.FirstOrDefault();
+
+                if (result != null)
+                    return new()
                     {
-                        metadata = new()
-                        {
-                            Backdrop = result.Backdrop,
-                            Description = result.Description,
-                            MediaType = result.MediaType,
-                            OriginalTitle = result.OriginalTitle,
-                            Vote = result.Vote,
-                            Released = DateTime.TryParse(result.Released, out DateTime released) ? released : null,
-                            ImageUrl = ImageBaseUrl + result.Poster
-                        };
-                    }
-                }
+                        BackdropUrl = ImageBaseUrl + result.Backdrop,
+                        Description = result.Description,
+                        MediaType = result.MediaType,
+                        OriginalTitle = result.OriginalTitle,
+                        Vote = result.Vote,
+                        Released = DateTime.TryParse(result.Released, out DateTime released) ? released : null,
+                        ImageUrl = ImageBaseUrl + result.Poster
+                    };
             }
             catch (OperationCanceledException ex)
             {
-                Logger.LogError(ex, "Failed to retrieve metadata for {media} within {timeout} ms", media, SettingsProvider.Application.MetadataTimeout);
+                Logger.LogError(ex, "Failed to retrieve metadata for {media} within {timeout} ms", media, MetadataTimeout);
             }
             catch (JsonException ex)
             {
@@ -73,12 +80,8 @@ namespace Kast.Provider.Media
             {
                 Logger.LogError(ex, "Unexpected error retrieving metadata for {media}", media);
             }
-            finally
-            {
-                cancellation.Dispose();
-            }
 
-            return metadata;
+            return null;
         }
     }
 }

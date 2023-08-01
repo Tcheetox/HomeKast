@@ -16,6 +16,14 @@
   }
 }
 
+.rotate {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: spinForward 2000ms infinite linear;
+}
+
 svg {
   fill: var(--white);
   position: absolute;

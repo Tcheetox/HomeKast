@@ -144,7 +144,9 @@ namespace Kast.Provider
 
     public sealed class Application : IEquatable<Application>
     {
-        public string? ApiToken { get; set; }
+        public string? YoutubeApiToken { get; set; }
+        public string? YoutubeEndpoint { get; set; }
+        public string? YoutubeEmbedBaseUrl { get; set; }
 
         private int _httpPort = 7279;
         public int HttpPort 
@@ -179,7 +181,9 @@ namespace Kast.Provider
             }
         }
 
-        public string? BaseUrl { get; set; }
+        public string? MetadataApiToken { get; set; }
+        public string? MetadataEndpoint { get; set; }
+
         public string? ImageBaseUrl { get; set; }
 
         private int _maxDegreeOfParallelism = 1;
@@ -218,9 +222,9 @@ namespace Kast.Provider
         {
             if (other == null) return false;
 
-            if (!Utilities.InsensitiveCompare(ApiToken, other.ApiToken)
+            if (!Utilities.InsensitiveCompare(MetadataApiToken, other.MetadataApiToken)
                 || !Utilities.InsensitiveCompare(CacheDirectory, other.CacheDirectory)
-                || !Utilities.InsensitiveCompare(BaseUrl, other.BaseUrl)
+                || !Utilities.InsensitiveCompare(MetadataEndpoint, other.MetadataEndpoint)
                 || !Utilities.InsensitiveCompare(Ip.ToString(), other.Ip.ToString())
                 || !Utilities.InsensitiveCompare(Uri.ToString(), other.Uri.ToString())
                 || HttpPort != other.HttpPort
@@ -242,9 +246,9 @@ namespace Kast.Provider
             unchecked
             {
                 int hash = 17;
-                hash *= 13 + ApiToken?.GetHashCode() ?? 0;
+                hash *= 13 + MetadataApiToken?.GetHashCode() ?? 0;
                 hash *= 13 + CacheDirectory?.GetHashCode() ?? 0;
-                hash *= 13 + BaseUrl?.GetHashCode() ?? 0;
+                hash *= 13 + MetadataEndpoint?.GetHashCode() ?? 0;
                 hash *= 13 + Ip?.ToString()?.GetHashCode() ?? 0;
                 hash *= 13 + Uri?.ToString()?.GetHashCode() ?? 0;
                 hash *= 13 + HttpPort;

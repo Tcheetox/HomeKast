@@ -2,7 +2,7 @@ import React from 'react'
 
 import './extension.scoped.scss'
 import { Col, Row } from 'react-bootstrap'
-import { Details } from '../../assets/icons'
+import Expand from './Expand'
 import useTimespan from '../../hooks/useTimespan'
 import Conditional from '../../hoc/Conditional'
 
@@ -34,7 +34,7 @@ export default function Extension({ collection }) {
           </Row>
         </Col>
         <Col className='more'>
-          <Details />
+          <Expand />
         </Col>
       </Row>
     </div>

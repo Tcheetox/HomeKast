@@ -124,24 +124,11 @@ small {
   circle,
   path {
     stroke: var(--white);
-    transition-duration: var(--main-transition-duration);
-  }
-  &:hover {
-    circle,
-    path {
-      stroke: var(--white-hover);
-    }
   }
 }
 .settings svg {
   path {
-    transition-duration: var(--main-transition-duration);
     fill: var(--white) !important;
-  }
-  &:hover {
-    path {
-      fill: var(--white-hover) !important;
-    }
   }
 }
 

@@ -3,7 +3,7 @@
 namespace Kast.Provider.Media
 {
 #pragma warning disable S101 // Types should be named in PascalCase
-    public class MetadataDTO
+    internal class MetadataDTO
 #pragma warning restore S101 // Types should be named in PascalCase
     {
         [JsonPropertyName("backdrop_path")]
