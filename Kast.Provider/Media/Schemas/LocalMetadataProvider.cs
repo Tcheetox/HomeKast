@@ -1,22 +1,22 @@
 ﻿using System.Text.Json;
-using Kast.Provider.Supports;
 using Microsoft.Extensions.Logging;
+using Kast.Provider.Media.YouTube;
+using Kast.Provider.Supports;
 
 namespace Kast.Provider.Media
 {
-    public class LocalMetadataProvider : MetadataProviderWithTrailer
+    public class LocalMetadataProvider : YoutubeMetadataProvider
     {
-        public LocalMetadataProvider(ILogger<MetadataProvider> logger, HttpClient httpClient, SettingsProvider settingsProvider, JsonSerializerOptions options)
+        public LocalMetadataProvider(ILogger<IMetadataProvider> logger, HttpClient httpClient, SettingsProvider settingsProvider, JsonSerializerOptions options)
             : base(logger, httpClient, settingsProvider, options)
         { }
 
-        protected override async Task<Metadata?> GetInternalAsync(IMedia media)
+        public override async Task<Metadata?> GetAsync(IMedia media)
         {
-            var metadata = await base.GetInternalAsync(media);
-            if (metadata == null) 
+            var metadata = await base.GetAsync(media);
+            if (metadata == null || !metadata.HasMissingInfo) 
                 return metadata;
 
-            
             try
             {
                 using var canceller = new CancellationTokenSource(MetadataTimeout);

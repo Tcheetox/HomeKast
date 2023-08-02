@@ -11,7 +11,7 @@ using Kast.Provider.Media;
 using Kast.Provider.Cast;
 using Kast.Api.Problems;
 using Kast.Api.Extensions;
-using Microsoft.AspNetCore.Hosting;
+using Kast.Provider.Media.IMDb; 
 
 var version = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 var match = Regex.Match(version ?? string.Empty, @"\d");
@@ -55,7 +55,7 @@ builder.WebHost.ConfigureKestrel(options =>
     options.Listen(settingsProvider.Application.Ip, settingsProvider.Application.HttpPort);
 });
 
-builder.Services.AddHttpClient<IMetadataProvider, MetadataProvider>();
+builder.Services.AddHttpClient<IMetadataProvider, IMDbMetadataProvider>();
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = ProblemDetailsContextExtension.Extend);
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy
     => policy

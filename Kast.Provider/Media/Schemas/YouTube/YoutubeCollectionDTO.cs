@@ -1,5 +1,4 @@
-﻿
-namespace Kast.Provider.Media
+﻿namespace Kast.Provider.Media.YouTube
 {
 #pragma warning disable S101 // Types should be named in PascalCase
     internal class YoutubeCollectionDTO

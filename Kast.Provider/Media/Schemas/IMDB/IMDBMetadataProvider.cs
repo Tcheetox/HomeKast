@@ -3,14 +3,15 @@ using System.Text.Json;
 using System.Net.Http.Headers;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
-using Kast.Provider.Supports;
 
-namespace Kast.Provider.Media
+namespace Kast.Provider.Media.IMDb
 {
-    public class MetadataProvider : IMetadataProvider
+#pragma warning disable S101 // Types should be named in PascalCase
+    public class IMDbMetadataProvider : IMetadataProvider
+#pragma warning restore S101 // Types should be named in PascalCase
     {
         protected readonly HttpClient HttpClient;
-        protected readonly ILogger<MetadataProvider> Logger;
+        protected readonly ILogger<IMetadataProvider> Logger;
         protected readonly SettingsProvider SettingsProvider;
         protected readonly JsonSerializerOptions Options;
 
@@ -18,7 +19,7 @@ namespace Kast.Provider.Media
         private string MetadataEndpoint => SettingsProvider.Application.MetadataEndpoint!;
         private string ImageBaseUrl => SettingsProvider.Application.ImageBaseUrl!;
 
-        public MetadataProvider(ILogger<MetadataProvider> logger, HttpClient httpClient, SettingsProvider settingsProvider, JsonSerializerOptions options)
+        public IMDbMetadataProvider(ILogger<IMetadataProvider> logger, HttpClient httpClient, SettingsProvider settingsProvider, JsonSerializerOptions options)
         {
             if (string.IsNullOrWhiteSpace(settingsProvider.Application.MetadataEndpoint))
                 throw new ArgumentException($"{nameof(settingsProvider)} must define a valid endpoint to retrieve {nameof(Metadata)}");
@@ -29,20 +30,12 @@ namespace Kast.Provider.Media
             Options = options;
         }
 
-        public async Task<Metadata?> GetAsync(IMedia media)
+        private readonly ConcurrentDictionary<string, Metadata?> _store = new(StringComparer.OrdinalIgnoreCase);
+        public virtual async Task<Metadata?> GetAsync(IMedia media)
         {
             if (_store.TryGetValue(media.Name, out var metadata) || (metadata = media.Metadata) != null)
                 return metadata;
 
-            metadata = await GetInternalAsync(media);
-            _store.TryAdd(media.Name, metadata);
-
-            return metadata;
-        }
-
-        private readonly ConcurrentDictionary<string, Metadata?> _store = new(StringComparer.OrdinalIgnoreCase);
-        protected virtual async Task<Metadata?> GetInternalAsync(IMedia media)
-        {
             try
             {
                 using var cancellation = new CancellationTokenSource(MetadataTimeout);
@@ -57,7 +50,7 @@ namespace Kast.Provider.Media
                 var result = requests?.Results?.FirstOrDefault();
 
                 if (result != null)
-                    return new()
+                    metadata = new()
                     {
                         BackdropUrl = ImageBaseUrl + result.Backdrop,
                         Description = result.Description,
@@ -81,7 +74,8 @@ namespace Kast.Provider.Media
                 Logger.LogError(ex, "Unexpected error retrieving metadata for {media}", media);
             }
 
-            return null;
+            _store.TryAdd(media.Name, metadata);
+            return metadata;
         }
     }
 }

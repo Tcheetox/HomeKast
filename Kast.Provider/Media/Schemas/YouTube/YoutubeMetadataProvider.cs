@@ -1,34 +1,44 @@
 ﻿using System.Web;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using Kast.Provider.Media.IMDb;
 
-namespace Kast.Provider.Media
+namespace Kast.Provider.Media.YouTube
 {
-    public class MetadataProviderWithTrailer : MetadataProvider
+    public class YoutubeMetadataProvider : IMDbMetadataProvider
     {
-        public MetadataProviderWithTrailer(ILogger<MetadataProvider> logger, HttpClient httpClient, SettingsProvider settingsProvider, JsonSerializerOptions options)
+        public YoutubeMetadataProvider(ILogger<IMetadataProvider> logger, HttpClient httpClient, SettingsProvider settingsProvider, JsonSerializerOptions options)
             : base(logger, httpClient, settingsProvider, options)
         { }
 
-        protected override async Task<Metadata?> GetInternalAsync(IMedia media)
+        private readonly ConcurrentDictionary<string, string?> _store = new(StringComparer.OrdinalIgnoreCase);
+        public override async Task<Metadata?> GetAsync(IMedia media)
         {
-            var metadata = await base.GetInternalAsync(media);
+            var metadata = await base.GetAsync(media);
 
-            if (string.IsNullOrWhiteSpace(SettingsProvider.Application.YoutubeApiToken) 
+            if (string.IsNullOrWhiteSpace(SettingsProvider.Application.YoutubeApiToken)
                 || string.IsNullOrWhiteSpace(SettingsProvider.Application.YoutubeEndpoint)
                 || string.IsNullOrWhiteSpace(SettingsProvider.Application.YoutubeEmbedBaseUrl))
             {
-                Logger.LogDebug("Missing youtube settings to retrieve trailers... (skipping {me})", nameof(MetadataProviderWithTrailer));
+                Logger.LogDebug("Missing youtube settings to retrieve trailers... (skipping {me})", nameof(YoutubeMetadataProvider));
                 return metadata;
             }
 
             if (metadata == null || !string.IsNullOrWhiteSpace(metadata.YoutubeEmbedUrl))
                 return metadata;
 
+            if (_store.TryGetValue(media.Name, out var embedUrl))
+            {
+                metadata.YoutubeEmbedUrl = embedUrl;
+                return metadata;
+            }
+
             var id = await GetYoutubeEmbedIdAsync(media);
             if (!string.IsNullOrWhiteSpace(id))
                 metadata.YoutubeEmbedUrl = SettingsProvider.Application.YoutubeEmbedBaseUrl + id;
+            _store.TryAdd(media.Name, metadata.YoutubeEmbedUrl);
 
             return metadata;
         }

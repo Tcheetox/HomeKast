@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Kast.Provider.Media
+namespace Kast.Provider.Media.IMDb
 {
 #pragma warning disable S101 // Types should be named in PascalCase
     internal class MetadataDTO

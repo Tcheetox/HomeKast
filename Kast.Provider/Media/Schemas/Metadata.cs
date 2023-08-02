@@ -9,6 +9,7 @@ namespace Kast.Provider.Media
         public DateTime? Released { get; init; }
         public double? Vote { get; init; }
         public string? Description { get; init; }
+
         public string? BackdropUrl { get; init; }
         public string? ImageUrl { get; init; }
 
@@ -24,6 +25,10 @@ namespace Kast.Provider.Media
         public bool HasBackdrop => !string.IsNullOrWhiteSpace(BackdropPath) && File.Exists(BackdropPath);
         public string? BackdropPath { get; set; }
 
-
+        [JsonIgnore]
+        internal bool HasMissingInfo
+            => (!string.IsNullOrWhiteSpace(ImageUrl) && (!HasImage || !HasThumbnail))
+            || (!string.IsNullOrWhiteSpace(BackdropUrl) && !HasBackdrop)
+            || string.IsNullOrWhiteSpace(YoutubeEmbedUrl);
     }
 }
