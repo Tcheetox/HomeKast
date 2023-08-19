@@ -1,3 +1,53 @@
 svg {
   fill: var(--white);
 }
+// TODO: shadow in var
+// TODO: override dedicated file
+.trailer {
+  border-radius: var(--main-radius);
+  box-shadow: 2px 2px 5px 3px black;
+}
+
+.trailer:hover + .metadata-overlay {
+  opacity: 1;
+}
+
+.metadata-overlay {
+  opacity: 1; // TODO REVERT
+  transition-duration: var(--main-transition-duration);
+  position: absolute;
+  top: 12%;
+  left: 0;
+  max-width: 65%;
+  padding: var(--main-padding-width);
+  background-color: rgba(0, 0, 0, 0.75);
+  border-top-right-radius: var(--main-radius);
+  border-bottom-right-radius: var(--main-radius);
+
+  // YOUTUBE transition style
+  // transition: opacity 0.1s cubic-bezier(0.4, 0, 1, 1);
+
+  &:hover {
+    opacity: 1;
+  }
+
+  .title {
+    padding-left: 0;
+    font-weight: 500;
+    font-size: 22px;
+    width: fit-content;
+  }
+  .release {
+    width: fit-content;
+    margin-top: auto;
+    margin-bottom: 2px;
+    padding-left: 0;
+  }
+  .row {
+    margin: 0 !important;
+  }
+  .description {
+    text-align: justify;
+    padding: 0;
+  }
+}

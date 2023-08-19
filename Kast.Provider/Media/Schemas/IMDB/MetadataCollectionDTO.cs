@@ -2,9 +2,7 @@
 
 namespace Kast.Provider.Media.IMDb
 {
-#pragma warning disable S101 // Types should be named in PascalCase
-    internal class MetadataCollectionDTO
-#pragma warning restore S101 // Types should be named in PascalCase
+    internal class MetadataCollectionDto
     {
         public int Page { get; set; }
         [JsonPropertyName("total_pages")]
@@ -12,10 +10,10 @@ namespace Kast.Provider.Media.IMDb
         [JsonPropertyName("total_results")]
         public int TotalResults { get; set; }
 
-        private List<MetadataDTO>? _results;
-        public List<MetadataDTO> Results
+        private List<MetadataDto>? _results;
+        public List<MetadataDto> Results
         {
-            get => _results ??= new List<MetadataDTO>();
+            get => _results ??= new List<MetadataDto>();
             set => _results = value;
         }
     }

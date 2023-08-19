@@ -1,15 +1,15 @@
 import React from 'react'
 
-import './overlay.scoped.scss'
+import './trigger.scoped.scss'
 import { Case, Switch } from '../../hoc/'
 import useMedia from '../../hooks/useMedia'
 import { Play, Convert, Subtitles, Queued } from '../../assets/icons/index.js'
 
-export default function Overlay({ id, status, children }) {
+export default function Trigger({ id, status, className }) {
   const { startConversion, play } = useMedia(id)
 
   return (
-    <div className={`overlay ${status}`}>
+    <div className={className ?? 'default'}>
       <Switch test={status}>
         <Play value={'Playable'} onClick={play} />
         <Play value={'Streamable'} onClick={play} />
@@ -23,7 +23,6 @@ export default function Overlay({ id, status, children }) {
           <Convert />
         </div>
       </Switch>
-      {children ?? null}
     </div>
   )
 }

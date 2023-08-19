@@ -22,6 +22,7 @@ namespace Kast.Api.Models
                 Popularity = media.Metadata?.Vote,
                 Episode = media is Serie serie ? serie.Episode : null,
                 Released = media.Metadata?.Released ?? Utilities.ToDateTime(media.Year),
+                YoutubeEmbed = media.Metadata?.YoutubeEmbedUrl,
                 HasImage = media.Metadata?.HasImage,
                 HasThumbnail = media.Metadata?.HasThumbnail
             };
@@ -37,7 +38,9 @@ namespace Kast.Api.Models
         public string? Description { get; private init; }
         public double? Popularity { get; private init; }
         public DateTime? Released { get; private init; }
+        public int? ReleasedYear => Released?.Year ?? null;
         public EpisodeInfo? Episode { get; private init; }
+        public string? YoutubeEmbed { get; private init; }
         public bool? HasImage { get; private init; }
         public bool? HasThumbnail { get; private init; }
 

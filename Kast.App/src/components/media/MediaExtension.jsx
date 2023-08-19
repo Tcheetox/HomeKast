@@ -1,12 +1,12 @@
 import React from 'react'
 
-import './extension.scoped.scss'
+import './mediaExtension.scoped.scss'
 import { Col, Row } from 'react-bootstrap'
 import Expand from './Expand'
 import useTimespan from '../../hooks/useTimespan'
 import Conditional from '../../hoc/Conditional'
 
-export default function Extension({ collection }) {
+export default function MediaExtension({ collection }) {
   const media = collection[0]
   const isSerie = collection.length > 1
   const duration = useTimespan(media.length)
@@ -34,7 +34,7 @@ export default function Extension({ collection }) {
           </Row>
         </Col>
         <Col className='more'>
-          <Expand />
+          <Expand collection={collection} />
         </Col>
       </Row>
     </div>

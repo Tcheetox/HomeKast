@@ -46,7 +46,7 @@ namespace Kast.Provider.Media.IMDb
                 response.EnsureSuccessStatusCode();
 
                 var content = await response.Content.ReadAsStringAsync(cancellation.Token);
-                var requests = JsonSerializer.Deserialize<MetadataCollectionDTO>(content, Options);
+                var requests = JsonSerializer.Deserialize<MetadataCollectionDto>(content, Options);
                 var result = requests?.Results?.FirstOrDefault();
 
                 if (result != null)
@@ -55,9 +55,9 @@ namespace Kast.Provider.Media.IMDb
                         BackdropUrl = ImageBaseUrl + result.Backdrop,
                         Description = result.Description,
                         MediaType = result.MediaType,
-                        OriginalTitle = result.OriginalTitle,
+                        OriginalTitle = result.OriginalTitle ?? result.OriginalName,
                         Vote = result.Vote,
-                        Released = DateTime.TryParse(result.Released, out DateTime released) ? released : null,
+                        Released = DateTime.TryParse(result.Released, out DateTime released) || DateTime.TryParse(result.FirstAirDate, out released) ? released : null,
                         ImageUrl = ImageBaseUrl + result.Poster
                     };
             }

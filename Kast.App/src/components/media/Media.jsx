@@ -2,11 +2,12 @@ import React from 'react'
 
 import './media.scoped.scss'
 import notFound from '../../assets/notfound.png'
-import Overlay from './Overlay'
-import Extension from './Extension'
+import MediaExtension from './MediaExtension'
+import Trigger from './Trigger'
 
 export default function Media({ collection }) {
   const media = collection[0]
+  const status = collection.length === 1 ? media.status : null
 
   return (
     <div className='media'>
@@ -18,9 +19,10 @@ export default function Media({ collection }) {
           <img className='thumbnail not-found' src={notFound} />
         </>
       )}
-      <Overlay id={media.id} status={collection.length === 1 ? media.status : null}>
-        <Extension collection={collection} />
-      </Overlay>
+      <div className={`overlay ${status}`}>
+        <Trigger id={media.id} status={status} />
+        <MediaExtension collection={collection} />
+      </div>
     </div>
   )
 }
