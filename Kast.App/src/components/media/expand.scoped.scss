@@ -1,22 +1,30 @@
 svg {
   fill: var(--white);
 }
+
 // TODO: shadow in var
-// TODO: override dedicated file
 .trailer {
   border-radius: var(--main-radius);
-  box-shadow: 2px 2px 5px 3px black;
 }
 
 .trailer:hover + .metadata-overlay {
   opacity: 1;
 }
 
+.poster {
+  width: 1140px;
+  height: 640px;
+  object-fit: scale-down;
+}
+.poster + .metadata-overlay {
+  opacity: 1;
+}
+
 .metadata-overlay {
-  opacity: 1; // TODO REVERT
+  opacity: 0;
   transition-duration: var(--main-transition-duration);
   position: absolute;
-  top: 12%;
+  top: 80px;
   left: 0;
   max-width: 65%;
   padding: var(--main-padding-width);

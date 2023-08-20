@@ -52,13 +52,13 @@ namespace Kast.Provider.Media.IMDb
                 if (result != null)
                     metadata = new()
                     {
-                        BackdropUrl = ImageBaseUrl + result.Backdrop,
+                        BackdropUrl = !string.IsNullOrWhiteSpace(result.Backdrop) ? ImageBaseUrl + result.Backdrop : null,
                         Description = result.Description,
                         MediaType = result.MediaType,
                         OriginalTitle = result.OriginalTitle ?? result.OriginalName,
                         Vote = result.Vote,
                         Released = DateTime.TryParse(result.Released, out DateTime released) || DateTime.TryParse(result.FirstAirDate, out released) ? released : null,
-                        ImageUrl = ImageBaseUrl + result.Poster
+                        ImageUrl = !string.IsNullOrWhiteSpace(result.Poster) ? ImageBaseUrl + result.Poster : null
                     };
             }
             catch (OperationCanceledException ex)

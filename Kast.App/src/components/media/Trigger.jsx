@@ -11,13 +11,37 @@ export default function Trigger({ id, status, className }) {
   return (
     <div className={className ?? 'default'}>
       <Switch test={status}>
-        <Play value={'Playable'} onClick={play} />
-        <Play value={'Streamable'} onClick={play} />
-        <Case value={'MissingSubtitles'} onClick={startConversion}>
+        <Play
+          value={'Playable'}
+          onClick={e => {
+            e.stopPropagation()
+            play()
+          }}
+        />
+        <Play
+          value={'Streamable'}
+          onClick={e => {
+            e.stopPropagation()
+            play()
+          }}
+        />
+        <Case
+          value={'MissingSubtitles'}
+          onClick={e => {
+            e.stopPropagation()
+            startConversion()
+          }}
+        >
           <Convert />
           <Subtitles className='subtitles' />
         </Case>
-        <Convert value={'Unplayable'} onClick={startConversion} />
+        <Convert
+          value={'Unplayable'}
+          onClick={e => {
+            e.stopPropagation()
+            startConversion()
+          }}
+        />
         <Queued value={'Queued'} />
         <div value={'Converting'} className='rotate'>
           <Convert />

@@ -1,19 +1,16 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 import './expand.scoped.scss'
+import notFoundPoster from '../../assets/notfoundPoster.png'
 import { Details } from '../../assets/icons'
 import { Button, Modal, Row } from 'react-bootstrap'
-import { Conditional } from '../../hoc/'
+import { Conditional, Case, Switch, DefaultCase } from '../../hoc/'
 import Trigger from './Trigger'
+import Gallery from './Gallery'
 
-// TODO: manage when no iframe ?
-// TODO: isSerie is wrong test atm
-// TODO: props passing is garbage atm
-
-export default function Expand({ collection }) {
-  const [show, setShow] = useState(false)
-  const first = collection[0]
-  const isSerie = collection.length > 1
+export default function Expand({ collection, serie, show, setShow }) {
+  const media = collection[0]
+  const imageSrc = media.hasImage ? `${process.env.REACT_APP_BACKEND_URI}/media/${media.id}/image` : notFoundPoster
 
   return (
     <>
@@ -21,27 +18,35 @@ export default function Expand({ collection }) {
         <Details />
       </Button>
       <Modal className='expand' show={show} onHide={() => setShow(false)} size='xl' centered>
-        <Conditional test={first.youtubeEmbed !== null}>
-          <iframe
-            className='trailer'
-            width='1140'
-            height='641'
-            src={`${first.youtubeEmbed}?autoplay=1&modestbranding=1&cc_load_policy=1&fs=0&rel=0&iv_load_policy=3`}
-            allow='autoplay; encrypted-media;'
-            title={first.name}
-          />
-          <div className='metadata-overlay'>
-            <Row>
-              <Conditional test={!isSerie}>
-                <Trigger id={first.id} status={first.status} className={'embed'} />
-              </Conditional>
-              <span className='title'>{first.name}</span>
-              <span className='release'>{first.releasedYear}</span>
-            </Row>
-            <Row>
-              <span className='description'>{first.description}</span>
-            </Row>
-          </div>
+        <Switch test={media.youtubeEmbed}>
+          <Case value={null}>
+            <img className='poster' src={imageSrc} />
+          </Case>
+          <DefaultCase>
+            <iframe
+              className='trailer'
+              width='1140'
+              height='641'
+              src={`${media.youtubeEmbed}?autoplay=1&modestbranding=1&cc_load_policy=1&fs=0&rel=0&iv_load_policy=3`}
+              allow='autoplay; encrypted-media;'
+              title={media.name}
+            />
+          </DefaultCase>
+        </Switch>
+        <div className='metadata-overlay'>
+          <Row>
+            <Conditional test={!serie}>
+              <Trigger id={media.id} status={media.status} className={'embed'} />
+            </Conditional>
+            <span className='title'>{media.name}</span>
+            <span className='release'>{media.releasedYear}</span>
+          </Row>
+          <Row>
+            <span className='description'>{media.description}</span>
+          </Row>
+        </div>
+        <Conditional test={serie}>
+          <Gallery episodes={collection} />
         </Conditional>
       </Modal>
     </>

@@ -4,9 +4,8 @@
   border-radius: var(--main-radius);
   position: relative;
   background-color: var(--main-dark-color);
-  margin-bottom: var(--main-margin-width);
-
   transition-duration: var(--main-transition-duration);
+
   &:hover {
     transform: scale(1.03);
     z-index: 1;
@@ -43,7 +42,8 @@
 
   &:hover {
     opacity: 1;
-    background-color: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    background-color: var(--main-overlay);
     z-index: 9;
 
     box-shadow: 2px 2px 5px 3px black;

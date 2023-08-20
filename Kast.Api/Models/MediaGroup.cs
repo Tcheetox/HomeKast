@@ -17,7 +17,9 @@ namespace Kast.Api.Models
             return new MediaGroup(item.Name, group
                 .OfType<Serie>()
                 .GroupBy(s => s.Episode?.Indicator)
-                .Select(entries => Media.From(entries.MaxBy(x => x.Status)!)));
+                .Select(entries => Media.From(entries.MaxBy(x => x.Status)!))
+                .OrderBy(m => m.Episode?.Indicator)
+                );
         }
 
         public static IGrouping<string, Media> Unfiltered(IGrouping<string, IMedia> group)

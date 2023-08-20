@@ -26,16 +26,41 @@ namespace Kast.Provider.Conversions
         internal readonly IMedia Media;
         internal readonly string TargetPath;
         internal readonly string? TemporaryTargetPath;
-        internal readonly int? SubtitlesStreamIndex;
-        internal readonly int AudioStreamIndex;
 
+        private (int, int, int?)? _streamIndices;
+        internal (int, int, int?) StreamIndices
+        {
+            get
+            {
+                if (_streamIndices.HasValue)
+                    return _streamIndices.Value;
+
+                int audioStreamIndex = 0; int? subtitlesStreamIndex = null;
+                var audioStreams = Media.Info!.AudioStreams.ToList();
+                var subtitlesStreams = Media.Info.SubtitleStreams.ToList();
+                foreach (var setting in _settingsProvider.Preferences)
+                {
+                    var preferredAudioStream = audioStreams.Find(s => Utilities.InsensitiveCompare(s.Language, setting.Language));
+                    var preferredSubtitlesStream = subtitlesStreams.Find(s => Utilities.InsensitiveCompare(s.Language, setting.Subtitles));
+
+                    if (preferredAudioStream != null && (preferredSubtitlesStream != null || string.IsNullOrWhiteSpace(setting.Subtitles)))
+                    {
+                        audioStreamIndex = audioStreams.IndexOf(preferredAudioStream);
+                        subtitlesStreamIndex = subtitlesStreams.IndexOf(preferredSubtitlesStream);
+                        break;
+                    }
+                }
+
+                _streamIndices = (0, audioStreamIndex, subtitlesStreamIndex);
+                return _streamIndices.Value;
+            }
+        }
+
+        private readonly SettingsProvider _settingsProvider;
         public ConversionContext(IMedia media, SettingsProvider settingsProvider) 
         {
-            if (media.Info == null)
-                throw new ArgumentNullException(nameof(media), $"Media info must be defined");
-
-            Media = media;
-            
+            _settingsProvider = settingsProvider;
+            Media = media;            
             Type = media.Status != MediaStatus.MissingSubtitles ? ConversionType.FullConversion : ConversionType.SubtitlesOnly;
             TargetPath = Path.Combine(IOSupport.CreateTargetDirectory(media.FilePath), $"_{Path.ChangeExtension(Media.FileName, ".mkv")}");
 
@@ -43,21 +68,6 @@ namespace Kast.Provider.Conversions
             {
                 TemporaryTargetPath = Path.ChangeExtension(TargetPath, ".tmp");
                 Handle = new StreamHandle(TemporaryTargetPath, TargetPath);
-            }
-
-            // Define streams preferred index
-            var audioStreams = Media.Info.AudioStreams.ToList();
-            var subtitlesStreams = Media.Info.SubtitleStreams.ToList();
-            foreach (var setting in settingsProvider.Preferences)
-            {
-                var audioStream = audioStreams.Find(s => Utilities.InsensitiveCompare(s.Language, setting.Language));
-                var subtitlesStream = subtitlesStreams.Find(s => Utilities.InsensitiveCompare(s.Language, setting.Subtitles));
-                if (audioStream != null && (subtitlesStream != null || string.IsNullOrWhiteSpace(setting.Subtitles)))
-                {
-                    AudioStreamIndex = audioStreams.IndexOf(audioStream);
-                    SubtitlesStreamIndex = subtitlesStreams?.IndexOf(subtitlesStream);
-                    return;
-                }
             }
         }
 

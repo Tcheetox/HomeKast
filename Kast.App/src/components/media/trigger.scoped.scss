@@ -26,15 +26,31 @@ svg.subtitles {
 }
 
 .embed {
+  position: relative;
   width: min-content;
-  padding-left: 0;
+  margin-right: 12px;
+  padding: 0;
 
-  svg {
+  svg:not(.subtitles) {
     position: relative;
     top: unset;
     left: unset;
     transform: unset;
     height: auto;
     width: 31px;
+  }
+
+  svg.subtitles {
+    width: 12px;
+    top: 48%;
+  }
+}
+
+.mini {
+  svg:not(.subtitles) {
+    width: 31px;
+  }
+  svg.subtitles {
+    width: 12px;
   }
 }

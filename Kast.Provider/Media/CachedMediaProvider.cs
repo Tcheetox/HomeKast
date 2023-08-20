@@ -58,7 +58,7 @@ namespace Kast.Provider.Media
                 if (library == null)
                     return library;
 
-                foreach (var media in library.Where(m => !string.IsNullOrWhiteSpace(m.Metadata?.ImageUrl) && (!m.Metadata.HasImage || !m.Metadata.HasThumbnail)))
+                foreach (var media in library.Where(m => m.Metadata == null || m.Metadata.HasMissingInfo))
                 {
                     var metadata = await MetadataProvider.GetAsync(media);
                     media.UpdateMetadata(metadata);

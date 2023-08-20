@@ -1,0 +1,86 @@
+// Modal
+.modal-open {
+  overflow-y: auto !important;
+  padding-right: 0 !important;
+}
+.modal-content {
+  background-color: var(--main-dark-12-color);
+  color: var(--white);
+  border: unset;
+}
+.modal-footer {
+  padding-top: 0;
+  border-top: none;
+}
+.modal-header {
+  border-bottom: none;
+  padding-bottom: 0;
+  .nav-link {
+    color: var(--white);
+  }
+  .nav-link.active {
+    color: var(--main-color);
+    font-weight: 500;
+  }
+  .modal-title {
+    font-weight: unset;
+  }
+}
+.modal-body {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.popover {
+  .popover-header,
+  .popover-body {
+    background-color: unset;
+    color: unset;
+    padding: unset;
+  }
+  .popover-header {
+    font-size: 14px;
+    text-align: left;
+    border: unset;
+  }
+  .popover-arrow::after,
+  .popover-header::before {
+    border-bottom-color: var(--main-dark-12-color) !important;
+  }
+}
+
+.btn-unstyle {
+  background-color: unset !important;
+  border: none;
+  padding: 0;
+  &:hover,
+  &:active {
+    background-color: unset !important;
+    border: none;
+  }
+}
+
+// Bootstrap override for search control
+.search input {
+  border-radius: 15px;
+  width: 120px;
+  margin: auto;
+  // background-color: var(--main-dark-color);
+  background-color: var(--main-dark-12-color);
+  transition: width var(--main-transition-duration) ease;
+  color: var(--white);
+  height: 35px;
+  border-color: transparent;
+  font-size: 1.05rem;
+  padding-right: 45px;
+  &:active,
+  &:focus {
+    color: var(--white);
+    width: 300px;
+    background-color: var(--main-dark-12-color);
+    border-color: transparent;
+  }
+  &::placeholder {
+    color: lighten(#343a40, 10%);
+  }
+}

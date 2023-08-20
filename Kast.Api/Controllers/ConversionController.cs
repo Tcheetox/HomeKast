@@ -53,7 +53,7 @@ namespace Kast.Api.Controllers
             if (media == null)
                 return BadRequest();
 
-            if (await _mediaConverter.StartAsync(media))
+            if (_mediaConverter.Start(media))
                 return StatusCode(StatusCodes.Status201Created);
 
             if (_mediaConverter.TryGetValue(media, out ConversionContext? state))

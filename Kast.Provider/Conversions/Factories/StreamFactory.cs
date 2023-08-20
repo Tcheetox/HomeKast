@@ -26,11 +26,11 @@ namespace Kast.Provider.Conversions.Factories
                     .SetOutput(context.TemporaryTargetPath)
                     .SetVideoCodec(VideoCodec.h264)
                     .SetAudioCodec(AudioCodec.mp3)
-                    .SetAudioStream(context.AudioStreamIndex)
+                    .SetAudioStream(context.StreamIndices.Item2)
                     .SetVideoStream(context)
                     .SetVideoSize(context.Media.Resolution)
                     .SetSubtitles(context)
-                    .UseMultiThread(1) // TEMP
+                    .UseMultiThread(SettingsProvider.Application.MaxDegreeOfParallelism)
                     .AddParameter("-f matroska")
                     .SetOnProgress((_, args) => context.Update(args, Target));
 

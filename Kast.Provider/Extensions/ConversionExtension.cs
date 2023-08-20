@@ -19,7 +19,7 @@ namespace Kast.Provider.Extensions
 
         public static IConversion SetVideoStream(this IConversion conversion, ConversionContext state)
         {
-            if (state.BurnSubtitles && state.SubtitlesStreamIndex.HasValue)
+            if (state.BurnSubtitles && state.StreamIndices.Item3.HasValue)
                 return conversion;
             return conversion.AddParameter("-map 0:v:0");
         }
@@ -44,8 +44,8 @@ namespace Kast.Provider.Extensions
 
             if (state.BurnSubtitles)
             {
-                if (state.SubtitlesStreamIndex.HasValue)
-                    conversion.AddParameter($"-filter_complex \"[0:v][0:s:{state.SubtitlesStreamIndex}]overlay[v]\" -map \"[v]\"");
+                if (state.StreamIndices.Item3.HasValue)
+                    conversion.AddParameter($"-filter_complex \"[0:v][0:s:{state.StreamIndices.Item3}]overlay[v]\" -map \"[v]\"");
                 return conversion;
             }
 

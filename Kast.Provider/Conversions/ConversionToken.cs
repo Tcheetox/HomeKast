@@ -12,6 +12,7 @@ namespace Kast.Provider.Conversions
         public readonly EventHandler? OnSuccess;
         public readonly EventHandler? OnFinally;
         public readonly string Description;
+
         public ConversionToken(
             string description,
             IReadOnlyCollection<Func<CancellationToken, Task>> conversions,

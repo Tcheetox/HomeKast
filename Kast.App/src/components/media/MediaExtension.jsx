@@ -6,20 +6,20 @@ import Expand from './Expand'
 import useTimespan from '../../hooks/useTimespan'
 import Conditional from '../../hoc/Conditional'
 
-export default function MediaExtension({ collection }) {
+export default function MediaExtension({ collection, show, setShow }) {
   const media = collection[0]
-  const isSerie = collection.length > 1
+  const serie = media.type !== 'Movie'
   const duration = useTimespan(media.length)
 
   return (
-    <div className='extension'>
+    <div className='extension' onClick={e => e.stopPropagation()}>
       <Row>
         <span className='title'>{media.name}</span>
       </Row>
       <Row className='metadata'>
         <Col className='timeAndRate'>
           <Row>
-            <Conditional test={!isSerie}>{duration}</Conditional>
+            <Conditional test={!serie}>{duration}</Conditional>
           </Row>
           <Row>{media.popularity ? `${media.popularity.toFixed(1)}/10` : null}</Row>
         </Col>
@@ -30,11 +30,11 @@ export default function MediaExtension({ collection }) {
             </Conditional>
           </Row>
           <Row>
-            <Conditional test={isSerie}>{`${collection.length} Episodes`}</Conditional>
+            <Conditional test={serie}>{`${collection.length} Episodes`}</Conditional>
           </Row>
         </Col>
         <Col className='more'>
-          <Expand collection={collection} />
+          <Expand collection={collection} serie={serie} show={show} setShow={setShow} />
         </Col>
       </Row>
     </div>

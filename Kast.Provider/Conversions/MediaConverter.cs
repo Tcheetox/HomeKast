@@ -43,23 +43,10 @@ namespace Kast.Provider.Conversions
             _logger.LogDebug("FFmpeg directory {directory}", directory);
         }
 
-        public async Task<bool> StartAsync(IMedia media)
+        public bool Start(IMedia media)
         {
             if (media.Status != MediaStatus.MissingSubtitles && media.Status != MediaStatus.Unplayable)
                 return false;
-
-            if (media.Info == null)
-            {
-                var info = await _mediaProvider.GetInfoAsync(media);
-                if (info == null)
-                {
-                    _logger.LogInformation("Conversion of {media} cannot be started because of missing information", media);
-                    return false;
-                }
-
-                media.UpdateInfo(info);
-                _logger.LogInformation("{info} added to {media} to prepare conversion", nameof(IMediaInfo), media);
-            }
 
             var context = new ConversionContext(media, _settingsProvider);
             var token = new ConversionToken(
@@ -70,6 +57,15 @@ namespace Kast.Provider.Conversions
                     _streamFactory.ConvertAsync(context)
                 },
                 onAdd: (_o, _e) => media.UpdateStatus(-1),
+                onStart: async (_o, _e) =>
+                {
+                    if (media.Info != null)
+                        return;
+
+                    var info = await _mediaProvider.GetInfoAsync(media) ?? throw new InvalidOperationException($"Conversion of {media} cannot be started because of missing information");
+                    media.UpdateInfo(info);
+                    _logger.LogInformation("{info} added to {media} to prepare conversion", nameof(IMediaInfo), media);
+                },
                 onSuccess: async (_o, _e) => await _mediaProvider.AddOrUpdateAsync(context.TargetPath),
                 onFinally: (_o, _e) =>
                 {

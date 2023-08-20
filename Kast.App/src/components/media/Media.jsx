@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 import './media.scoped.scss'
 import notFound from '../../assets/notfound.png'
@@ -6,8 +6,9 @@ import MediaExtension from './MediaExtension'
 import Trigger from './Trigger'
 
 export default function Media({ collection }) {
+  const [show, setShow] = useState(false)
   const media = collection[0]
-  const status = collection.length === 1 ? media.status : null
+  const status = collection.length === 1 ? media.status : 'Multiple'
 
   return (
     <div className='media'>
@@ -19,9 +20,14 @@ export default function Media({ collection }) {
           <img className='thumbnail not-found' src={notFound} />
         </>
       )}
-      <div className={`overlay ${status}`}>
+      <div
+        className={`overlay ${status}`}
+        onClick={() => {
+          if (!show) setShow(true)
+        }}
+      >
         <Trigger id={media.id} status={status} />
-        <MediaExtension collection={collection} />
+        <MediaExtension collection={collection} show={show} setShow={setShow} />
       </div>
     </div>
   )

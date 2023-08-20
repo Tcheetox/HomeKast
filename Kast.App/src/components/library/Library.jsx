@@ -25,11 +25,11 @@ export default function Library() {
     setSearchResults(searchedResults)
   }, [search, library, setSearchResults])
 
-  return isLoading ? (
-    <Loading />
-  ) : (
+  if (isLoading) return <Loading />
+
+  return (
     <InfiniteScroll
-      className='library'
+      className={'library'}
       pageStart={0}
       loadMore={() => setShownResults(p => searchResults.slice(0, p.length + perPage))}
       hasMore={shownResults.length < searchResults.length}

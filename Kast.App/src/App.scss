@@ -1,4 +1,6 @@
 @import '~bootstrap/scss/bootstrap';
+@import './Globals.scss';
+@import './Override.scss';
 
 html,
 body,
@@ -24,83 +26,12 @@ small {
   font-size: 13px;
 }
 
-:root {
-  --main-radius: 3px;
-  --main-color: #007bff;
-  --main-hover-color: #0056b3;
-  --main-dark-color: #060708;
-  --main-dark-12-color: #191b1e;
-  --main-base-dark-color: #343a40;
-  --main-transition-duration: 100ms;
-  --main-padding-width: 1rem;
-  --main-margin-width: 1rem;
-  --main-gray: gray;
-  --main-gray-hover: #676767;
-  --white: white;
-  --white-hover: #cccccc;
-}
-
 .container-fluid {
   max-width: 95vw;
 }
 
-// TODO: move that kind of override elsewhere
-// Bootstrap override for search control
-.search input {
-  border-radius: 15px;
-  width: 120px;
-  margin: auto;
-  // background-color: var(--main-dark-color);
-  background-color: var(--main-dark-12-color);
-  transition: width var(--main-transition-duration) ease;
-  color: var(--white);
-  height: 35px;
-  border-color: transparent;
-  font-size: 1.05rem;
-  padding-right: 45px;
-  &:active,
-  &:focus {
-    color: var(--white);
-    width: 300px;
-    background-color: var(--main-dark-12-color);
-    border-color: transparent;
-  }
-  &::placeholder {
-    color: lighten(#343a40, 10%);
-  }
-}
-
-// Modal
-.modal-open {
-  overflow-y: auto !important;
-  padding-right: 0 !important;
-}
-.modal-content {
-  //background-color: var(--main-dark-color);
-  background-color: var(--main-dark-12-color);
-  color: var(--white);
-}
-.modal-footer {
-  padding-top: 0;
-  border-top: none;
-}
-.modal-header {
-  border-bottom: none;
-  padding-bottom: 0;
-  .nav-link {
-    color: var(--white);
-  }
-  .nav-link.active {
-    color: var(--main-color);
-    font-weight: 500;
-  }
-  .modal-title {
-    font-weight: unset;
-  }
-}
-.modal-body {
-  padding-top: 0;
-  padding-bottom: 0;
+.expand .modal-content {
+  background-color: black;
 }
 
 // Reduce nav-item colliding on .active
@@ -129,35 +60,6 @@ small {
 .settings svg {
   path {
     fill: var(--white) !important;
-  }
-}
-
-.popover {
-  .popover-header,
-  .popover-body {
-    background-color: unset;
-    color: unset;
-    padding: unset;
-  }
-  .popover-header {
-    font-size: 14px;
-    text-align: left;
-    border: unset;
-  }
-  .popover-arrow::after,
-  .popover-header::before {
-    border-bottom-color: var(--main-dark-12-color) !important;
-  }
-}
-
-.btn-unstyle {
-  background-color: unset !important;
-  border: none;
-  padding: 0;
-  &:hover,
-  &:active {
-    background-color: unset !important;
-    border: none;
   }
 }
 

@@ -26,9 +26,10 @@ namespace Kast.Provider.Media.YouTube
                 return metadata;
             }
 
-            if (metadata == null || !string.IsNullOrWhiteSpace(metadata.YoutubeEmbedUrl))
+            if (!string.IsNullOrWhiteSpace(metadata?.YoutubeEmbedUrl))
                 return metadata;
 
+            metadata ??= new Metadata();
             if (_store.TryGetValue(media.Name, out var embedUrl))
             {
                 metadata.YoutubeEmbedUrl = embedUrl;
