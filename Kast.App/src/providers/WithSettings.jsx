@@ -14,6 +14,8 @@ export default function WithSettings() {
       }).then(value => value.json()),
     onSuccess: data => update(data),
     initialData: {},
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
   })
 
   return null

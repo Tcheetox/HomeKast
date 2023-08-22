@@ -15,7 +15,9 @@ export default function WithCasters() {
       }).then(value => value.json()),
     onSuccess: data => update(data),
     initialData: [],
-    // refetchInterval: interval,
+    refetchInterval: interval,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
   })
 
   return null

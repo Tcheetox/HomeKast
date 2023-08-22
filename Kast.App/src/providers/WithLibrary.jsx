@@ -15,7 +15,9 @@ export default function WithLibrary() {
       }).then(value => value.json()),
     onSuccess: updateLibrary,
     initialData: [],
-    // refetchInterval: refetch,
+    refetchInterval: interval,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
   })
 
   return null

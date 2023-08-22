@@ -4,8 +4,6 @@ import { WithLibrary, WithCasters, WithSettings, WithConversions } from './provi
 const AppContextConsumer = createContext()
 const AppContextUpdater = createContext()
 
-// TODO: much of this stuff probably requires useCallback and useMemo?
-
 export function useContextConsumer(key = null) {
   const consumer = useContext(AppContextConsumer)
   if (consumer === undefined) throw new Error(`useContextConsumer must be used within a ContextProvider`)
@@ -19,7 +17,7 @@ export const useContextUpdater = (key = null) => {
 }
 
 export const AppContextProvider = props => {
-  const [context, setContext] = useState({ library: [], casters: [] })
+  const [context, setContext] = useState({ library: [], casters: [], search: '' })
 
   return (
     <AppContextUpdater.Provider value={setContext}>
