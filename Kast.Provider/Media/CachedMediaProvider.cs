@@ -28,6 +28,8 @@ namespace Kast.Provider.Media
         protected override async Task<MediaLibrary> CreateLibraryAsync()
         {
             var library = await RestoreLibraryAsync();
+            // Update the local file to ensure consistency, e.g. in case restoration fixed metadata/filtered medias, etc.
+            _ = SaveLibraryAsync(library); 
             if (library != null && library.Any())
                 return library;
 

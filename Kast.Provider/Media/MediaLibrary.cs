@@ -20,8 +20,7 @@ namespace Kast.Provider.Media
         }
         
         private MediaLibrary(IEnumerable<IMedia> store, EventHandler? onChangeEventHandler = null)
-        {
-            _onChangeEventHandler = onChangeEventHandler;
+        { 
             _store = new(
                 store.Select(e => new KeyValuePair<MultiKey<Guid, string>, IMedia>(new MultiKey<Guid, string>(e.Id, e.FilePath), e)), 
                 key2Comparer: StringComparer.OrdinalIgnoreCase
@@ -39,6 +38,9 @@ namespace Kast.Provider.Media
                 if (entry.Companion == null)
                     AddCompanionship(entry);
             }
+
+            // Late binding to prevent events during ctor.
+            _onChangeEventHandler = onChangeEventHandler; 
         }
 
         public bool AddOrUpdate(IMedia media)

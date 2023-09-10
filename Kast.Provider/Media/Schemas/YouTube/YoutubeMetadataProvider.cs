@@ -9,24 +9,23 @@ namespace Kast.Provider.Media.YouTube
 {
     public class YoutubeMetadataProvider : IMDbMetadataProvider
     {
+        private readonly bool _enabled;
         public YoutubeMetadataProvider(ILogger<IMetadataProvider> logger, HttpClient httpClient, SettingsProvider settingsProvider, JsonSerializerOptions options)
             : base(logger, httpClient, settingsProvider, options)
-        { }
+        {
+            _enabled = !string.IsNullOrWhiteSpace(SettingsProvider.Application.YoutubeApiToken)
+                && !string.IsNullOrWhiteSpace(SettingsProvider.Application.YoutubeEndpoint)
+                && !string.IsNullOrWhiteSpace(SettingsProvider.Application.YoutubeEmbedBaseUrl);
+            
+            if (!_enabled)
+                Logger.LogDebug("Missing youtube settings to retrieve trailers... (skipping {me})", nameof(YoutubeMetadataProvider));
+        }
 
         private readonly ConcurrentDictionary<string, string?> _store = new(StringComparer.OrdinalIgnoreCase);
         public override async Task<Metadata?> GetAsync(IMedia media)
         {
             var metadata = await base.GetAsync(media);
-
-            if (string.IsNullOrWhiteSpace(SettingsProvider.Application.YoutubeApiToken)
-                || string.IsNullOrWhiteSpace(SettingsProvider.Application.YoutubeEndpoint)
-                || string.IsNullOrWhiteSpace(SettingsProvider.Application.YoutubeEmbedBaseUrl))
-            {
-                Logger.LogDebug("Missing youtube settings to retrieve trailers... (skipping {me})", nameof(YoutubeMetadataProvider));
-                return metadata;
-            }
-
-            if (!string.IsNullOrWhiteSpace(metadata?.YoutubeEmbedUrl))
+            if (!_enabled || !string.IsNullOrWhiteSpace(metadata?.YoutubeEmbedUrl))
                 return metadata;
 
             metadata ??= new Metadata();
