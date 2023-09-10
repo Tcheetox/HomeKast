@@ -11,7 +11,8 @@ using Kast.Provider.Media;
 using Kast.Provider.Cast;
 using Kast.Api.Problems;
 using Kast.Api.Extensions;
-using Kast.Provider.Media.IMDb; 
+using Kast.Provider.Media.IMDb;
+using Microsoft.Extensions.FileProviders;
 
 var version = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 var match = Regex.Match(version ?? string.Empty, @"\d");
@@ -105,7 +106,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseAuthorization();
+var spaTarget = Path.Combine(Directory.GetParent(builder.Environment.ContentRootPath)!.FullName, "Kast.App", "dist");
+var options = new StaticFileOptions()
+{
+    ServeUnknownFileTypes = true,
+    FileProvider = new PhysicalFileProvider(spaTarget)
+};
+app.UseStaticFiles(options);
 
 app.MapControllers();
 

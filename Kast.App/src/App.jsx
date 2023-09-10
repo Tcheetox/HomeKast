@@ -1,5 +1,4 @@
 import React from 'react'
-import { Route, Routes } from 'react-router-dom'
 
 import './App.scss'
 
@@ -13,9 +12,7 @@ export default function App() {
     <>
       <AppContextProvider>
         <Header />
-        <Routes>
-          <Route path='/' element={<Home />} />
-        </Routes>
+        <Home />
       </AppContextProvider>
       <Footer />
     </>
