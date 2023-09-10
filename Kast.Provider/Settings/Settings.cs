@@ -145,7 +145,7 @@ namespace Kast.Provider
     public sealed class Application : IEquatable<Application>
     {
         public string? YoutubeApiToken { get; set; }
-        public string? YoutubeEndpoint { get; set; }
+        public string? YoutubeEndPoint { get; set; }
         public string? YoutubeEmbedBaseUrl { get; set; }
 
         private int _httpPort = 7279;

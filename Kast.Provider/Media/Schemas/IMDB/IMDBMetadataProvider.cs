@@ -15,7 +15,7 @@ namespace Kast.Provider.Media.IMDb
         protected readonly SettingsProvider SettingsProvider;
         protected readonly JsonSerializerOptions Options;
 
-        protected int MetadataTimeout => SettingsProvider.Application.MetadataTimeout ?? Constants.MetadataFetchTimeout;
+        private int MetadataTimeout => SettingsProvider.Application.MetadataTimeout ?? Constants.MetadataFetchTimeout;
         private string MetadataEndpoint => SettingsProvider.Application.MetadataEndpoint!;
         private string ImageBaseUrl => SettingsProvider.Application.ImageBaseUrl!;
 

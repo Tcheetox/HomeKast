@@ -1,19 +1,33 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
-using Kast.Provider.Media.YouTube;
+﻿using Microsoft.Extensions.Logging;
 using Kast.Provider.Supports;
+using Kast.Provider.Media.YouTube;
 
 namespace Kast.Provider.Media
 {
-    public class LocalMetadataProvider : YoutubeMetadataProvider
+    public class LocalMetadataProvider : IMetadataProvider
     {
-        public LocalMetadataProvider(ILogger<IMetadataProvider> logger, HttpClient httpClient, SettingsProvider settingsProvider, JsonSerializerOptions options)
-            : base(logger, httpClient, settingsProvider, options)
-        { }
+        private readonly IMetadataProvider _metadataProvider;
+        private readonly ILogger _logger;
+        private readonly HttpClient _httpClient;
+        private readonly SettingsProvider _settingsProvider;
 
-        public override async Task<Metadata?> GetAsync(IMedia media)
+        private int MetadataTimeout => _settingsProvider.Application.MetadataTimeout ?? Constants.MetadataFetchTimeout;
+
+        public LocalMetadataProvider(
+            ILogger<IMetadataProvider> logger,
+            YoutubeMetadataProvider metadataProvider, 
+            HttpClient httpClient, 
+            SettingsProvider settingsProvider)
         {
-            var metadata = await base.GetAsync(media);
+            _logger = logger;
+            _metadataProvider = metadataProvider;
+            _httpClient = httpClient;
+            _settingsProvider = settingsProvider;
+        }
+
+        public async Task<Metadata?> GetAsync(IMedia media)
+        {
+            var metadata = await _metadataProvider.GetAsync(media);
             if (metadata == null || !metadata.HasMissingInfo) 
                 return metadata;
 
@@ -30,7 +44,7 @@ namespace Kast.Provider.Media
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Could not download picture from {image} or {backdrop}", metadata.ImageUrl, metadata.BackdropUrl);
+                _logger.LogError(ex, "Could not download picture from {image} or {backdrop}", metadata.ImageUrl, metadata.BackdropUrl);
             }
 
             return metadata;
@@ -40,7 +54,7 @@ namespace Kast.Provider.Media
         {
             var backdropPath = imagePath.Replace(".jpg", "_backdrop.jpg");
 
-            using var response = await HttpClient.GetAsync(metadata.BackdropUrl, canceller.Token);
+            using var response = await _httpClient.GetAsync(metadata.BackdropUrl, canceller.Token);
             response.EnsureSuccessStatusCode();
 
             // Download backdrop
@@ -53,7 +67,7 @@ namespace Kast.Provider.Media
 
         private async Task DownloadImageAsync(string imagePath, Metadata metadata, CancellationTokenSource canceller)
         {
-            using var response = await HttpClient.GetAsync(metadata.ImageUrl, canceller.Token);
+            using var response = await _httpClient.GetAsync(metadata.ImageUrl, canceller.Token);
             response.EnsureSuccessStatusCode();
 
             // Download image
@@ -65,7 +79,7 @@ namespace Kast.Provider.Media
 
             // Create thumbnail
             var thumbnailPath = imagePath.Replace(".jpg", "_thumbnail.jpg");
-            ImageGenerator.TryCreateThumbnail(Logger, ms, thumbnailPath, 640, 480);
+            ImageGenerator.TryCreateThumbnail(_logger, ms, thumbnailPath, 640, 480);
             metadata.ThumbnailPath = thumbnailPath;
         }
     }

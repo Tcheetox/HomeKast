@@ -13,6 +13,7 @@ using Kast.Api.Problems;
 using Kast.Api.Extensions;
 using Kast.Provider.Media.IMDb;
 using Microsoft.Extensions.FileProviders;
+using Kast.Provider.Media.YouTube;
 
 var version = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 var match = Regex.Match(version ?? string.Empty, @"\d");
@@ -43,7 +44,7 @@ builder.Services.AddLogging(logging =>
 
 // JSON
 var sharedSerializationOptions = new JsonSerializerOptions() 
-{ 
+{  
     PropertyNameCaseInsensitive = true 
 };
 builder.Services.AddSingleton(sharedSerializationOptions);
@@ -56,7 +57,6 @@ builder.WebHost.ConfigureKestrel(options =>
     options.Listen(settingsProvider.Application.Ip, settingsProvider.Application.HttpPort);
 });
 
-builder.Services.AddHttpClient<IMetadataProvider, IMDbMetadataProvider>();
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = ProblemDetailsContextExtension.Extend);
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy
     => policy
@@ -86,6 +86,10 @@ builder.Services.AddSwaggerGen(options =>
     })
 );
 
+builder.Services.AddHttpClient<IMetadataProvider>();
+
+builder.Services.AddSingleton<IMDbMetadataProvider>();
+builder.Services.AddSingleton<YoutubeMetadataProvider>();
 builder.Services.AddSingleton<IMetadataProvider, LocalMetadataProvider>();
 builder.Services.AddSingleton<IMediaProvider, CachedMediaProvider>();
 builder.Services.AddSingleton<IMediaConverter, MediaConverter>();
