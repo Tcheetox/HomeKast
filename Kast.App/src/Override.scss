@@ -1,4 +1,5 @@
 // Modal
+// TODO: dbc whats still relevant in here...
 .modal-open {
   overflow-y: auto !important;
   padding-right: 0 !important;
@@ -15,13 +16,6 @@
 .modal-header {
   border-bottom: none;
   padding-bottom: 0;
-  .nav-link {
-    color: var(--white);
-  }
-  .nav-link.active {
-    color: var(--main-color);
-    font-weight: 500;
-  }
   .modal-title {
     font-weight: unset;
   }
@@ -82,5 +76,118 @@
   }
   &::placeholder {
     color: lighten(#343a40, 10%);
+  }
+}
+
+.settings-canvas {
+  background-color: var(--main-dark-color);
+
+  .nav-link,
+  .nav-link.active {
+    color: white;
+    transition: all var(--main-transition-duration);
+  }
+  .nav-default {
+    width: 45px;
+  }
+  .offcanvas-body {
+    padding-top: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+    .top.separator {
+      margin-top: 0;
+    }
+    &.advanced {
+      .top.separator {
+        margin-bottom: 0;
+      }
+      .bottom.separator {
+        margin-top: 0;
+      }
+    }
+  }
+  .btn-primary {
+    margin-left: 0.5rem;
+  }
+  hr {
+    color: var(--main-gray);
+  }
+  .settings-content {
+    flex-grow: 1;
+  }
+
+  .default.offcanvas-body {
+    .list-builder {
+      margin-bottom: var(--main-margin-width);
+      .label {
+        color: var(--white);
+      }
+      .list {
+        display: flex;
+        margin: 0.3rem 0;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .list-entry {
+        //background-color: var(--main-gray);
+        color: var(--white-hover);
+        border: 1px solid var(--main-gray-hover);
+        margin: 0.2rem;
+        border-radius: 8px;
+        font-size: 12px;
+        //font-weight: 500;
+        padding: 0.1rem 0.3rem;
+        .btn-close {
+          transition-duration: all var(--main-transition-duration);
+          padding-right: 0;
+          padding-left: 5px;
+        }
+      }
+      .submitter {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        margin: auto;
+        .form-control {
+          flex-grow: 1;
+          width: fit-content;
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+        .btn {
+          flex-grow: 0;
+          width: fit-content;
+          margin-left: 0;
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
+      }
+    }
+  }
+}
+
+// Code mirror
+.cm-content {
+  white-space: pre-wrap !important;
+  word-break: normal !important;
+  word-wrap: break-word !important;
+  max-width: calc(100% - 2rem) !important;
+}
+.cm {
+  ::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+    background: #000;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: gray;
+    -webkit-border-radius: 1ex;
+    // -webkit-box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: #000;
   }
 }

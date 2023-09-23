@@ -34,22 +34,6 @@ small {
   background-color: black;
 }
 
-// Reduce nav-item colliding on .active
-.settings-modal {
-  .nav-item {
-    text-align: center;
-  }
-  .nav-advanced {
-    min-width: 75px;
-  }
-  .nav-default {
-    min-width: 40px;
-  }
-  .nav-link.disabled {
-    color: var(--main-base-dark-color);
-  }
-}
-
 // Some SVG's are kind boring...
 .search svg {
   circle,

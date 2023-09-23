@@ -1,50 +1,34 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useCallback } from 'react'
 
-// https://github.com/AndrewRedican/react-json-editor-ajrm#readme
-// Hacking implementation to obtain kind of desired behavior
-// Move to ACE - REACT ?!
+import './settings.scoped.scss'
+import CodeMirror from '@uiw/react-codemirror'
+import { javascript } from '@codemirror/lang-javascript'
+import { githubDark } from '@uiw/codemirror-theme-github'
 
-import JSONInput from 'react-json-editor-ajrm'
-import locale from 'react-json-editor-ajrm/locale/en'
-
-let cursor
-let timer
+const extensions = [javascript()]
 
 export default function Advanced({ settings, setSettings }) {
-  const ref = useRef()
-
-  useEffect(() => {
-    setTimeout(() => {
-      if (ref.current && cursor) ref.current.setCursorPosition(cursor)
-    })
-  }, [settings])
-
-  useEffect(() => {
-    if (!ref.current) return
-    ref.current.onKeyPress = () => {
-      if (ref.current) cursor = ref.current.getCursorPosition()
-      setTimeout(() => {
-        const current = ref.current
-        if (current) {
-          clearTimeout(timer)
-          const data = current.tokenize(current.refContent)?.jsObject
-          if (data) timer = setTimeout(() => setSettings(data), 650)
-        }
-      })
-    }
-  }, [setSettings])
+  const onChange = useCallback(
+    value => {
+      try {
+        const jsonSettings = JSON.parse(value)
+        setSettings(jsonSettings)
+      } catch {
+        // Not a valid JSON
+      }
+    },
+    [setSettings]
+  )
 
   return (
-    <JSONInput
-      ref={ref}
-      className='advanced-settings'
-      placeholder={settings}
-      locale={locale}
-      height='auto'
-      width='auto'
-      confirmGood={false}
-      colors={{ background: '#191b1e' }}
-      onKeyPressUpdate={false}
+    <CodeMirror
+      className='cm'
+      theme={githubDark}
+      value={JSON.stringify(settings, null, 4)}
+      height='83vh'
+      width='100%'
+      extensions={extensions}
+      onChange={onChange}
     />
   )
 }
