@@ -28,6 +28,7 @@ namespace Kast.Provider.Media
         internal void UpdateMetadata(Metadata? metadata = null);
         internal void UpdateCompanion(IMedia? companion = null);
         internal void UpdateInfo(IMediaInfo? info = null);
+        internal event EventHandler<MediaChangeEventArgs> MediaChanged;
 
         string ToString();
     }

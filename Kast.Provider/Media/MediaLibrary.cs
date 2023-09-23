@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using Kast.Provider.Supports;
+using static Kast.Provider.Media.MediaChangeEventArgs;
 
 namespace Kast.Provider.Media
 {
@@ -9,18 +10,19 @@ namespace Kast.Provider.Media
         private readonly MultiConcurrentDictionary<Guid, string, IMedia> _store;
         private readonly CompanionComparer _companionComparer = new();
 
-        private EventHandler? _onChangeEventHandler;
+        private EventHandler<MediaChangeEventArgs>? _onChangeEventHandler;
 
         public int Count => _store.Count;
 
-        public MediaLibrary(EventHandler? onChangeEventHandler = null) 
+        public MediaLibrary(EventHandler<MediaChangeEventArgs>? onChangeEventHandler = null) 
         {
             _onChangeEventHandler = onChangeEventHandler;
             _store = new(key2Comparer: StringComparer.OrdinalIgnoreCase);
         }
         
-        private MediaLibrary(IEnumerable<IMedia> store, EventHandler? onChangeEventHandler = null)
-        { 
+        private MediaLibrary(IEnumerable<IMedia> store, EventHandler<MediaChangeEventArgs>? onChangeEventHandler = null)
+        {
+            _onChangeEventHandler = onChangeEventHandler;
             _store = new(
                 store.Select(e => new KeyValuePair<MultiKey<Guid, string>, IMedia>(new MultiKey<Guid, string>(e.Id, e.FilePath), e)), 
                 key2Comparer: StringComparer.OrdinalIgnoreCase
@@ -37,10 +39,9 @@ namespace Kast.Provider.Media
 
                 if (entry.Companion == null)
                     AddCompanionship(entry);
-            }
 
-            // Late binding to prevent events during ctor.
-            _onChangeEventHandler = onChangeEventHandler; 
+                entry.MediaChanged += OnMediaChanged;
+            }
         }
 
         public bool AddOrUpdate(IMedia media)
@@ -48,7 +49,11 @@ namespace Kast.Provider.Media
             _store.GetOrAdd(media.Id, media.FilePath, media, out bool added);
             AddCompanionship(media);
 
-            _onChangeEventHandler?.Invoke(this, EventArgs.Empty);
+            if (added)
+            {
+               media.MediaChanged += OnMediaChanged;
+               OnMediaChanged(this, new MediaChangeEventArgs(EventType.Added));
+            }
 
             return added;
         }
@@ -63,11 +68,14 @@ namespace Kast.Provider.Media
 
             RemoveCompanionship(media);
 
-            _onChangeEventHandler?.Invoke(this, EventArgs.Empty);
+            media.MediaChanged -= OnMediaChanged;
+            OnMediaChanged(this, new MediaChangeEventArgs(EventType.Removed));
 
             return true;
         }
-        
+
+        private void OnMediaChanged(object? sender, MediaChangeEventArgs e) => _onChangeEventHandler?.Invoke(sender, e);
+
         public bool TryGetValue(string path, out IMedia? media) => _store.TryGetValue(path, out media);
         public bool TryGetValue(Guid guid, out IMedia? media) => _store.TryGetValue(guid, out media);
 
@@ -156,6 +164,8 @@ namespace Kast.Provider.Media
                 if (disposing)
                 {
                     _onChangeEventHandler = null;
+                    foreach (var media in this)
+                        media.MediaChanged -= OnMediaChanged;
                     _store.Clear();
                 }
                 _disposedValue = true;

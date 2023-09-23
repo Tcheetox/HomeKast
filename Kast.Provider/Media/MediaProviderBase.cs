@@ -5,14 +5,16 @@ using Kast.Provider.Supports;
 
 namespace Kast.Provider.Media
 {
-    public class MediaProvider : IMediaProvider, IDisposable
+    public abstract class MediaProviderBase : IMediaProvider, IDisposable
     {
-        protected EventHandler OnLibraryChangeEventHandler;
-        protected readonly ILogger<MediaProvider> Logger;
+        protected readonly ILogger<MediaProviderBase> Logger;
         protected readonly IMetadataProvider MetadataProvider;
         protected readonly SettingsProvider SettingsProvider;
 
-        public MediaProvider(ILogger<MediaProvider> logger, IMetadataProvider metadataProvider, SettingsProvider settingsProvider)
+        protected MediaProviderBase(
+            ILogger<MediaProviderBase> logger, 
+            IMetadataProvider metadataProvider, 
+            SettingsProvider settingsProvider)
         {
             FFmpegSupport.SetExecutable(out _);
 
@@ -20,7 +22,11 @@ namespace Kast.Provider.Media
             SettingsProvider = settingsProvider;
             SettingsProvider.SettingsChanged += OnSettingsChanged;
             MetadataProvider = metadataProvider;
-            OnLibraryChangeEventHandler += (_, __) => _groupedLibrary = null;
+        }
+
+        protected virtual void OnLibraryChanged(object? sender, MediaChangeEventArgs e)
+        {
+            _groupedLibrary = null;
         }
 
         protected virtual void OnSettingsChanged(object? sender, Settings e)
@@ -30,13 +36,13 @@ namespace Kast.Provider.Media
             _ = RefreshAsync();
         }
 
-        private MediaLibrary? _library;
-        public virtual async Task RefreshAsync()
+        protected MediaLibrary? Library { get; private set; }
+        public async Task RefreshAsync()
         {
-            if (_library != null)
+            if (Library != null)
             {
-                _library.Dispose();
-                _library = null;
+                Library.Dispose();
+                Library = null;
                 _groupedLibrary = null;
             }
             _ = await GetLibraryAsync();
@@ -97,16 +103,16 @@ namespace Kast.Provider.Media
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         private async Task<MediaLibrary> GetLibraryAsync()
         {
-            if (_library != null)
-                return _library;
+            if (Library != null)
+                return Library;
             try
             {
                 await _semaphore.WaitAsync();
-                if (_library != null)
-                    return _library;
+                if (Library != null)
+                    return Library;
 
-                _library = await CreateLibraryAsync();
-                Logger.LogInformation("MediaProvider retrieved {media} media from {directories} directories", _library.Count, SettingsProvider.Library.Directories.Count);
+                Library = await CreateLibraryAsync();
+                Logger.LogInformation("MediaProvider retrieved {media} media from {directories} directories", Library.Count, SettingsProvider.Library.Directories.Count);
             }
             catch (Exception ex)
             {
@@ -117,12 +123,12 @@ namespace Kast.Provider.Media
                 _semaphore.Release();
             }
 
-            return _library ?? new MediaLibrary(OnLibraryChangeEventHandler);
+            return Library ?? new MediaLibrary(OnLibraryChanged);
         }
 
         protected virtual async Task<MediaLibrary> CreateLibraryAsync()
         {
-            var library = new MediaLibrary(OnLibraryChangeEventHandler);
+            var library = new MediaLibrary(OnLibraryChanged);
             await Parallel.ForEachAsync(SettingsProvider
                 .Library
                 .Directories
@@ -193,8 +199,8 @@ namespace Kast.Provider.Media
         {
             if (!_disposedValue)
             {
-                if (disposing && _library != null)
-                    _library.Dispose();
+                if (disposing && Library != null)
+                    Library.Dispose();
                 _disposedValue = true;
             }
         }

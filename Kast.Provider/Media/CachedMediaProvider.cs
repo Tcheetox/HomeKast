@@ -5,31 +5,41 @@ using static Kast.Provider.Media.MediaLibrary;
 
 namespace Kast.Provider.Media
 {
-    public class CachedMediaProvider : MediaProvider
+    public class CachedMediaProvider : MediaProviderBase
     {
         private string LibraryPath => Path.Combine(SettingsProvider.Settings.Application.CacheDirectory, "LibCache.json");
-
+        
         private readonly JsonSerializerOptions _serializerOptions;
+        private readonly CancellationTokenSource _canceller = new();
+       
+        private Task? _serializationTask;
+        private bool _isStale;
 
-        public CachedMediaProvider(ILogger<MediaProvider> logger, IMetadataProvider metadataProvider, SettingsProvider settingsProvider, JsonSerializerOptions serializerOptions) 
+        public CachedMediaProvider(
+            ILogger<MediaProviderBase> logger, 
+            IMetadataProvider metadataProvider, 
+            SettingsProvider settingsProvider, 
+            JsonSerializerOptions serializerOptions) 
             : base(logger, metadataProvider, settingsProvider)
         {
-            OnLibraryChangeEventHandler += (_s, _e) => 
-            {
-                if (_s is MediaLibrary library)
-                    _ = SaveLibraryAsync(library);
-            };
-
             _serializerOptions = new JsonSerializerOptions(serializerOptions);
-            _serializerOptions.Converters.Add(new MediaLibraryConverter(OnLibraryChangeEventHandler));
+            _serializerOptions.Converters.Add(new MediaLibraryConverter(OnLibraryChanged));
             _serializerOptions.Converters.Add(new MediaConverter());
+            _serializationTask = Task.Run(SaveStaleLibraryAsync, _canceller.Token);
+        }
+
+        protected override void OnLibraryChanged(object? sender, MediaChangeEventArgs e)
+        {
+            base.OnLibraryChanged(sender, e);
+            if (e.Event != MediaChangeEventArgs.EventType.CompanionChanged
+                && e.Event != MediaChangeEventArgs.EventType.MediaInfoChanged
+                && e.Event != MediaChangeEventArgs.EventType.StatusChanged)
+                _isStale = true;
         }
 
         protected override async Task<MediaLibrary> CreateLibraryAsync()
         {
             var library = await RestoreLibraryAsync();
-            // Update the local file to ensure consistency, e.g. in case restoration fixed metadata/filtered medias, etc.
-            _ = SaveLibraryAsync(library); 
             if (library != null && library.Any())
                 return library;
 
@@ -79,23 +89,36 @@ namespace Kast.Provider.Media
             }
         }
 
-        private async Task SaveLibraryAsync(MediaLibrary? library)
+        private async void SaveStaleLibraryAsync()
+        {
+            while (!_canceller.IsCancellationRequested)
+            {
+                if (_isStale)
+                {
+                    await SaveLibraryAsync();
+                    _isStale = false;
+                }
+                await Task.Delay(SettingsProvider.Application.LibrarySerializationInterval, _canceller.Token);
+            }
+        }
+
+        private async Task SaveLibraryAsync()
         {
             try
             {
                 await _fileLock.WaitAsync();
 
-                if (library == null)
+                if (Library == null)
                 {
                     await IOSupport.DeleteAsync(LibraryPath, SettingsProvider.Application.FileAccessTimeout);
                     return;
                 }
 
-                if (!library.Any())
+                if (!Library.Any())
                     return;
 
                 using var stream = new MemoryStream();
-                await JsonSerializer.SerializeAsync(stream, library, _serializerOptions);
+                await JsonSerializer.SerializeAsync(stream, Library, _serializerOptions);
                 stream.Position = 0;
 
                 using var reader = new StreamReader(stream);
@@ -114,5 +137,22 @@ namespace Kast.Provider.Media
                 _fileLock.Release();
             }
         }
+
+        #region IDisposable
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (disposing)
+            {
+                if (!_canceller.IsCancellationRequested)
+                {
+                    _canceller.Cancel();
+                    _canceller.Dispose();
+                }
+                _serializationTask?.Dispose();
+                _serializationTask = null;
+            }
+        }
+        #endregion
     }
 }

@@ -170,6 +170,17 @@ namespace Kast.Provider
             }
         }
 
+        private int _librarySerializationInterval = 1000;
+        public int LibrarySerializationInterval
+        {
+            get => _librarySerializationInterval;
+            set
+            {
+                if (value > 0)
+                    _librarySerializationInterval = value;
+            }
+        }
+
         private string _cacheDirectory = Path.Combine(Path.GetTempPath(), "HomeKast");
         public string CacheDirectory 
         {

@@ -7,9 +7,9 @@ namespace Kast.Provider.Media
     {
         internal class MediaLibraryConverter : JsonConverter<MediaLibrary>
         {
-            private readonly EventHandler? _onLibraryChangeEventHandler;
+            private readonly EventHandler<MediaChangeEventArgs>? _onLibraryChangeEventHandler;
 
-            public MediaLibraryConverter(EventHandler? onLibraryChangeEventHandler = null)
+            public MediaLibraryConverter(EventHandler<MediaChangeEventArgs>? onLibraryChangeEventHandler = null)
             {
                 _onLibraryChangeEventHandler = onLibraryChangeEventHandler;
             }

@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Xabe.FFmpeg;
 using Kast.Provider.Supports;
 using Kast.Provider.Conversions.Factories;
+using static Kast.Provider.Media.MediaChangeEventArgs;
 
 namespace Kast.Provider.Media
 {
@@ -68,29 +69,41 @@ namespace Kast.Provider.Media
             UpdateStatus();
         }
         public string Name { get; protected set; }
+        public int? Year { get; protected set; }
+
         [JsonIgnore]
         public string FileName => FileInfo.Name.Capitalize();
+
         public abstract string Type { get; }
         public string FilePath { get; }
+
         private FileInfo? _fileInfo;
         [JsonIgnore]
         public FileInfo FileInfo => _fileInfo ??= new(FilePath);
+
         public TimeSpan Length { get; private set; }
+
         [JsonIgnore]
         public MediaStatus Status { get; private set; }
+
         public SubtitlesList Subtitles { get; private set; }     
         public Metadata? Metadata { get; private set; }
         public VideoSize Resolution { get; private set; }
+
         [JsonIgnore]
         public IMedia? Companion { get; private set; }
+
         [JsonIgnore]
         public IMediaInfo? Info { get; private set; }
+
         public Guid Id { get; private set; }
         public double VideoFrameRate { get; private set; }
         public string VideoCodec { get; private set; }
         public string AudioCodec { get; private set; }
-        public int? Year { get; protected set; }
 
+        public event EventHandler<MediaChangeEventArgs>? MediaChanged;
+        private void OnMediaChanged(object?  sender, MediaChangeEventArgs e) => MediaChanged?.Invoke(sender, e);
+       
         public void UpdateStatus(int? progress = null, FactoryTarget? target = null)
         {
             if (progress.HasValue)
@@ -98,10 +111,12 @@ namespace Kast.Provider.Media
                 if (progress < 0)
                 {
                     Status = MediaStatus.Queued;
+                    OnMediaChanged(this, new MediaChangeEventArgs(EventType.StatusChanged));
                     return;
                 }
 
                 Status = target == FactoryTarget.Stream ? MediaStatus.Streamable : MediaStatus.Converting;
+                OnMediaChanged(this, new MediaChangeEventArgs(EventType.StatusChanged));
                 return;
             }
 
@@ -125,21 +140,25 @@ namespace Kast.Provider.Media
             }
 
             Status = newStatus;
+            OnMediaChanged(this, new MediaChangeEventArgs(EventType.StatusChanged));
         }
 
         public void UpdateCompanion(IMedia? companion = null)
         { 
             Companion = companion;
+            OnMediaChanged(this, new MediaChangeEventArgs(EventType.CompanionChanged));
             UpdateStatus();
         }
 
         public void UpdateInfo(IMediaInfo? info = null)
         { 
             Info = info;
+            OnMediaChanged(this, new MediaChangeEventArgs(EventType.MediaInfoChanged));
         }
         public void UpdateMetadata(Metadata? metadata = null)
         {
             Metadata = metadata;
+            OnMediaChanged(this, new MediaChangeEventArgs(EventType.MetadataChanged));
         }
 
         public override string ToString() => $"{Name} ({Id})";
@@ -157,8 +176,7 @@ namespace Kast.Provider.Media
             return other.FilePath == FilePath;
         }
 
-        public override int GetHashCode()
-            => FilePath.GetHashCode();
+        public override int GetHashCode() => FilePath.GetHashCode();
         #endregion
     }
 }
