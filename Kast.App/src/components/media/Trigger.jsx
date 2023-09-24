@@ -2,7 +2,7 @@ import React from 'react'
 
 import './trigger.scoped.scss'
 import { Case, Switch } from '../../hoc/'
-import useMedia from '../../hooks/useMedia'
+import { useMedia } from '../../hooks/'
 import { Play, Convert, Subtitles, Queued } from '../../assets/icons/index.js'
 
 export default function Trigger({ id, status, className }) {

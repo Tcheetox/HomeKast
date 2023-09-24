@@ -197,7 +197,7 @@ namespace Kast.Provider
 
         public string? ImageBaseUrl { get; set; }
 
-        private int _maxDegreeOfParallelism = 1;
+        private int _maxDegreeOfParallelism = Environment.ProcessorCount;
         public int MaxDegreeOfParallelism 
         {
             get => _maxDegreeOfParallelism;

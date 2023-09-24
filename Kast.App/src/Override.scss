@@ -82,11 +82,14 @@
 .settings-canvas {
   background-color: var(--main-dark-color);
 
-  .nav-link,
-  .nav-link.active {
+  .nav-link {
     color: white;
     transition: all var(--main-transition-duration);
+    &.active {
+      color: var(--main-color);
+    }
   }
+
   .nav-default {
     width: 45px;
   }

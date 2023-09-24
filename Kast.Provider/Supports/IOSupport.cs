@@ -59,6 +59,7 @@ namespace Kast.Provider.Supports
         {
             var time = Stopwatch.StartNew();
             var write = DateTime.MinValue;
+            long length = -1;
             timeout ??= Constants.FileAccessTimeout;
 
             while (time.ElapsedMilliseconds < timeout)
@@ -72,10 +73,13 @@ namespace Kast.Provider.Supports
                 {
                     try
                     {
-                        var newWrite = new FileInfo(path).LastWriteTimeUtc;
-                        if (write < newWrite)
+                        var info = new FileInfo(path);
+                        var newWrite = info.LastWriteTimeUtc;
+                        var newLength = info.Length;
+                        if (write < newWrite || length < newLength)
                         {
                             write = newWrite;
+                            length = newLength;
                             time.Restart();
                         }
                     }
@@ -83,7 +87,7 @@ namespace Kast.Provider.Supports
                     {
                         // No trace needed
                     }
-                    await Task.Delay(10);
+                    await Task.Delay(30);
                 }
             }
 
