@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 
-import './listBuilder.scoped.scss'
 import { Row, Button, Form, CloseButton } from 'react-bootstrap'
 
 export default function ListBuilder({ name, list, setList, placeholder = '', transform = e => e }) {

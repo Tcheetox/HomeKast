@@ -1,10 +1,10 @@
 import { useMutation } from '@tanstack/react-query'
-import { useLibrary, useConversions, useCaster } from './'
+import { useLibrary, useConversions, useSettings } from './'
 
 export default function useMedia(id, receiverId = null) {
   const library = useLibrary()
   const conversions = useConversions()
-  receiverId ??= useCaster().id
+  receiverId ??= useSettings()?.application?.casterId
 
   const startConversion = useMutation(() =>
     fetch(`${process.env.REACT_APP_BACKEND_URI}/conversion/${id}/start`, {

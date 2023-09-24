@@ -121,11 +121,16 @@
   }
 
   .default.offcanvas-body {
-    .list-builder {
+    .label {
+      color: var(--white);
+    }
+    .dropdown-toggle {
+      margin-top: 0.5rem;
+    }
+    .list-builder,
+    .drop-picker {
       margin-bottom: var(--main-margin-width);
-      .label {
-        color: var(--white);
-      }
+
       .list {
         display: flex;
         margin: 0.3rem 0;
