@@ -5,7 +5,7 @@ using static Kast.Provider.Media.Serie;
 
 namespace Kast.Api.Models
 {
-    public class Media
+    public record class Media
     {
         public static Media From(IMedia media)
             => new()
@@ -44,10 +44,7 @@ namespace Kast.Api.Models
         public bool? HasImage { get; private init; }
         public bool? HasThumbnail { get; private init; }
 
-        private Media()
-        { }
-
-        public class Caption
+        public record class Caption
         {
             public string Label { get; private set; }
             public int Index { get; private set; }

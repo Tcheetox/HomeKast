@@ -3,7 +3,7 @@
 namespace Kast.Provider.Conversions
 {
     [DebuggerDisplay("{Description}")]
-    internal readonly struct ConversionToken : IDisposable
+    internal readonly record struct ConversionToken : IDisposable
     {
         public readonly IReadOnlyCollection<Func<CancellationToken, Task>> Conversions;
         public readonly EventHandler? OnStart;
