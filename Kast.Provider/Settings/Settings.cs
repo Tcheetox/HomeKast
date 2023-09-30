@@ -208,6 +208,8 @@ namespace Kast.Provider
             }
         }
 
+        public Guid? ReceiverId { get; set; }
+
         public int? MediaInfoTimeout { get; set; }
         public int? MetadataTimeout { get; set; }
         public int? FileAccessTimeout { get; set; }
@@ -243,7 +245,8 @@ namespace Kast.Provider
                 || ReceiverRefreshInterval != other.ReceiverRefreshInterval
                 || MediaInfoTimeout != other.MediaInfoTimeout
                 || MetadataTimeout != other.MetadataTimeout
-                || FileAccessTimeout != other.FileAccessTimeout)
+                || FileAccessTimeout != other.FileAccessTimeout
+                || ReceiverId != other.ReceiverId)
                 return false;
 
             return true;
@@ -267,6 +270,7 @@ namespace Kast.Provider
                 hash *= 13 + MediaInfoTimeout?.GetHashCode() ?? 0;
                 hash *= 13 + MetadataTimeout?.GetHashCode() ?? 0;
                 hash *= 13 + FileAccessTimeout?.GetHashCode() ?? 0;
+                hash *= 13 + ReceiverId?.GetHashCode() ?? 0;
                 return hash;
             }
         }
