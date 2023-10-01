@@ -1,7 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using Kast.Provider.Supports;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Xabe.FFmpeg;
-using Kast.Provider.Supports;
 
 namespace Kast.Provider.Media
 {
@@ -9,7 +9,7 @@ namespace Kast.Provider.Media
     {
         private readonly static Regex _infoRegex = new(@"\d+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        public Serie(IMediaInfo info, SubtitlesList subtitles) 
+        public Serie(IMediaInfo info, SubtitlesList subtitles)
             : base(info, subtitles)
         {
             var (name, episode, episodeName, year) = Normalization.NameFromPath(info.Path);
@@ -24,7 +24,7 @@ namespace Kast.Provider.Media
                     Indicator = episode,
                     Name = episodeName,
                     Season = indexes.Count > 1 && int.TryParse(indexes[0].Value, out int season) ? season : null,
-                    Episode = indexes.Count > 1 && int.TryParse(indexes[1].Value, out int _episode) 
+                    Episode = indexes.Count > 1 && int.TryParse(indexes[1].Value, out int _episode)
                         || indexes.Count == 1 && int.TryParse(indexes[0].Value, out _episode) ? _episode : null,
                 };
             }

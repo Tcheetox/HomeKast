@@ -7,7 +7,8 @@ namespace Kast.Api.Extensions
     internal static class ProblemDetailsContextExtension
     {
         private readonly static Lazy<PropertyInfo[]> _lookupProperties
-            = new(() => { 
+            = new(() =>
+            {
                 var basePropertyNames = typeof(ProblemDetails).GetProperties().Select(p => p.Name).ToHashSet();
                 return typeof(IProblemDetails).GetProperties().Where(p => !basePropertyNames.Contains(p.Name)).ToArray();
             });
@@ -19,7 +20,7 @@ namespace Kast.Api.Extensions
 
             context.ProblemDetails.Extensions.Clear();
             context.ProblemDetails.Type = null;
-            
+
             foreach (var prop in _lookupProperties.Value)
             {
                 var lookup = prop.Name.LowerFirstLetter();

@@ -19,7 +19,7 @@ namespace Kast.Api.Controllers
 
         [HttpGet]
         public Settings Get() => _settingsProvider.Settings;
-   
+
         [HttpPut]
         [ProducesResponseType(typeof(Settings), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(IProblemDetails), StatusCodes.Status400BadRequest)]

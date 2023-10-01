@@ -1,5 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GoogleCast;
+﻿using GoogleCast;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Kast.Provider.Cast
 {
@@ -7,7 +7,7 @@ namespace Kast.Provider.Cast
     {
         public bool Equals(IReceiver? x, IReceiver? y)
         {
-            if ((x == null && y == null) || ReferenceEquals(x, y)) 
+            if ((x == null && y == null) || ReferenceEquals(x, y))
                 return true;
 
             if (x == null || y == null) return false;

@@ -16,7 +16,7 @@ namespace Kast.Provider.Conversions
                 await Task.Delay(50);
         }
 
-        public StreamHandle(string temporaryTargetPath, string targetPath) 
+        public StreamHandle(string temporaryTargetPath, string targetPath)
         {
             _temporaryTargetPath = temporaryTargetPath;
             _targetPath = targetPath;
@@ -42,7 +42,7 @@ namespace Kast.Provider.Conversions
             }
 
             private readonly StreamHandle _handle;
-            public ReaderStream(StreamHandle handle) 
+            public ReaderStream(StreamHandle handle)
                 : base(handle._temporaryTargetPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete)
             {
                 _handle = handle;

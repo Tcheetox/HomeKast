@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Kast.Api.Models;
+using Kast.Api.Problems;
 using Kast.Provider.Conversions;
 using Kast.Provider.Media;
-using Kast.Api.Models;
-using Kast.Api.Problems;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Kast.Api.Controllers
 {
@@ -40,7 +40,7 @@ namespace Kast.Api.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<Conversion>), StatusCodes.Status200OK)]
-        public IEnumerable<Conversion> Get() 
+        public IEnumerable<Conversion> Get()
             => _mediaConverter.GetAll().Select(Conversion.From);
 
         [HttpPost("{mediaId:guid}/start")]

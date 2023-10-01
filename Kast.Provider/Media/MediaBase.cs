@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
+﻿using Kast.Provider.Conversions.Factories;
+using Kast.Provider.Supports;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Xabe.FFmpeg;
-using Kast.Provider.Supports;
-using Kast.Provider.Conversions.Factories;
 using static Kast.Provider.Media.MediaChangeEventArgs;
 
 namespace Kast.Provider.Media
@@ -10,7 +10,7 @@ namespace Kast.Provider.Media
     public enum MediaStatus
     {
         Hidden,
-        Unplayable,    
+        Unplayable,
         MissingSubtitles,
         Queued,
         Converting,
@@ -24,7 +24,7 @@ namespace Kast.Provider.Media
         [JsonConstructor]
         protected MediaBase(
             Guid id,
-            string name, 
+            string name,
             Metadata? metadata,
             SubtitlesList subtitles,
             string filePath,
@@ -86,7 +86,7 @@ namespace Kast.Provider.Media
         [JsonIgnore]
         public MediaStatus Status { get; private set; }
 
-        public SubtitlesList Subtitles { get; private set; }     
+        public SubtitlesList Subtitles { get; private set; }
         public Metadata? Metadata { get; private set; }
         public VideoSize Resolution { get; private set; }
 
@@ -102,8 +102,8 @@ namespace Kast.Provider.Media
         public string AudioCodec { get; private set; }
 
         public event EventHandler<MediaChangeEventArgs>? MediaChanged;
-        private void OnMediaChanged(object?  sender, MediaChangeEventArgs e) => MediaChanged?.Invoke(sender, e);
-       
+        private void OnMediaChanged(object? sender, MediaChangeEventArgs e) => MediaChanged?.Invoke(sender, e);
+
         public void UpdateStatus(int? progress = null, FactoryTarget? target = null)
         {
             if (progress.HasValue)
@@ -144,14 +144,14 @@ namespace Kast.Provider.Media
         }
 
         public void UpdateCompanion(IMedia? companion = null)
-        { 
+        {
             Companion = companion;
             OnMediaChanged(this, new MediaChangeEventArgs(EventType.CompanionChanged));
             UpdateStatus();
         }
 
         public void UpdateInfo(IMediaInfo? info = null)
-        { 
+        {
             Info = info;
             OnMediaChanged(this, new MediaChangeEventArgs(EventType.MediaInfoChanged));
         }
@@ -169,7 +169,7 @@ namespace Kast.Provider.Media
 
         public virtual bool Equals(IMedia? other)
         {
-            if (other == null) 
+            if (other == null)
                 return false;
             if (string.IsNullOrWhiteSpace(other.FilePath) && string.IsNullOrWhiteSpace(FilePath))
                 return other.Id == Id;

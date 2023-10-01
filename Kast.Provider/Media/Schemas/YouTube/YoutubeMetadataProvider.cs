@@ -1,9 +1,9 @@
-﻿using System.Web;
+﻿using Kast.Provider.Media.IMDb;
+using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
-using Kast.Provider.Media.IMDb;
+using System.Web;
 
 namespace Kast.Provider.Media.YouTube
 {
@@ -23,10 +23,10 @@ namespace Kast.Provider.Media.YouTube
         private string? YoutubeBaseUrl => _settingsProvider.Application.YoutubeEmbedBaseUrl;
 
         public YoutubeMetadataProvider(
-            ILogger<IMetadataProvider> logger, 
+            ILogger<IMetadataProvider> logger,
             IMDbMetadataProvider metadataProvider,
-            HttpClient httpClient, 
-            SettingsProvider settingsProvider, 
+            HttpClient httpClient,
+            SettingsProvider settingsProvider,
             JsonSerializerOptions options)
         {
             _logger = logger;
@@ -38,7 +38,7 @@ namespace Kast.Provider.Media.YouTube
             _enabled = !string.IsNullOrWhiteSpace(YoutubeApiToken)
                 && !string.IsNullOrWhiteSpace(YoutubeEndPoint)
                 && !string.IsNullOrWhiteSpace(YoutubeBaseUrl);
-            
+
             if (!_enabled)
                 _logger.LogDebug("Missing youtube settings to retrieve trailers... (skipping {me})", nameof(YoutubeMetadataProvider));
         }

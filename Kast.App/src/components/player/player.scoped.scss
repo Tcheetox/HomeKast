@@ -1,0 +1,29 @@
+.player {
+  z-index: 111;
+  background-color: red !important;
+  width: 300px;
+  padding: calc(var(--main-padding-width) / 2);
+
+  .title {
+    text-align: center;
+  }
+
+  svg {
+    fill: white;
+    width: fit-content;
+    height: 100%;
+    padding: 0;
+
+    &.stop-icon,
+    &.pause-icon,
+    &.play-icon {
+      width: 24px;
+    }
+  }
+
+  .actions-bar {
+    margin: 0;
+    flex-wrap: nowrap;
+    justify-content: space-evenly;
+  }
+}

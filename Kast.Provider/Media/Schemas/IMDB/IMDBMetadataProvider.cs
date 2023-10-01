@@ -1,8 +1,8 @@
-﻿using System.Web;
-using System.Text.Json;
-using System.Net.Http.Headers;
+﻿using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Web;
 
 namespace Kast.Provider.Media.IMDb
 {

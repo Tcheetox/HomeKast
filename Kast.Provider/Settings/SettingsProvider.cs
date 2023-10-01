@@ -1,5 +1,5 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace Kast.Provider
 {
@@ -30,7 +30,7 @@ namespace Kast.Provider
 
         public bool TryUpdate(Settings settings)
         {
-            if (settings.Equals(Settings)) 
+            if (settings.Equals(Settings))
                 return false;
 
             try

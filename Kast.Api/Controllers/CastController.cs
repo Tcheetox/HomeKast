@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Kast.Api.Models;
+﻿using Kast.Api.Models;
 using Kast.Api.Problems;
-using Kast.Provider.Media;
 using Kast.Provider.Cast;
+using Kast.Provider.Media;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Kast.Api.Controllers
 {
@@ -13,15 +13,15 @@ namespace Kast.Api.Controllers
         private readonly IMediaProvider _mediaProvider;
         private readonly ICastProvider _castProvider;
 
-        public CastController(IMediaProvider mediaProvider, ICastProvider castProvider) 
-        { 
+        public CastController(IMediaProvider mediaProvider, ICastProvider castProvider)
+        {
             _mediaProvider = mediaProvider;
             _castProvider = castProvider;
         }
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<Caster>), StatusCodes.Status200OK)]
-        public async Task<IEnumerable<Caster>> GetAllAsync() 
+        public async Task<IEnumerable<Caster>> GetAllAsync()
             => (await _castProvider.GetAllAsync()).Select(Caster.From);
 
         [HttpGet("{receiverId:guid}")]
@@ -46,7 +46,7 @@ namespace Kast.Api.Controllers
             var media = await _mediaProvider.GetAsync(mediaId);
             if (media == null)
                 return NotFound();
-            
+
             if (media.Status != MediaStatus.Playable && media.Status != MediaStatus.Streamable)
                 return BadRequest();
 

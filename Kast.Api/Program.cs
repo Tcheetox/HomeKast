@@ -1,19 +1,18 @@
-using System.Text.Json;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Mvc;
-using Serilog.Events;
-using Serilog;
-using Kast.Provider.Conversions;
-using Kast.Provider;
-using Kast.Provider.Media;
-using Kast.Provider.Cast;
-using Kast.Api.Problems;
 using Kast.Api.Extensions;
+using Kast.Provider;
+using Kast.Provider.Cast;
+using Kast.Provider.Conversions;
+using Kast.Provider.Media;
 using Kast.Provider.Media.IMDb;
-using Microsoft.Extensions.FileProviders;
 using Kast.Provider.Media.YouTube;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Events;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 var version = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 var match = Regex.Match(version ?? string.Empty, @"\d");
@@ -43,9 +42,9 @@ builder.Services.AddLogging(logging =>
 });
 
 // JSON
-var sharedSerializationOptions = new JsonSerializerOptions() 
-{  
-    PropertyNameCaseInsensitive = true 
+var sharedSerializationOptions = new JsonSerializerOptions()
+{
+    PropertyNameCaseInsensitive = true
 };
 builder.Services.AddSingleton(sharedSerializationOptions);
 

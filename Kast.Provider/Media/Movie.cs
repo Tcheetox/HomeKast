@@ -22,7 +22,7 @@ namespace Kast.Provider.Media
             : base(id, name, metadata, subtitles, filePath, length, videoCodec, videoFrameRate, audioCodec, resolution, year)
         { }
 
-        public Movie(IMediaInfo info, SubtitlesList subtitles) 
+        public Movie(IMediaInfo info, SubtitlesList subtitles)
             : base(info, subtitles)
         {
             var (name, _, _, year) = Normalization.NameFromPath(info.Path);

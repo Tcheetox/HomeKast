@@ -1,6 +1,6 @@
-﻿using System.Runtime.Serialization;
-using GoogleCast.Messages;
+﻿using GoogleCast.Messages;
 using GoogleCast.Models;
+using System.Runtime.Serialization;
 
 namespace Kast.Provider.Cast.Messages
 {
@@ -9,7 +9,7 @@ namespace Kast.Provider.Cast.Messages
     {
         [DataMember(Name = "volume")]
         public Volume Volume { get; set; } = default!;
-        public VolumeMessage() 
+        public VolumeMessage()
         {
             Type = "SET_VOLUME";
         }

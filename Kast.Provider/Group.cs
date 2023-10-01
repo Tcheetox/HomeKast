@@ -7,8 +7,8 @@ namespace Kast.Provider
         public T Key { get; }
 
         private readonly IEnumerable<K> _items;
-        protected Group(T key, IEnumerable<K> items) 
-        { 
+        protected Group(T key, IEnumerable<K> items)
+        {
             Key = key;
             _items = items;
         }

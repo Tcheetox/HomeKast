@@ -4,7 +4,7 @@ import { useLibrary, useConversions, useSettings } from './'
 export default function useMedia(id, receiverId = null) {
   const library = useLibrary()
   const conversions = useConversions()
-  receiverId ??= useSettings()?.application?.casterId
+  receiverId ??= useSettings()?.application?.receiverId
 
   const startConversion = useMutation(() =>
     fetch(`${process.env.REACT_APP_BACKEND_URI}/conversion/${id}/start`, {

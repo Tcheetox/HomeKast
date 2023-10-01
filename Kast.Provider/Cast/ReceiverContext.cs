@@ -1,14 +1,14 @@
-﻿using System.Diagnostics;
-using Microsoft.Extensions.Logging;
-using GoogleCast;
+﻿using GoogleCast;
 using GoogleCast.Channels;
 using GoogleCast.Models.Media;
 using GoogleCast.Models.Receiver;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace Kast.Provider.Cast
 {
     [DebuggerDisplay("{Name}")]
-    public class ReceiverContext<T> : IRefreshable, IDisposable
+    public class ReceiverContext<T> : IDisposable
         where T : class, IEquatable<T>
     {
         public readonly Guid Id;
@@ -31,6 +31,9 @@ namespace Kast.Provider.Cast
                 return application;
             }
         }
+
+        public string? Title => (Media as Media.IMedia)?.Name ?? _mediaStatus?.Media?.Metadata?.Title;
+
         public TimeSpan? Current
         {
             get
@@ -41,17 +44,31 @@ namespace Kast.Provider.Cast
             }
         }
 
+        public TimeSpan? Duration
+        {
+            get
+            {
+                var length = (Media as Media.IMedia)?.Length;
+                if (length is not null)
+                    return length;
+                var duration = _mediaStatus?.Media?.Duration;
+                if (duration.HasValue)
+                    return TimeSpan.FromSeconds(duration.Value);
+                return null;
+            }
+        }
+
         private readonly IReceiver _receiver;
         private readonly SemaphoreSlim _lock = new(1, 1);
-        private readonly Sender _sender;
+        private readonly Sender _sender = new();
         private readonly ILogger _logger;
-       
+
         private ReceiverStatus? _receiverStatus;
         private MediaStatus? _mediaStatus;
         private IMediaChannel? _channel;
 
-        private IMediaChannel? MediaChannel 
-        { 
+        private IMediaChannel? MediaChannel
+        {
             get => _channel;
             set
             {
@@ -60,7 +77,7 @@ namespace Kast.Provider.Cast
                 if (value != null)
                     value.StatusChanged += OnStatusChanged;
                 _channel = value;
-            } 
+            }
         }
 
         private void OnStatusChanged(object? sender, EventArgs e)
@@ -68,21 +85,37 @@ namespace Kast.Provider.Cast
             if (sender is IMediaChannel channel)
             {
                 var item = channel.Status?.FirstOrDefault();
-                if (item != null)
+                if (item is not null)
                     _mediaStatus = item;
-            }    
+            }
         }
 
-        public ReceiverContext(ILogger logger, IReceiver receiver)
-        {
-            _logger = logger;
-            _receiver = receiver;
+        private TimeSpan RefreshInterval 
+            => IsOwner
+            ? TimeSpan.FromMilliseconds(300) 
+            : TimeSpan.FromMilliseconds(_applicationSettings.ReceiverRefreshInterval);
 
+        private readonly Application _applicationSettings;
+        private readonly CancellationTokenSource _refreshCanceller = new();
+        public ReceiverContext(ILogger logger, SettingsProvider settings, IReceiver receiver)
+        {
             Id = Guid.Parse(receiver.Id);
             Name = receiver.FriendlyName;
-            
-            _sender = new Sender();
+
+            _logger = logger;
+            _applicationSettings = settings.Application;
+            _receiver = receiver;
             _sender.Disconnected += OnDisconnected;
+
+            Task.Run(async () =>
+            {
+                while (!_refreshCanceller.IsCancellationRequested)
+                {
+                    await RefreshAsync();
+                    await Task.Delay(RefreshInterval, _refreshCanceller.Token);
+                }
+            },
+            _refreshCanceller.Token);
         }
 
         private void OnDisconnected(object? sender, EventArgs e)
@@ -91,58 +124,41 @@ namespace Kast.Provider.Cast
             IsLaunched = false;
         }
 
-        private async Task UnlockedRefreshAsync()
+        private async Task RefreshAsync()
         {
-            if (!IsConnected || MediaChannel == null)
+            if (MediaChannel == null || !IsConnected)
             {
                 MediaChannel = _sender.GetChannel<IMediaChannel>();
                 await _sender.ConnectAsync(_receiver);
-                if (MediaChannel != null)
-                {
-                    IsConnected = true;
-                    await GetMediaStatusAsync();
-                }
+                IsConnected = true;
             }
-            
+
             // Update status
-            var senderStatus = _sender.GetStatuses();
-            if (senderStatus?.FirstOrDefault(e => e.Key.EndsWith("receiver")).Value is ReceiverStatus receiverStatus)
+            if (MediaChannel is not null)
+                _mediaStatus = await GetMediaStatusAsync();
+            if (_sender
+                .GetStatuses()
+                .FirstOrDefault(e => e.Key.EndsWith("receiver")).Value is ReceiverStatus receiverStatus)
                 _receiverStatus = receiverStatus;
-            if (senderStatus?.FirstOrDefault(e => e.Key.EndsWith("media")).Value is MediaStatus[] mediaStatus && mediaStatus.Any())
-                _mediaStatus = mediaStatus[0];
         }
 
-        private async Task GetMediaStatusAsync()
+        private async Task<MediaStatus?> GetMediaStatusAsync()
         {
             try
             {
-                _mediaStatus = await MediaChannel!
+                var status = await MediaChannel!
                     .GetStatusAsync()
-                    .WaitAsync(new CancellationTokenSource(2000).Token);
-                IsOwner = true;
+                    .WaitAsync(_refreshCanceller.Token);
+                if (status is not null)
+                    IsOwner = true;
+                return status;
             }
             catch (Exception)
             {
                 IsOwner = false;
             }
-        }
 
-        public async Task RefreshAsync()
-        {
-            try
-            {
-                await _lock.WaitAsync();
-
-                await UnlockedRefreshAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error during {me} of {name} ({id})", nameof(RefreshAsync), Name, Id);
-            }
-            finally
-            {
-                _lock.Release();
-            }
+            return null;
         }
 
         private async Task<bool> Do(Func<IMediaChannel, Task<bool>> perform)
@@ -151,27 +167,27 @@ namespace Kast.Provider.Cast
             {
                 await _lock.WaitAsync();
 
-                await UnlockedRefreshAsync();
+                await RefreshAsync();
 
-                if (MediaChannel != null && IsConnected && !IsLaunched)
+                if (MediaChannel is not null && IsConnected && !IsLaunched)
                 {
                     _receiverStatus = await _sender.LaunchAsync(MediaChannel);
                     IsLaunched = true;
                 }
 
-                if (MediaChannel == null || !IsConnected || !IsLaunched)
+                if (MediaChannel is null || !IsConnected || !IsLaunched)
                     return false;
 
                 return await perform(MediaChannel);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error performing action on {name} ({id}) (Owner: {ownership})", Name, Id, IsOwner);
                 return false;
             }
-            finally 
-            { 
-                _lock.Release(); 
+            finally
+            {
+                _lock.Release();
             }
         }
 
@@ -185,7 +201,7 @@ namespace Kast.Provider.Cast
         public async Task<bool> Do(Func<IMediaChannel, T, Task> perform)
             => await Do(async m =>
             {
-                if (Media == null)
+                if (Media is null)
                     return false;
                 await perform(m, Media);
                 return true;
@@ -209,9 +225,13 @@ namespace Kast.Provider.Cast
             if (!_disposedValue)
             {
                 if (disposing)
-                { 
+                {
+                    _refreshCanceller.Cancel();
+                    _refreshCanceller.Dispose();
+
                     if (IsConnected)
                         _sender.Disconnect();
+
                     MediaChannel = null;
                 }
                 _disposedValue = true;

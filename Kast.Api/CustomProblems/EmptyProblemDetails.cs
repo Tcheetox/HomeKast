@@ -7,7 +7,7 @@ namespace Kast.Api.Problems
     internal class EmptyProblemDetails : ProblemDetails, IProblemDetails
     {
         public readonly static new EmptyProblemDetails Instance = new();
-        private EmptyProblemDetails() 
+        private EmptyProblemDetails()
         { }
 
         public string? Description { get; set; }

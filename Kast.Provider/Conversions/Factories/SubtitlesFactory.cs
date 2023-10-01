@@ -1,10 +1,10 @@
-﻿using System.Text;
+﻿using Kast.Provider.Extensions;
+using Kast.Provider.Media;
+using Kast.Provider.Supports;
 using Microsoft.Extensions.Logging;
+using System.Text;
 using Xabe.FFmpeg;
 using Xabe.FFmpeg.Exceptions;
-using Kast.Provider.Supports;
-using Kast.Provider.Media;
-using Kast.Provider.Extensions;
 
 namespace Kast.Provider.Conversions.Factories
 {
@@ -36,7 +36,7 @@ namespace Kast.Provider.Conversions.Factories
                     .New()
                     .AddParameter(command.ToString())
                     .SetOnProgress((_, args) => context.Update(args, Target));
-                   
+
                 _logger.LogInformation("Beginning ({count}) subtitles extraction for {media}", context.Media.Subtitles.Count, context.Media);
                 _logger.LogInformation("Arguments: {args}", conversion.Build());
 

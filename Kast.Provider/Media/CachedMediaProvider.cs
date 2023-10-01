@@ -1,6 +1,6 @@
-﻿using System.Text.Json;
+﻿using Kast.Provider.Supports;
 using Microsoft.Extensions.Logging;
-using Kast.Provider.Supports;
+using System.Text.Json;
 using static Kast.Provider.Media.MediaLibrary;
 
 namespace Kast.Provider.Media
@@ -8,18 +8,18 @@ namespace Kast.Provider.Media
     public class CachedMediaProvider : MediaProviderBase
     {
         private string LibraryPath => Path.Combine(SettingsProvider.Settings.Application.CacheDirectory, "LibCache.json");
-        
+
         private readonly JsonSerializerOptions _serializerOptions;
         private readonly CancellationTokenSource _canceller = new();
-       
+
         private Task? _serializationTask;
         private bool _isStale;
 
         public CachedMediaProvider(
-            ILogger<MediaProviderBase> logger, 
-            IMetadataProvider metadataProvider, 
-            SettingsProvider settingsProvider, 
-            JsonSerializerOptions serializerOptions) 
+            ILogger<MediaProviderBase> logger,
+            IMetadataProvider metadataProvider,
+            SettingsProvider settingsProvider,
+            JsonSerializerOptions serializerOptions)
             : base(logger, metadataProvider, settingsProvider)
         {
             _serializerOptions = new JsonSerializerOptions(serializerOptions);

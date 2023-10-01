@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
-using Kast.Provider.Media;
-using Kast.Api.Models;
+﻿using Kast.Api.Models;
 using Kast.Api.Problems;
-using Kast.Provider;
 using Kast.Provider.Conversions;
-using System.Collections;
-using System.IO.Pipelines;
+using Kast.Provider.Media;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 
 namespace Kast.Api.Controllers
 {
@@ -53,7 +50,7 @@ namespace Kast.Api.Controllers
         public async Task<IActionResult> GetImageAsync([FromRoute] Guid mediaId)
         {
             var media = await _mediaProvider.GetAsync(mediaId);
-            if (media == null || media.Metadata == null) 
+            if (media == null || media.Metadata == null)
                 return NoContent();
 
             Response.Headers.Add(HeaderNames.AccessControlMaxAge, TimeSpan.FromDays(30).TotalSeconds.ToString());
@@ -98,8 +95,8 @@ namespace Kast.Api.Controllers
                     EnableRangeProcessing = true
                 };
 
-            if (media.Status != MediaStatus.Streamable 
-                || !_mediaConverter.TryGetValue(media, out var conversion) 
+            if (media.Status != MediaStatus.Streamable
+                || !_mediaConverter.TryGetValue(media, out var conversion)
                 || conversion?.Handle == null)
                 return NotFound();
 

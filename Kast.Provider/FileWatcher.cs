@@ -1,12 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
-using Kast.Provider.Media;
+﻿using Kast.Provider.Media;
 using Kast.Provider.Supports;
+using Microsoft.Extensions.Logging;
 
 namespace Kast.Provider
 {
     public class FileWatcher : IRefreshable, IDisposable
     {
-        private const string _default = "default";   
+        private const string _default = "default";
 
         private readonly ILogger _logger;
         private readonly SettingsProvider _settingsProvider;
@@ -26,7 +26,7 @@ namespace Kast.Provider
                 { _default, DefaultHandler },
                 { Constants.SubtitlesExtension, SubtitlesHandler },
                 { string.Empty, DirectoryHandler }
-            }; 
+            };
         }
 
         public Task RefreshAsync()

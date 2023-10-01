@@ -1,7 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using Kast.Provider.Supports;
 using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 using Xabe.FFmpeg;
-using Kast.Provider.Supports;
 
 namespace Kast.Provider.Media
 {
@@ -12,8 +12,8 @@ namespace Kast.Provider.Media
         protected readonly SettingsProvider SettingsProvider;
 
         protected MediaProviderBase(
-            ILogger<MediaProviderBase> logger, 
-            IMetadataProvider metadataProvider, 
+            ILogger<MediaProviderBase> logger,
+            IMetadataProvider metadataProvider,
             SettingsProvider settingsProvider)
         {
             FFmpegSupport.SetExecutable(out _);

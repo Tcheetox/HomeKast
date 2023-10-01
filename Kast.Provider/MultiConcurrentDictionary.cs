@@ -29,14 +29,14 @@ namespace Kast.Provider
 
         #region Constructors
         public MultiConcurrentDictionary(IEqualityComparer<TK1>? key1Comparer = null, IEqualityComparer<TK2>? key2Comparer = null)
-        { 
+        {
             _valDictionary = new(key1Comparer);
             _keyDictionary = new(key2Comparer);
         }
 
         public MultiConcurrentDictionary(
-            IEnumerable<KeyValuePair<MultiKey<TK1, TK2>, TValue>> content, 
-            IEqualityComparer<TK1>? key1Comparer = null, 
+            IEnumerable<KeyValuePair<MultiKey<TK1, TK2>, TValue>> content,
+            IEqualityComparer<TK1>? key1Comparer = null,
             IEqualityComparer<TK2>? key2Comparer = null)
         {
             _valDictionary = new Dictionary<TK1, KeyValuePair<TK2, TValue>>(content.Select(e => new KeyValuePair<TK1, KeyValuePair<TK2, TValue>>(e.Key.Key1, new KeyValuePair<TK2, TValue>(e.Key.Key2, e.Value))), key1Comparer);
@@ -57,7 +57,7 @@ namespace Kast.Provider
         }
 
         public TValue this[MultiKey<TK1, TK2> multiKey]
-        { 
+        {
             get => this[multiKey.Key1, multiKey.Key2];
             set => _ = AddOrUpdate(multiKey, value);
         }
@@ -143,7 +143,7 @@ namespace Kast.Provider
         public TValue GetOrAdd(TK1 key1, TK2 key2, TValue value, out bool added)
         {
             lock (_syncRoot)
-            {  
+            {
                 ref var keyRefOrNew = ref CollectionsMarshal.GetValueRefOrAddDefault(_keyDictionary, key2, out bool existingKey);
                 ref var valOrNew = ref CollectionsMarshal.GetValueRefOrAddDefault(_valDictionary, key1, out bool existingEntry);
                 if (existingKey && existingEntry)
@@ -198,7 +198,7 @@ namespace Kast.Provider
             lock (_syncRoot)
             {
                 ref var keyRefOrNew = ref CollectionsMarshal.GetValueRefOrAddDefault(_keyDictionary, key2, out bool existingKey);
-                ref var valOrNew = ref CollectionsMarshal.GetValueRefOrAddDefault(_valDictionary, key1, out bool existingEntry); 
+                ref var valOrNew = ref CollectionsMarshal.GetValueRefOrAddDefault(_valDictionary, key1, out bool existingEntry);
                 if (!existingKey && !existingEntry)
                 {
                     keyRefOrNew = key1;

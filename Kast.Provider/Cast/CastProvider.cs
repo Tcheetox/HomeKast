@@ -1,9 +1,9 @@
-﻿using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
-using GoogleCast;
+﻿using GoogleCast;
 using GoogleCast.Models.Media;
-using Kast.Provider.Media;
 using Kast.Provider.Cast.Messages;
+using Kast.Provider.Media;
+using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 
 namespace Kast.Provider.Cast
 {
@@ -16,60 +16,54 @@ namespace Kast.Provider.Cast
         private readonly CancellationTokenSource _refreshCanceller = new();
         private readonly Lazy<Task> _refreshTask;
 
+        private TimeSpan RefreshInterval => TimeSpan.FromMilliseconds(_settingsProvider.Application.ReceiverRefreshInterval);
+
         public CastProvider(ILogger<CastProvider> logger, SettingsProvider settingsProvider)
         {
             _logger = logger;
             _settingsProvider = settingsProvider;
-            _refreshTask = new Lazy<Task>(() => Task.Run(async () => 
+            _refreshTask = new Lazy<Task>(() => Task.Run(async () =>
             {
-                while(!_refreshCanceller.IsCancellationRequested)
+                _logger.LogDebug("Refreshing {target}'s context...", nameof(IReceiver));
+                while (!_refreshCanceller.IsCancellationRequested)
                 {
-                    _logger.LogDebug("Refreshing {target}'s context...", nameof(IReceiver));
-                    await RefreshStore();
-                    await Task.Delay(TimeSpan.FromMilliseconds(settingsProvider.Application.ReceiverRefreshInterval));
+                    await RefreshStoreAsync();
+                    await Task.Delay(RefreshInterval, _refreshCanceller.Token);
                 }
-            }, 
-            _refreshCanceller.Token), 
+            },
+            _refreshCanceller.Token),
             LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        private async Task RefreshStore()
+        private async Task<IDictionary<IReceiver, ReceiverContext<IMedia>>> RefreshStoreAsync()
         {
             try
             {
-                foreach (var receiver in await _deviceLocator.FindReceiversAsync())
-                    _deviceStore.TryAdd(receiver, new ReceiverContext<IMedia>(_logger, receiver));
+                var devices = await _deviceLocator.FindReceiversAsync();
+                foreach (var receiver in devices.Where(d => !_deviceStore.ContainsKey(d)))
+                    _deviceStore.TryAdd(receiver, new ReceiverContext<IMedia>(_logger, _settingsProvider, receiver));
+                foreach (var receiver in _deviceStore.Where(d => !devices.Contains(d.Key)).ToList())
+                    _deviceStore.TryRemove(receiver);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error finding receivers");
             }
 
-            foreach (var context in _deviceStore.Values)
-                try
-                {
-                    await context.RefreshAsync();
-                }
-                catch(Exception ex)
-                {
-                    _logger.LogError(ex, "error refreshing {context} context", context);
-                }
+            return _deviceStore;
         }
 
         private async Task<IDictionary<IReceiver, ReceiverContext<IMedia>>> GetStoreAsync()
         {
-            if (_deviceStore.Any() && !_refreshCanceller.IsCancellationRequested && _refreshTask.IsValueCreated)
+            if (_deviceStore.Any() && _refreshTask.IsValueCreated)
                 return _deviceStore;
-
-            await RefreshStore();
-
-            return _deviceStore;
+            return await RefreshStoreAsync();
         }
 
         private async Task<ReceiverContext<IMedia>?> GetContext(Guid id)
         {
             var context = (await GetAllAsync()).FirstOrDefault(c => c.Id == id);
-            if (context == null)
+            if (context is null)
                 _logger.LogDebug("{context} not found for Id: {id}", nameof(ReceiverContext<IMedia>), id);
             return context;
         }
@@ -80,7 +74,7 @@ namespace Kast.Provider.Cast
         public async Task<bool> TrySeek(Guid receiverId, double seconds)
         {
             var context = await GetContext(receiverId);
-            if (context == null)
+            if (context is null)
                 return false;
 
             return await context.Do(m => m.SeekAsync(seconds));
@@ -89,7 +83,7 @@ namespace Kast.Provider.Cast
         public async Task<bool> TryStop(Guid receiverId)
         {
             var context = await GetContext(receiverId);
-            if (context == null)
+            if (context is null)
                 return false;
 
             return await context.Do(m => m.StopAsync());
@@ -98,7 +92,7 @@ namespace Kast.Provider.Cast
         public async Task<bool> TryPause(Guid receiverId)
         {
             var context = await GetContext(receiverId);
-            if (context == null)
+            if (context is null)
                 return false;
 
             return await context.Do(m => m.PauseAsync());
@@ -107,7 +101,7 @@ namespace Kast.Provider.Cast
         public async Task<bool> TryPlay(Guid receiverId)
         {
             var context = await GetContext(receiverId);
-            if (context == null)
+            if (context is null)
                 return false;
 
             return await context.Do(m => m.PlayAsync());
@@ -116,7 +110,7 @@ namespace Kast.Provider.Cast
         public async Task<bool> TryStart(Guid receiverId, IMedia media, int? subtitleIndex = null)
         {
             var context = await GetContext(receiverId);
-            if (context == null)
+            if (context is null)
                 return false;
 
             return await context.Do(media, (c, m) =>
@@ -130,7 +124,7 @@ namespace Kast.Provider.Cast
         public async Task<bool> TryChangeSubtitles(Guid receiverId, int? subtitleIndex = null)
         {
             var context = await GetContext(receiverId);
-            if (context == null)
+            if (context is null)
                 return false;
 
             return await context.Do((c, m) =>
@@ -147,7 +141,7 @@ namespace Kast.Provider.Cast
         public async Task<bool> TryToggleMute(Guid receiverId, bool mute)
         {
             var context = await GetContext(receiverId);
-            if (context == null)
+            if (context is null)
                 return false;
 
             return await context.Do(m =>
@@ -160,7 +154,7 @@ namespace Kast.Provider.Cast
         public async Task<bool> TrySetVolume(Guid receiverId, float volume)
         {
             var context = await GetContext(receiverId);
-            if (context == null)
+            if (context is null)
                 return false;
 
             return await context.Do(m =>
@@ -178,7 +172,7 @@ namespace Kast.Provider.Cast
         private MediaInformation Convert(IMedia media)
         {
             var metadata = new GenericMediaMetadata() { Title = media.Name };
-            if (media.Metadata != null && (media.Metadata.HasImage || !string.IsNullOrWhiteSpace(media.Metadata.ImageUrl)))
+            if (media.Metadata is not null && (media.Metadata.HasImage || !string.IsNullOrWhiteSpace(media.Metadata.ImageUrl)))
             {
                 string url = !media.Metadata.HasImage
                     ? media.Metadata.ImageUrl!
@@ -186,13 +180,14 @@ namespace Kast.Provider.Cast
                 metadata.Images = new GoogleCast.Models.Image[] { new GoogleCast.Models.Image() { Url = url } };
             }
 
-            var subtitles = new List<Track>(media.Subtitles.Select(s => new Track() { 
-                TrackId = s.Index, 
+            var subtitles = new List<Track>(media.Subtitles.Select(s => new Track()
+            {
+                TrackId = s.Index,
                 Name = s.Language,
-                Language = s.Name, 
-                TrackContentId = $"{_settingsProvider.Application.Uri}media/{media.Id}/subtitles/{s.Index}" 
+                Language = s.Name,
+                TrackContentId = $"{_settingsProvider.Application.Uri}media/{media.Id}/subtitles/{s.Index}"
             }));
-            
+
             return new MediaInformation()
             {
                 ContentId = $"{_settingsProvider.Application.Uri}media/{media.Id}/stream",
@@ -217,6 +212,7 @@ namespace Kast.Provider.Cast
                     _refreshCanceller.Dispose();
                     foreach (var state in _deviceStore.Values)
                         state.Dispose();
+                    _deviceStore.Clear();
                 }
                 _disposedValue = true;
             }

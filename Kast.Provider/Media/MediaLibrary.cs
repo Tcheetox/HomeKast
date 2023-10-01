@@ -1,6 +1,6 @@
-﻿using System.Collections;
+﻿using Kast.Provider.Supports;
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using Kast.Provider.Supports;
 using static Kast.Provider.Media.MediaChangeEventArgs;
 
 namespace Kast.Provider.Media
@@ -14,17 +14,17 @@ namespace Kast.Provider.Media
 
         public int Count => _store.Count;
 
-        public MediaLibrary(EventHandler<MediaChangeEventArgs>? onChangeEventHandler = null) 
+        public MediaLibrary(EventHandler<MediaChangeEventArgs>? onChangeEventHandler = null)
         {
             _onChangeEventHandler = onChangeEventHandler;
             _store = new(key2Comparer: StringComparer.OrdinalIgnoreCase);
         }
-        
+
         private MediaLibrary(IEnumerable<IMedia> store, EventHandler<MediaChangeEventArgs>? onChangeEventHandler = null)
         {
             _onChangeEventHandler = onChangeEventHandler;
             _store = new(
-                store.Select(e => new KeyValuePair<MultiKey<Guid, string>, IMedia>(new MultiKey<Guid, string>(e.Id, e.FilePath), e)), 
+                store.Select(e => new KeyValuePair<MultiKey<Guid, string>, IMedia>(new MultiKey<Guid, string>(e.Id, e.FilePath), e)),
                 key2Comparer: StringComparer.OrdinalIgnoreCase
                 );
 
@@ -51,8 +51,8 @@ namespace Kast.Provider.Media
 
             if (added)
             {
-               media.MediaChanged += OnMediaChanged;
-               OnMediaChanged(this, new MediaChangeEventArgs(EventType.Added));
+                media.MediaChanged += OnMediaChanged;
+                OnMediaChanged(this, new MediaChangeEventArgs(EventType.Added));
             }
 
             return added;
@@ -137,7 +137,7 @@ namespace Kast.Provider.Media
         private sealed class CompanionComparer : IEqualityComparer<IMedia>
         {
             public bool Equals(IMedia? x, IMedia? y)
-                => x?.Type == y?.Type && x?.Length == y?.Length 
+                => x?.Type == y?.Type && x?.Length == y?.Length
                 && Utilities.InsensitiveCompare(x?.Name, y?.Name)
                 && x?.Id != y?.Id;
 

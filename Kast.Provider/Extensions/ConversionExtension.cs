@@ -1,5 +1,5 @@
-﻿using Xabe.FFmpeg;
-using Kast.Provider.Conversions;
+﻿using Kast.Provider.Conversions;
+using Xabe.FFmpeg;
 using Xabe.FFmpeg.Events;
 
 namespace Kast.Provider.Extensions
@@ -24,7 +24,7 @@ namespace Kast.Provider.Extensions
             return conversion.AddParameter("-map 0:v:0");
         }
 
-        public static IConversion SetOnProgress(this IConversion conversion, ConversionProgressEventHandler handler) 
+        public static IConversion SetOnProgress(this IConversion conversion, ConversionProgressEventHandler handler)
         {
             conversion.OnProgress += handler;
             return conversion;

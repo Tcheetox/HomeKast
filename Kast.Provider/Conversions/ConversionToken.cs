@@ -18,8 +18,8 @@ namespace Kast.Provider.Conversions
             IReadOnlyCollection<Func<CancellationToken, Task>> conversions,
             EventHandler? onStart = null,
             EventHandler? onAdd = null,
-            EventHandler? onError = null, 
-            EventHandler? onSuccess = null, 
+            EventHandler? onError = null,
+            EventHandler? onSuccess = null,
             EventHandler? onFinally = null)
         {
             Description = description;

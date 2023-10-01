@@ -1,6 +1,6 @@
-﻿using System.Net;
+﻿using Kast.Provider.Supports;
+using System.Net;
 using System.Text.Json.Serialization;
-using Kast.Provider.Supports;
 
 namespace Kast.Provider
 {
@@ -29,11 +29,11 @@ namespace Kast.Provider
 
         public bool Equals(Settings? other)
         {
-            if (other == null) 
+            if (other == null)
                 return false;
 
-            return Application.Equals(other.Application) 
-                && Library.Equals(other.Library) 
+            return Application.Equals(other.Application)
+                && Library.Equals(other.Library)
                 && Preferences.SequenceEqual(other.Preferences);
         }
 
@@ -78,7 +78,7 @@ namespace Kast.Provider
             if (other == null)
                 return false;
 
-           if ((Extensions.Count != other.Extensions.Count) || (Directories.Count != other.Directories.Count))
+            if ((Extensions.Count != other.Extensions.Count) || (Directories.Count != other.Directories.Count))
                 return false;
             foreach (var entry in Extensions)
                 if (!other.Extensions.Contains(entry))
@@ -149,8 +149,8 @@ namespace Kast.Provider
         public string? YoutubeEmbedBaseUrl { get; set; }
 
         private int _httpPort = 7279;
-        public int HttpPort 
-        { 
+        public int HttpPort
+        {
             get => _httpPort;
             set
             {
@@ -182,7 +182,7 @@ namespace Kast.Provider
         }
 
         private string _cacheDirectory = Path.Combine(Path.GetTempPath(), "HomeKast");
-        public string CacheDirectory 
+        public string CacheDirectory
         {
             get => _cacheDirectory;
             set
@@ -198,7 +198,7 @@ namespace Kast.Provider
         public string? ImageBaseUrl { get; set; }
 
         private int _maxDegreeOfParallelism = Environment.ProcessorCount;
-        public int MaxDegreeOfParallelism 
+        public int MaxDegreeOfParallelism
         {
             get => _maxDegreeOfParallelism;
             set

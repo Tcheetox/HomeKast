@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Kast.Provider.Media.YouTube;
 using Kast.Provider.Supports;
-using Kast.Provider.Media.YouTube;
+using Microsoft.Extensions.Logging;
 
 namespace Kast.Provider.Media
 {
@@ -15,8 +15,8 @@ namespace Kast.Provider.Media
 
         public LocalMetadataProvider(
             ILogger<IMetadataProvider> logger,
-            YoutubeMetadataProvider metadataProvider, 
-            HttpClient httpClient, 
+            YoutubeMetadataProvider metadataProvider,
+            HttpClient httpClient,
             SettingsProvider settingsProvider)
         {
             _logger = logger;
@@ -28,7 +28,7 @@ namespace Kast.Provider.Media
         public async Task<Metadata?> GetAsync(IMedia media)
         {
             var metadata = await _metadataProvider.GetAsync(media);
-            if (metadata == null || !metadata.HasMissingInfo) 
+            if (metadata == null || !metadata.HasMissingInfo)
                 return metadata;
 
             try

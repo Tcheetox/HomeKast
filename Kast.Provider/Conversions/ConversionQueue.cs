@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using System.Diagnostics;
-using Microsoft.Extensions.Logging;
 using Xabe.FFmpeg.Exceptions;
 
 namespace Kast.Provider.Conversions
@@ -10,8 +10,8 @@ namespace Kast.Provider.Conversions
         private readonly ILogger<ConversionQueue<T>> _logger;
         private readonly CancellationTokenSource _queueCanceller = new();
         private readonly BlockingCollection<ConversionToken> _blockingConversions = new();
-        
-        public ConversionQueue(ILogger<ConversionQueue<T>> logger) 
+
+        public ConversionQueue(ILogger<ConversionQueue<T>> logger)
         {
             _logger = logger;
 
@@ -21,7 +21,7 @@ namespace Kast.Provider.Conversions
                 {
                     if (!_blockingConversions.TryTake(out var item, -1, _queueCanceller.Token))
                         continue;
-                    
+
                     if (item.IsCancellationRequested)
                     {
                         _logger.LogInformation("Conversion skipped for {item}", item);
@@ -42,11 +42,11 @@ namespace Kast.Provider.Conversions
                         _logger.LogInformation("Conversion successful for {item} after {time} seconds", item, clock.Elapsed.TotalSeconds);
                         item.OnSuccess?.Invoke(this, EventArgs.Empty);
                     }
-                    catch (OperationCanceledException ex) 
+                    catch (OperationCanceledException ex)
                     {
                         _logger.LogError(ex, "Conversion cancelled by user for {item} after {time} seconds", item, clock.Elapsed.TotalSeconds);
                         item.OnError?.Invoke(this, EventArgs.Empty);
-                        
+
                     }
                     catch (ConversionException ex)
                     {
@@ -63,7 +63,8 @@ namespace Kast.Provider.Conversions
             }, _queueCanceller.Token);
         }
 
-        public bool TryAdd(ConversionToken options){
+        public bool TryAdd(ConversionToken options)
+        {
             if (_blockingConversions.TryAdd(options))
             {
                 options.OnAdd?.Invoke(this, EventArgs.Empty);

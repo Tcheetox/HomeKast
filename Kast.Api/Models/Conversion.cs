@@ -7,10 +7,10 @@ namespace Kast.Api.Models
         public string? Name { get; private set; }
         public Guid Id { get; private set; }
         public string? Target { get; private set; }
-        public int Progress { get; private set; }   
+        public int Progress { get; private set; }
         public string? Status { get; private set; }
 
-        public static Conversion From(ConversionContext state) 
+        public static Conversion From(ConversionContext state)
             => new()
             {
                 Name = state.Name,

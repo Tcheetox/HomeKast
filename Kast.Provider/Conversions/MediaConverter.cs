@@ -1,9 +1,9 @@
-﻿using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
-using Xabe.FFmpeg;
-using Kast.Provider.Conversions.Factories;
+﻿using Kast.Provider.Conversions.Factories;
 using Kast.Provider.Media;
 using Kast.Provider.Supports;
+using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
+using Xabe.FFmpeg;
 
 namespace Kast.Provider.Conversions
 {
@@ -13,8 +13,8 @@ namespace Kast.Provider.Conversions
         {
             public readonly ConversionContext Context;
             public readonly ConversionToken Token;
-            public ConversionInfo(ConversionToken token, ConversionContext container) 
-                : base (token, container)
+            public ConversionInfo(ConversionToken token, ConversionContext container)
+                : base(token, container)
             {
                 Token = token;
                 Context = container;
@@ -28,8 +28,8 @@ namespace Kast.Provider.Conversions
         private readonly SubtitlesFactory _subtitlesFactory;
         private readonly SettingsProvider _settingsProvider;
         private readonly ConcurrentDictionary<IMedia, ConversionInfo> _conversionTracking = new();
-        
-        public MediaConverter(ILoggerFactory loggerFactory, IMediaProvider mediaProvider, SettingsProvider settingsProvider) 
+
+        public MediaConverter(ILoggerFactory loggerFactory, IMediaProvider mediaProvider, SettingsProvider settingsProvider)
         {
             FFmpegSupport.SetExecutable(out string directory);
 
@@ -51,8 +51,8 @@ namespace Kast.Provider.Conversions
             var context = new ConversionContext(media, _settingsProvider);
             var token = new ConversionToken(
                 media.ToString(),
-                new List<Func<CancellationToken, Task>>() 
-                { 
+                new List<Func<CancellationToken, Task>>()
+                {
                     _subtitlesFactory.ConvertAsync(context),
                     _streamFactory.ConvertAsync(context)
                 },
@@ -73,7 +73,7 @@ namespace Kast.Provider.Conversions
                     context.Update();
                 });
 
-            return _conversionTracking.TryAdd(media, new ConversionInfo(token, context)) 
+            return _conversionTracking.TryAdd(media, new ConversionInfo(token, context))
                 && _conversionQueue.TryAdd(token);
         }
 

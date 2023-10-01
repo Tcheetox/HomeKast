@@ -1,7 +1,7 @@
-﻿using Xabe.FFmpeg.Events;
-using Kast.Provider.Conversions.Factories;
+﻿using Kast.Provider.Conversions.Factories;
 using Kast.Provider.Media;
 using Kast.Provider.Supports;
+using Xabe.FFmpeg.Events;
 
 namespace Kast.Provider.Conversions
 {
@@ -18,10 +18,10 @@ namespace Kast.Provider.Conversions
         public MediaStatus Status => Media.Status;
         public FactoryTarget? Target { get; private set; }
         public ConversionProgressEventArgs? Progress { get; private set; }
-        
+
         public readonly ConversionType Type;
         public readonly StreamHandle? Handle;
-        
+
         internal bool BurnSubtitles { get; set; }
         internal readonly IMedia Media;
         internal readonly string TargetPath;
@@ -57,10 +57,10 @@ namespace Kast.Provider.Conversions
         }
 
         private readonly SettingsProvider _settingsProvider;
-        public ConversionContext(IMedia media, SettingsProvider settingsProvider) 
+        public ConversionContext(IMedia media, SettingsProvider settingsProvider)
         {
             _settingsProvider = settingsProvider;
-            Media = media;            
+            Media = media;
             Type = media.Status != MediaStatus.MissingSubtitles ? ConversionType.FullConversion : ConversionType.SubtitlesOnly;
             TargetPath = Path.Combine(IOSupport.CreateTargetDirectory(media.FilePath), $"_{Path.ChangeExtension(Media.FileName, ".mkv")}");
 

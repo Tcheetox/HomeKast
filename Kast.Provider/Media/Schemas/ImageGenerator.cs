@@ -1,6 +1,6 @@
-﻿using System.Drawing.Drawing2D;
+﻿using Microsoft.Extensions.Logging;
 using System.Drawing;
-using Microsoft.Extensions.Logging;
+using System.Drawing.Drawing2D;
 
 namespace Kast.Provider.Media
 {

@@ -1,6 +1,6 @@
-﻿using Xabe.FFmpeg;
-using Kast.Provider.Media;
+﻿using Kast.Provider.Media;
 using Kast.Provider.Supports;
+using Xabe.FFmpeg;
 using static Kast.Provider.Media.Serie;
 
 namespace Kast.Api.Models
